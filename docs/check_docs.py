@@ -9,7 +9,12 @@ DOCS_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(DOCS_DIR)
 sys.path.insert(0, DOCS_DIR)
 
-from tgen_source_index import TgenSourceIndex, default_xml_dir  # noqa: E402
+from tgen_source_index import (  # noqa: E402
+    TgenSourceIndex,
+    default_xml_dir,
+    load_index_cache,
+    local_source_url,
+)
 
 try:
     import yaml
@@ -83,9 +88,13 @@ def main():
         entries = sources.get("entries", {})
         tgen_index = TgenSourceIndex(default_xml_dir(root))
         if len(tgen_index) == 0:
+            cached = load_index_cache()
+            if cached:
+                tgen_index = TgenSourceIndex(index=cached)
+        if len(tgen_index) == 0:
             errors.append(
                 "api_sources: tgen Doxygen XML missing — run "
-                "'cd vendor/tgen && make doc-prepare'"
+                "'cd vendor/tgen && make doc-prepare' or 'make docs'"
             )
         else:
             for op_id, lib_map in entries.items():

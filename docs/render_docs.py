@@ -17,6 +17,7 @@ from tgen_source_index import (  # noqa: E402
     TgenSourceIndex,
     default_xml_dir,
     local_source_url,
+    save_index_cache,
 )
 
 try:
@@ -28,6 +29,66 @@ except ImportError:
 
 O_COMPLEXITY_RE = re.compile(r"O\([^)]+\)")
 LIB_MENTION_RE = re.compile(r"\b(jngen|tgen)(?=\s)")
+
+
+def format_generated_at(ts):
+    if not ts or ts == "—":
+        return "—"
+    return ts.replace("T", " ", 1)
+
+
+def format_compiler_display(compiler):
+    if not compiler or compiler == "—":
+        return "—"
+    text = compiler.strip()
+    lower = text.lower()
+    if "gcc" in lower or "g++" in lower or "clang" in lower:
+        return text
+    return f"GCC {text}"
+
+
+def render_vendor_commits_html(vendors, repos=None):
+    repos = repos or {}
+    chunks = []
+    for lib in ("tgen", "jngen"):
+        sha = vendors.get(lib)
+        if not sha:
+            continue
+        repo = repos.get(lib)
+        if repo:
+            commit_url = f"https://github.com/{repo}/commit/{sha}"
+            sha_part = (
+                f'<a href="{html.escape(commit_url)}">'
+                f"<code>{html.escape(sha)}</code></a>"
+            )
+        else:
+            sha_part = f"<code>{html.escape(sha)}</code>"
+        lib_part = f'<strong class="lib-label lib-{lib}">{lib}</strong>'
+        chunks.append(f"{lib_part} {sha_part}")
+    return ", ".join(chunks)
+
+
+INFERRED_SUFFIX = " (inferred)"
+INFERRED_MARK_HTML = '<span class="inferred-mark">*</span>'
+TABLE_INFERRED_FOOTNOTE_HTML = (
+    '<p class="table-footnote">'
+    f"{INFERRED_MARK_HTML} Uniformity or complexity is undocumented "
+    "and is inferred by code inspection.</p>"
+)
+
+
+def split_inferred(value):
+    if not value or not isinstance(value, str):
+        return value, False
+    if value.endswith(INFERRED_SUFFIX):
+        return value[: -len(INFERRED_SUFFIX)], True
+    return value, False
+
+
+def strip_inferred(text):
+    if not text or INFERRED_SUFFIX not in text:
+        return text, False
+    return text.replace(INFERRED_SUFFIX, ""), True
 
 
 def bold_complexities_md(text):
@@ -51,8 +112,46 @@ def bold_complexities_html(text):
     return "".join(out)
 
 
+def format_inferred_text_md(text):
+    if not text:
+        return text
+    if INFERRED_SUFFIX not in text:
+        return bold_complexities_md(highlight_lib_labels_md(text))
+    idx = text.index(INFERRED_SUFFIX)
+    before = text[:idx]
+    after = text[idx + len(INFERRED_SUFFIX) :]
+    return (
+        format_inferred_text_md(before)
+        + "*"
+        + format_inferred_text_md(after)
+    )
+
+
+def format_inferred_text_html(text):
+    if not text:
+        return text
+    if INFERRED_SUFFIX not in text:
+        return bold_complexities_html(text)
+    idx = text.index(INFERRED_SUFFIX)
+    before = text[:idx]
+    after = text[idx + len(INFERRED_SUFFIX) :]
+    return (
+        format_inferred_text_html(before)
+        + INFERRED_MARK_HTML
+        + format_inferred_text_html(after)
+    )
+
+
 def format_lib_part_md(part):
-    return bold_complexities_md(highlight_lib_labels_md(part))
+    if part.startswith("jngen: "):
+        label = "**jngen:** "
+        rest = part[7:]
+    elif part.startswith("tgen: "):
+        label = "**tgen:** "
+        rest = part[6:]
+    else:
+        return format_inferred_text_md(part)
+    return label + format_inferred_text_md(rest)
 
 
 def format_lib_part_html(part):
@@ -63,8 +162,8 @@ def format_lib_part_html(part):
         label = '<strong class="lib-label lib-tgen">tgen:</strong> '
         rest = part[6:]
     else:
-        return bold_complexities_html(part)
-    return label + bold_complexities_html(rest)
+        return format_inferred_text_html(part)
+    return label + format_inferred_text_html(rest)
 
 
 def load_yaml(path):
@@ -194,16 +293,24 @@ def load_api_sources(path=None):
     return load_yaml(path)
 
 
-def build_tgen_source_index(xml_dir=None):
+def build_tgen_source_index(xml_dir=None, cache_path=None):
     xml_dir = xml_dir or default_xml_dir(ROOT_DIR)
+    cache_path = cache_path or os.path.join(DOCS_DIR, "tgen_symbol_index.json")
     index = TgenSourceIndex(xml_dir)
-    if len(index) == 0:
+    if len(index) > 0:
+        save_index_cache(index._index, cache_path)
+        return index
+    cached = TgenSourceIndex.from_cache(cache_path)
+    if cached and len(cached) > 0:
         sys.stderr.write(
-            "render_docs: tgen Doxygen XML missing or empty — run "
-            "'cd vendor/tgen && make doc-prepare' (API links for tgen will be omitted)\n"
+            f"render_docs: using cached tgen symbol index ({len(cached)} symbols)\n"
         )
-        return None
-    return index
+        return cached
+    sys.stderr.write(
+        "render_docs: tgen Doxygen XML missing or empty — run "
+        "'cd vendor/tgen && make doc-prepare' (API links for tgen will be omitted)\n"
+    )
+    return None
 
 
 def yes_no(val):
@@ -212,23 +319,6 @@ def yes_no(val):
     if val is False:
         return "No"
     return val or "—"
-
-
-def uniform_label(val):
-    if not val:
-        return "—"
-    inferred = val.endswith(" (inferred)")
-    base = val[:-11] if inferred else val
-    mapping = {
-        "uniform": "Uniform",
-        "non-uniform": "Non\u2011uniform",
-        "undocumented": "Undocumented",
-        "varies": "Varies",
-    }
-    label = mapping.get(base, base)
-    if inferred:
-        return f"{label} (inferred)"
-    return label
 
 
 def lib_label(text, lib):
@@ -247,27 +337,37 @@ NO_DEFAULT_UNIFORM_OPS = frozenset({
 NO_DEFAULT_UNIFORM_CATEGORIES = frozenset({"hacks", "other"})
 
 
-def effective_uniform(lib_info, category, op_id):
+def uniform_label(base):
+    if not base:
+        return "—"
+    mapping = {
+        "uniform": "Uniform",
+        "non-uniform": "Non\u2011uniform",
+        "undocumented": "Undocumented",
+        "varies": "Varies",
+    }
+    return mapping.get(base, base)
+
+
+def get_uniform_raw(lib_info, category, op_id):
     if not lib_info.get("has"):
-        return None
+        return None, False
     uniform = lib_info.get("uniform")
     if uniform:
-        return uniform
+        return split_inferred(uniform)
     if category in NO_DEFAULT_UNIFORM_CATEGORIES:
-        return None
+        return None, False
     if op_id in NO_DEFAULT_UNIFORM_OPS:
-        return None
-    return "undocumented"
+        return None, False
+    return "undocumented", False
 
 
 def lib_uniformity_parts(tg, jg, category, op_id):
     parts = []
-    jg_u = effective_uniform(jg, category, op_id)
-    tg_u = effective_uniform(tg, category, op_id)
-    if jg_u:
-        parts.append(lib_label(uniform_label(jg_u), "jngen"))
-    if tg_u:
-        parts.append(lib_label(uniform_label(tg_u), "tgen"))
+    for lib, info in (("jngen", jg), ("tgen", tg)):
+        base, inferred = get_uniform_raw(info, category, op_id)
+        if base:
+            parts.append((lib, uniform_label(base), inferred))
     return parts
 
 
@@ -316,16 +416,25 @@ def format_notes_text_md(text):
 def format_notes_text_html(text):
     if not text:
         return text
-    out = []
-    last = 0
-    for match in O_COMPLEXITY_RE.finditer(text):
-        out.append(highlight_lib_names_html(text[last : match.start()]))
-        out.append(
-            f'<strong class="complexity">{html.escape(match.group(0))}</strong>'
-        )
-        last = match.end()
-    out.append(highlight_lib_names_html(text[last:]))
-    return "".join(out)
+    if INFERRED_SUFFIX not in text:
+        out = []
+        last = 0
+        for match in O_COMPLEXITY_RE.finditer(text):
+            out.append(highlight_lib_names_html(text[last : match.start()]))
+            out.append(
+                f'<strong class="complexity">{html.escape(match.group(0))}</strong>'
+            )
+            last = match.end()
+        out.append(highlight_lib_names_html(text[last:]))
+        return "".join(out)
+    idx = text.index(INFERRED_SUFFIX)
+    before = text[:idx]
+    after = text[idx + len(INFERRED_SUFFIX) :]
+    return (
+        format_notes_text_html(before)
+        + INFERRED_MARK_HTML
+        + format_notes_text_html(after)
+    )
 
 
 def format_exclusive_md(lib):
@@ -363,14 +472,50 @@ def format_uniformity_md(tg, jg, category, op_id):
     if not parts:
         return "—"
     rows = []
-    for part in parts:
-        if part.startswith("jngen: "):
-            rows.append(f"**jngen:**<br>{part[7:]}")
-        elif part.startswith("tgen: "):
-            rows.append(f"**tgen:**<br>{part[6:]}")
-        else:
-            rows.append(format_lib_part_md(part))
+    for lib, label, inferred in parts:
+        suffix = "*" if inferred else ""
+        rows.append(f"**{lib}:**<br>{label}{suffix}")
     return "<br>".join(rows)
+
+
+def op_has_inferred(op):
+    for lib in ("jngen", "tgen"):
+        info = op.get(lib, {})
+        uniform = info.get("uniform")
+        if uniform and isinstance(uniform, str) and uniform.endswith(INFERRED_SUFFIX):
+            return True
+        complexity = info.get("complexity")
+        if complexity and INFERRED_SUFFIX in complexity:
+            return True
+    return False
+
+
+def category_has_inferred(ops):
+    return any(
+        op_has_inferred(op) for op in ops if not op.get("gallery_only")
+    )
+
+
+def uniform_value_class(text):
+    if text == "Uniform":
+        return "uniform-yes"
+    if text == "Non\u2011uniform":
+        return "uniform-no"
+    return ""
+
+
+def format_uniform_value_html(text, inferred=False):
+    if text == "Undocumented":
+        return f'<span class="uniform-val uniform-undocumented"><em>{html.escape(text)}</em></span>'
+    css = uniform_value_class(text)
+    mark = INFERRED_MARK_HTML if inferred else ""
+    inner = html.escape(text)
+    if css:
+        return (
+            f'<span class="uniform-val {css}">'
+            f"<strong>{inner}</strong>{mark}</span>"
+        )
+    return f'<span class="uniform-val">{inner}{mark}</span>'
 
 
 def format_uniformity_html(tg, jg, category, op_id):
@@ -378,20 +523,15 @@ def format_uniformity_html(tg, jg, category, op_id):
     if not parts:
         return "—"
     rows = []
-    for part in parts:
-        if part.startswith("jngen: "):
-            label = '<strong class="lib-label lib-jngen">jngen:</strong>'
-            rest = part[7:]
-        elif part.startswith("tgen: "):
-            label = '<strong class="lib-label lib-tgen">tgen:</strong>'
-            rest = part[6:]
+    for lib, label, inferred in parts:
+        if lib == "jngen":
+            row_label = '<strong class="lib-label lib-jngen">jngen:</strong>'
         else:
-            rows.append(bold_complexities_html(part))
-            continue
+            row_label = '<strong class="lib-label lib-tgen">tgen:</strong>'
         rows.append(
             '<div class="uniform-entry">'
-            f"{label}"
-            f'<span class="uniform-val">{html.escape(rest)}</span>'
+            f"{row_label}"
+            f"{format_uniform_value_html(label, inferred)}"
             "</div>"
         )
     return "".join(rows)
@@ -506,12 +646,12 @@ def format_api_html(api, source_url=None, doc_url=None):
 def format_doc_line_html(doc_url):
     if doc_url:
         return (
-            f'<br><span class="api-doc-line">'
+            f'<span class="api-doc-line">'
             f'<a class="api-doc-link" href="{html.escape(doc_url)}" '
             f'target="_blank" rel="noopener">Docs</a>'
             f"</span>"
         )
-    return f'<br><span class="api-doc-line"><em>Undocumented</em></span>'
+    return f'<span class="api-doc-line"><em>Undocumented</em></span>'
 
 
 def format_lib_api_cell_md(lib_info, lib=None):
@@ -551,6 +691,60 @@ def wrap_params(params):
     return params
 
 
+def _format_scientific_number_html(num_str, min_exp_gt=2):
+    num_str = num_str.strip()
+    e_pos = -1
+    for sep in ("e", "E"):
+        pos = num_str.find(sep)
+        if pos != -1:
+            e_pos = pos
+            break
+    if e_pos == -1:
+        return html.escape(num_str)
+
+    mantissa = num_str[:e_pos]
+    exponent = num_str[e_pos + 1 :]
+    if not mantissa or not exponent:
+        return html.escape(num_str)
+    try:
+        exp_val = int(exponent)
+    except ValueError:
+        return html.escape(num_str)
+    if abs(exp_val) <= min_exp_gt:
+        return html.escape(num_str)
+
+    exp_html = html.escape(exponent)
+    if mantissa == "1":
+        return f"10<sup>{exp_html}</sup>"
+    return f"{html.escape(mantissa)}&times;10<sup>{exp_html}</sup>"
+
+
+def format_params_html(params):
+    if not params:
+        return ""
+    out = []
+    pos = 0
+    while pos < len(params):
+        eq = params.find("=", pos)
+        if eq == -1:
+            out.append(html.escape(params[pos:]))
+            break
+        out.append(html.escape(params[pos : eq + 1]))
+        pos = eq + 1
+        end = params.find(",", pos)
+        if end == -1:
+            end = len(params)
+        out.append(_format_scientific_number_html(params[pos:end]))
+        pos = end
+        if pos < len(params):
+            out.append(html.escape(params[pos]))
+            pos += 1
+            while pos < len(params) and params[pos] == " ":
+                out.append(html.escape(params[pos]))
+                pos += 1
+    return "".join(out)
+
+
 def format_benchmark_name_md(name):
     return f"<code>{wrap_benchmark_name(name)}</code>"
 
@@ -567,10 +761,6 @@ def format_benchmark_name_html(name, source_url=None, doc_url=None):
 
 def format_params_md(params):
     return wrap_params(params)
-
-
-def format_params_html(params):
-    return wrap_params(html.escape(params))
 
 
 def sample_svg_path(op_id, lib):
@@ -594,7 +784,7 @@ def _append_sample_images_html(cell, op, lib):
             if i == 0 and top_params:
                 cell += (
                     f'<span class="gallery-params gallery-params-stack">'
-                    f"{html.escape(top_params)}</span>"
+                    f"{format_params_html(top_params)}</span>"
                 )
             if sample_svg_exists(sid, lib):
                 path = sample_svg_path(sid, lib)
@@ -605,7 +795,7 @@ def _append_sample_images_html(cell, op, lib):
             if i == 0 and len(stack) > 1 and mid_params:
                 cell += (
                     f'<span class="gallery-params gallery-params-stack">'
-                    f"{html.escape(mid_params)}</span>"
+                    f"{format_params_html(mid_params)}</span>"
                 )
         return cell
     if sample_svg_exists(op["id"], lib):
@@ -624,7 +814,7 @@ def format_sample_cell_html(op_id, op, lib_info, lib, source_resolver=None):
     params = op.get("gallery_params", "")
     if params and lib_info.get("has") and not _sample_stack_ids(op):
         cell += (
-            f'<br><span class="gallery-params">{html.escape(params)}</span>'
+            f'<br><span class="gallery-params">{format_params_html(params)}</span>'
         )
     if lib_info.get("has"):
         cell = _append_sample_images_html(cell, op, lib)
@@ -829,7 +1019,7 @@ def format_benchmark_cell_html(op, bench_index):
 
     params = row.get("params", "")
     if params:
-        lines.append(f'<span class="bench-params">{html.escape(params)}</span>')
+        lines.append(f'<span class="bench-params">{format_params_html(params)}</span>')
 
     return "<br>".join(lines)
 
@@ -890,6 +1080,8 @@ def render_comparison_html(operations, categories, bench_index, source_resolver=
                 "</tr>"
             )
         parts.append("</table></div>")
+        if category_has_inferred(by_cat[cat_id]):
+            parts.append(TABLE_INFERRED_FOOTNOTE_HTML)
         if cat_id == "geometry":
             parts.extend(render_geometry_samples_html(operations, source_resolver))
 
@@ -897,7 +1089,7 @@ def render_comparison_html(operations, categories, bench_index, source_resolver=
     return "\n".join(parts)
 
 
-def render_benchmarks_html(bench, source_resolver=None):
+def render_benchmarks_html(bench, source_resolver=None, repos=None):
     parts = [
         "<section id=\"benchmarks\">",
         "<h1>tgen vs jngen — Benchmarks</h1>",
@@ -910,16 +1102,17 @@ def render_benchmarks_html(bench, source_resolver=None):
     vendors = bench.get("vendors", {})
     parts.extend([
         "<ul>",
-        f"<li><strong>Generated:</strong> {html.escape(bench.get('generated_at', '—'))}</li>",
-        f"<li><strong>Compiler:</strong> {html.escape(bench.get('compiler', '—'))}</li>",
+        f"<li><strong>Generated:</strong> "
+        f"{html.escape(format_generated_at(bench.get('generated_at', '—')))}</li>",
+        f"<li><strong>Compiler:</strong> "
+        f"{html.escape(format_compiler_display(bench.get('compiler', '—')))}</li>",
         f"<li><strong>Flags:</strong> {html.escape(bench.get('flags', '—'))}</li>",
         f"<li><strong>Host:</strong> {html.escape(bench.get('hostname', '—'))}</li>",
     ])
     if vendors:
         parts.append(
             "<li><strong>Vendor commits:</strong> "
-            f"tgen <code>{html.escape(vendors.get('tgen', '—'))}</code>, "
-            f"jngen <code>{html.escape(vendors.get('jngen', '—'))}</code></li>"
+            f"{render_vendor_commits_html(vendors, repos)}</li>"
         )
     parts.extend([
         "</ul>",
@@ -994,19 +1187,19 @@ def render_benchmarks_html(bench, source_resolver=None):
     return "\n".join(parts)
 
 
-def render_page_meta(bench):
+def render_page_meta(bench, repos=None):
     if not bench:
         return ""
     vendors = bench.get("vendors", {})
     parts = [
         '<div class="page-meta">',
-        f"<div><strong>Generated:</strong> {html.escape(bench.get('generated_at', '—'))}</div>",
+        f"<div><strong>Generated:</strong> "
+        f"{html.escape(format_generated_at(bench.get('generated_at', '—')))}</div>",
     ]
     if vendors:
         parts.append(
             "<div><strong>Vendor commits:</strong> "
-            f"tgen <code>{html.escape(vendors.get('tgen', '—'))}</code>, "
-            f"jngen <code>{html.escape(vendors.get('jngen', '—'))}</code></div>"
+            f"{render_vendor_commits_html(vendors, repos)}</div>"
         )
     parts.append("</div>")
     return "\n".join(parts)
@@ -1095,6 +1288,27 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     .uniform-val {{
       display: block;
       margin-top: 0.1rem;
+    }}
+    .uniform-val.uniform-undocumented {{
+      color: var(--muted);
+      font-size: 0.85rem;
+    }}
+    .uniform-val.uniform-yes strong {{
+      font-weight: 700;
+      color: #a6e3a6;
+    }}
+    .uniform-val.uniform-no strong {{
+      font-weight: 700;
+      color: #f0c674;
+    }}
+    .inferred-mark {{
+      color: #f85149;
+      font-weight: 700;
+    }}
+    .table-footnote {{
+      margin: 0.5rem 0 1.25rem;
+      font-size: 0.85rem;
+      color: var(--muted);
     }}
     hr.notes-sep {{
       border: 0;
@@ -1298,10 +1512,10 @@ def main():
     comparison_html = render_comparison_html(
         operations, categories, bench_index, source_resolver
     )
-    benchmarks_html = render_benchmarks_html(bench, source_resolver)
-
+    repos = api_sources.get("repos", {})
+    benchmarks_html = render_benchmarks_html(bench, source_resolver, repos)
     os.makedirs(args.out_dir, exist_ok=True)
-    page_meta = render_page_meta(bench)
+    page_meta = render_page_meta(bench, repos)
     page_html = render_html(comparison_html, benchmarks_html, page_meta)
     with open(os.path.join(args.out_dir, "comparison.html"), "w", encoding="utf-8") as f:
         f.write(page_html)

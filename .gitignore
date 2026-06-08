@@ -2,6 +2,7 @@ build/
 results/
 docs/site/
 docs/vendor/
+docs/tgen_symbol_index.json
 docs/__pycache__/
 __pycache__/
 vendor/jngen/jngen.h

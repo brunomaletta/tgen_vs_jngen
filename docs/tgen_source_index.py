@@ -11,6 +11,9 @@ TGEN_REPO = "brunomaletta/tgen"
 TGEN_DEFAULT_PATH = "single_include/tgen.h"
 TGEN_SITE_DOCS_PREFIX = "vendor/tgen/docs"
 TGEN_SITE_SOURCE_PREFIX = "vendor/tgen"
+DEFAULT_CACHE_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "tgen_symbol_index.json"
+)
 
 
 def doxygen_docs_page_anchor(member_id: str) -> tuple[str, str]:
@@ -90,9 +93,44 @@ def github_blob_url(
     return url
 
 
+def save_index_cache(index: dict[str, dict[str, str | int]], path: str = DEFAULT_CACHE_PATH) -> None:
+    import json
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"symbols": index}, f, indent=2, sort_keys=True)
+        f.write("\n")
+
+
+def load_index_cache(path: str = DEFAULT_CACHE_PATH) -> dict[str, dict[str, str | int]] | None:
+    import json
+
+    if not os.path.isfile(path):
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
+    symbols = data.get("symbols")
+    return symbols if isinstance(symbols, dict) and symbols else None
+
+
 class TgenSourceIndex:
-    def __init__(self, xml_dir: str):
-        self._index = build_index(xml_dir)
+    def __init__(self, xml_dir: str | None = None, index: dict | None = None):
+        if index is not None:
+            self._index = index
+        elif xml_dir is not None:
+            self._index = build_index(xml_dir)
+        else:
+            self._index = {}
+
+    @classmethod
+    def from_cache(cls, path: str = DEFAULT_CACHE_PATH) -> TgenSourceIndex | None:
+        cached = load_index_cache(path)
+        if not cached:
+            return None
+        return cls(index=cached)
 
     def lookup(self, symbol: str) -> dict[str, str | int] | None:
         return self._index.get(symbol)
