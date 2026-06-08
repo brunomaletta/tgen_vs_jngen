@@ -1,6 +1,6 @@
 # tgen vs jngen — Feature Comparison
 
-*Generated 2026-06-08 01:06 UTC*
+*Generated 2026-06-08 01:07 UTC*
 
 > **Styled tables and geometry samples:** [view on GitHub Pages](https://brunomaletta.github.io/tgen_vs_jngen/). GitHub's Markdown renderer cannot reproduce the HTML layout.
 
@@ -54,8 +54,6 @@ Comparison of non-trivial generation operations. See [benchmarks.md](benchmarks.
 | Simple polygon through given points | **No** | Yes<br><code>geometry::random_simple_polygon_through_points(pts)</code> | **tgen:** Non-uniform | **tgen:** **O(n log n)** expected; randomized divide-and-conquer Hamiltonian path | **tgen:** 1131 ms<br><sub>n=1e6</sub> |
 
 ### Samples
-
-Visual output for the geometry operations above (seed **42**, coordinates in **[0, 1000]**; **n = 80** except simple polygon through points, which uses a **10×10 rectangular grid**).
 
 | Operation | jngen | tgen |
 |-----------|-------|------|

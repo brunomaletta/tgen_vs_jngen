@@ -422,10 +422,6 @@ def render_geometry_samples_md(operations):
     lines = [
         "### Samples",
         "",
-        "Visual output for the geometry operations above "
-        "(seed **42**, coordinates in **[0, 1000]**; **n = 80** except "
-        "simple polygon through points, which uses a **10×10 rectangular grid**).",
-        "",
         "| Operation | jngen | tgen |",
         "|-----------|-------|------|",
     ]
@@ -446,10 +442,6 @@ def render_geometry_samples_html(operations):
         return []
     parts = [
         "<h3>Samples</h3>",
-        "<p>Visual output for the geometry operations above "
-        "(seed <strong>42</strong>, coordinates in <strong>[0, 1000]</strong>; "
-        "<strong>n = 80</strong> except simple polygon through points, which uses a "
-        "<strong>10×10 rectangular grid</strong>).</p>",
         '<div class="table-scroll"><table class="comparison-table samples-table">',
         "<colgroup>"
         '<col class="col-op">'
