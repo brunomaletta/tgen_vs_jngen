@@ -1,6 +1,6 @@
 # tgen vs jngen — Feature Comparison
 
-*Generated 2026-06-08 00:59 UTC*
+*Generated 2026-06-08 01:06 UTC*
 
 > **Styled tables and geometry samples:** [view on GitHub Pages](https://brunomaletta.github.io/tgen_vs_jngen/). GitHub's Markdown renderer cannot reproduce the HTML layout.
 

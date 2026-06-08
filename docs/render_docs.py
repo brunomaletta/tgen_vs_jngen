@@ -1013,7 +1013,6 @@ def render_html(comparison_body, benchmarks_body):
       max-width: 420px;
       margin: 0.65rem auto 0;
       border-radius: 4px;
-      background: #fff;
       border: 1px solid var(--border);
     }}
     td.cell-unavailable {{

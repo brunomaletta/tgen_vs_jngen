@@ -9,15 +9,14 @@ import sys
 CANVAS_SIZE = 2000
 MARGIN = 80
 PADDING_RATIO = 0.08
-NORMALIZE_PADDING_RATIO = 0.06  # keep in sync with normalize_gallery.py
-# jngen Drawer default point radius (width=1 -> r=8*1.5=12 in SVG units)
-JNGEN_POINT_R = 12
+# jngen Drawer defaults in a 2000×2000 canvas (normalize_gallery rescales after crop).
+GALLERY_POINT_R = 12
+GALLERY_STROKE_W = 8
 
 
 def svg_header(title):
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{CANVAS_SIZE}" height="{CANVAS_SIZE}" viewBox="0 0 {CANVAS_SIZE} {CANVAS_SIZE}">
   <title>{title}</title>
-  <rect width="100%" height="100%" fill="#fafafa"/>
 """
 
 
@@ -67,51 +66,37 @@ def render_polygon_svg(points, title="", stroke="#2563eb", fill="#93c5fd55"):
     x0, y0, x1, y1 = bbox_of_points(points)
     tx, ty = fit_transform(x0, y0, x1, y1)
     pts = " ".join(format_point(tx, ty, x, y) for x, y in points)
-    stroke_width = max(3, CANVAS_SIZE // 500)
-    vertex_radius = max(3, CANVAS_SIZE // 320)
     dots = "\n".join(
-        f'  <circle cx="{tx(x):.1f}" cy="{ty(y):.1f}" r="{vertex_radius}" '
-        f'fill="{stroke}" stroke="{stroke}" stroke-width="1"/>'
+        f'  <circle cx="{tx(x):.1f}" cy="{ty(y):.1f}" r="{GALLERY_POINT_R}" '
+        f'fill="{stroke}"/>'
         for x, y in points
     )
 
     return (
         svg_header(title)
         + f'  <polygon points="{pts}" fill="{fill}" fill-rule="nonzero" '
-        + f'stroke="{stroke}" stroke-width="{stroke_width}" stroke-linejoin="round"/>\n'
+        + f'stroke="{stroke}" stroke-width="{GALLERY_STROKE_W}" '
+        f'stroke-linejoin="round"/>\n'
         + dots
         + "\n</svg>\n"
     )
-
-
-def content_viewbox_side(points, extra_pad=0.0):
-    """Square viewBox side after normalize_gallery cropping."""
-    x0, y0, x1, y1 = bbox_of_points(points, extra_pad=extra_pad)
-    width = x1 - x0
-    height = y1 - y0
-    pad_x = width * NORMALIZE_PADDING_RATIO
-    pad_y = height * NORMALIZE_PADDING_RATIO
-    return max(width + 2 * pad_x, height + 2 * pad_y)
 
 
 def render_scatter_svg(points, title="", stroke="#2563eb", fill="#2563eb"):
     if not points:
         return ""
     x0, y0, x1, y1 = bbox_of_points(points)
-    tx, ty = fit_transform(x0, y0, x1, y1)
-    canvas_pts = [(tx(x), ty(y)) for x, y in points]
-    side = content_viewbox_side(canvas_pts)
-    radius = max(3, JNGEN_POINT_R * side / CANVAS_SIZE)
-
     data_w = x1 - x0
     data_h = y1 - y0
     avail = CANVAS_SIZE - 2 * MARGIN
     scale = min(avail / data_w, avail / data_h)
-    x0, y0, x1, y1 = bbox_of_points(points, extra_pad=(radius * 2) / scale)
+    x0, y0, x1, y1 = bbox_of_points(
+        points, extra_pad=(GALLERY_POINT_R * 2) / scale
+    )
     tx, ty = fit_transform(x0, y0, x1, y1)
 
     dots = "\n".join(
-        f'  <circle cx="{tx(x):.1f}" cy="{ty(y):.1f}" r="{radius:.2f}" '
+        f'  <circle cx="{tx(x):.1f}" cy="{ty(y):.1f}" r="{GALLERY_POINT_R}" '
         f'fill="{fill}"/>'
         for x, y in points
     )

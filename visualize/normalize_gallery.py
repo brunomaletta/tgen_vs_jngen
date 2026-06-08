@@ -8,10 +8,36 @@ from pathlib import Path
 
 CANVAS_SIZE = 2000
 PADDING_RATIO = 0.06
+# Match jngen Drawer defaults (width=1 -> point r=12, stroke=8 in 2000 canvas units).
+GALLERY_POINT_R = 12
+GALLERY_STROKE_W = 8
 SVG_OPEN = re.compile(r"<svg\b([^>]*)>", re.IGNORECASE)
 VIEWBOX = re.compile(r'\sviewBox="[^"]*"', re.IGNORECASE)
 WIDTH = re.compile(r'\swidth="[^"]*"', re.IGNORECASE)
 HEIGHT = re.compile(r'\sheight="[^"]*"', re.IGNORECASE)
+BACKGROUND_RECT = re.compile(
+    r'\s*<rect\b[^>]*\bwidth="100%"[^>]*\bheight="100%"[^>]*/>\s*',
+    re.IGNORECASE,
+)
+BACKGROUND_CIRCLE = re.compile(
+    r"\s*<circle\b[^>]*\bfill=['\"]white['\"][^>]*/>\s*",
+    re.IGNORECASE,
+)
+
+
+def strip_background(text):
+    text = BACKGROUND_RECT.sub("\n", text)
+    # jngen Drawer paints a huge white circle behind the scene.
+    def drop_large_white_circle(match):
+        tag = match.group(0)
+        r_match = re.search(r"\br=['\"]([^'\"]+)['\"]", tag)
+        if not r_match:
+            return tag
+        if float(r_match.group(1)) > CANVAS_SIZE * 0.75:
+            return "\n"
+        return tag
+
+    return BACKGROUND_CIRCLE.sub(drop_large_white_circle, text)
 
 
 def parse_points(raw):
@@ -88,7 +114,53 @@ def content_viewbox(points):
     return cx - side / 2, cy - side / 2, side, side
 
 
+def scale_markup(text, viewbox_side):
+    """Scale point radii and strokes so dots/lines look the same after crop."""
+    point_r = GALLERY_POINT_R * viewbox_side / CANVAS_SIZE
+    stroke_w = GALLERY_STROKE_W * viewbox_side / CANVAS_SIZE
+
+    def scale_circle(match):
+        tag = match.group(0)
+        tag = re.sub(
+            r"(\br=)(['\"])([\d.]+)\2",
+            lambda m: f"{m.group(1)}{m.group(2)}{point_r:.4f}{m.group(2)}",
+            tag,
+            count=1,
+        )
+        if re.search(r"stroke-width=", tag, re.IGNORECASE):
+            tag = re.sub(
+                r'(stroke-width=")([\d.]+)(")',
+                lambda m: f'{m.group(1)}{stroke_w:.4f}{m.group(3)}',
+                tag,
+                count=1,
+            )
+        return tag
+
+    text = re.sub(r"<circle\b[^>]*/>", scale_circle, text, flags=re.IGNORECASE)
+
+    def scale_style_stroke(match):
+        style = match.group(1)
+        style = re.sub(
+            r"(stroke-width:)([\d.]+)",
+            lambda m: f"{m.group(1)}{stroke_w:.4f}",
+            style,
+            count=1,
+        )
+        return f"style='{style}'"
+
+    text = re.sub(r"style='([^']*)'", scale_style_stroke, text)
+
+    text = re.sub(
+        r'(<polygon\b[^>]*\bstroke-width=")([\d.]+)(")',
+        lambda m: f"{m.group(1)}{stroke_w:.4f}{m.group(3)}",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return text
+
+
 def normalize_svg(text):
+    text = strip_background(text)
     match = SVG_OPEN.search(text)
     if not match:
         return text
@@ -109,7 +181,10 @@ def normalize_svg(text):
     replacement = (
         f'<svg{attrs} width="{CANVAS_SIZE}" height="{CANVAS_SIZE}" {view_box}>'
     )
-    return text[: match.start()] + replacement + text[match.end() :]
+    text = text[: match.start()] + replacement + text[match.end() :]
+    if points:
+        text = scale_markup(text, vw)
+    return text
 
 
 def normalize_file(path):
