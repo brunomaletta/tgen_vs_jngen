@@ -11,6 +11,18 @@ PADDING_RATIO = 0.06
 # Match jngen Drawer defaults (width=1 -> point r=12, stroke=8 in 2000 canvas units).
 GALLERY_POINT_R = 12
 GALLERY_STROKE_W = 8
+GALLERY_POINT_R_DENSE = 2
+GALLERY_STROKE_W_DENSE = 1.5
+GALLERY_POINT_R_SCATTER = 5
+GALLERY_STROKE_W_SCATTER = 3
+
+
+def gallery_point_style(name):
+    if name.endswith("_large") or "_large_" in name:
+        return GALLERY_POINT_R_DENSE, GALLERY_STROKE_W_DENSE
+    if "general_position" in name:
+        return GALLERY_POINT_R_SCATTER, GALLERY_STROKE_W_SCATTER
+    return GALLERY_POINT_R, GALLERY_STROKE_W
 SVG_OPEN = re.compile(r"<svg\b([^>]*)>", re.IGNORECASE)
 VIEWBOX = re.compile(r'\sviewBox="[^"]*"', re.IGNORECASE)
 WIDTH = re.compile(r'\swidth="[^"]*"', re.IGNORECASE)
@@ -114,10 +126,10 @@ def content_viewbox(points):
     return cx - side / 2, cy - side / 2, side, side
 
 
-def scale_markup(text, viewbox_side):
+def scale_markup(text, viewbox_side, point_r_base, stroke_w_base):
     """Scale point radii and strokes so dots/lines look the same after crop."""
-    point_r = GALLERY_POINT_R * viewbox_side / CANVAS_SIZE
-    stroke_w = GALLERY_STROKE_W * viewbox_side / CANVAS_SIZE
+    point_r = point_r_base * viewbox_side / CANVAS_SIZE
+    stroke_w = stroke_w_base * viewbox_side / CANVAS_SIZE
 
     def scale_circle(match):
         tag = match.group(0)
@@ -159,8 +171,9 @@ def scale_markup(text, viewbox_side):
     return text
 
 
-def normalize_svg(text):
+def normalize_svg(text, style_name=""):
     text = strip_background(text)
+    point_r_base, stroke_w_base = gallery_point_style(style_name)
     match = SVG_OPEN.search(text)
     if not match:
         return text
@@ -183,13 +196,13 @@ def normalize_svg(text):
     )
     text = text[: match.start()] + replacement + text[match.end() :]
     if points:
-        text = scale_markup(text, vw)
+        text = scale_markup(text, vw, point_r_base, stroke_w_base)
     return text
 
 
 def normalize_file(path):
     original = path.read_text(encoding="utf-8")
-    updated = normalize_svg(original)
+    updated = normalize_svg(original, path.stem)
     if updated != original:
         path.write_text(updated, encoding="utf-8")
         print(f"Normalized {path}")

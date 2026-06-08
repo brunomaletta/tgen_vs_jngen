@@ -50,7 +50,7 @@ Geometry sample SVGs live under `docs/gallery/` and are embedded in the HTML com
 - Distinct integer lists
 - Convex polygons (n=3.6e5, max=3e9 — jngen-limited; both use the same n)
 
-**Feature table** (not all rows are timed): named graphs, rooted tree output, structured printing, testlib integration, math, geometry, strings, adversarial hacks — see [docs/comparison.html](docs/comparison.html).
+**Feature table** (not all rows are timed): named graphs, rooted tree output, structured printing, testlib integration, math, geometry, strings, `hack::` generators — see [docs/comparison.html](docs/comparison.html).
 
 **Tgen-only benchmarks** (in the table, not head-to-head): general-position points, simple polygons, convex polygon at n=1e6.
 

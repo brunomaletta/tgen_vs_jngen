@@ -1,4 +1,5 @@
 #include "../vendor/jngen/jngen.h"
+#include "samples.h"
 
 #include <string>
 
@@ -40,12 +41,13 @@ void draw_points_svg(const string &path, const TArray<Point> &pts,
 
 void run_jngen_samples(const string &out_dir) {
 	rnd.seed(42);
-	const int n = 80;
-	const int coord = 1000;
 
-	draw_polygon_svg(out_dir + "/geometry_convex_polygon_jngen.svg",
-					 rndg.convexPolygon(n, 0, coord));
+	draw_polygon_svg(
+		out_dir + "/geometry_convex_polygon_jngen.svg",
+		rndg.convexPolygon(GALLERY_CONVEX_N, 0, GALLERY_CONVEX_COORD));
 
-	draw_points_svg(out_dir + "/geometry_points_general_position_jngen.svg",
-					rndg.pointsInGeneralPosition(n, 0, coord));
+	draw_points_svg(
+		out_dir + "/geometry_points_general_position_jngen.svg",
+		rndg.pointsInGeneralPosition(GALLERY_GENERAL_POSITION_N, 0,
+									 GALLERY_GENERAL_POSITION_COORD));
 }

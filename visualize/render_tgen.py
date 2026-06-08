@@ -12,6 +12,20 @@ PADDING_RATIO = 0.08
 # jngen Drawer defaults in a 2000×2000 canvas (normalize_gallery rescales after crop).
 GALLERY_POINT_R = 12
 GALLERY_STROKE_W = 8
+# Dense polygons (*_large): small markers so n≈1e4 stays readable.
+GALLERY_POINT_R_DENSE = 2
+GALLERY_STROKE_W_DENSE = 1.5
+# General-position scatter (n≈2e3): between dense and default.
+GALLERY_POINT_R_SCATTER = 5
+GALLERY_STROKE_W_SCATTER = 3
+
+
+def gallery_point_style(stem):
+    if stem.endswith("_large") or "_large_" in stem:
+        return GALLERY_POINT_R_DENSE, GALLERY_STROKE_W_DENSE
+    if "general_position" in stem:
+        return GALLERY_POINT_R_SCATTER, GALLERY_STROKE_W_SCATTER
+    return GALLERY_POINT_R, GALLERY_STROKE_W
 
 
 def svg_header(title):
@@ -60,14 +74,21 @@ def format_point(tx, ty, x, y):
     return f"{tx(x):.1f},{ty(y):.1f}"
 
 
-def render_polygon_svg(points, title="", stroke="#2563eb", fill="#93c5fd55"):
+def render_polygon_svg(
+    points,
+    title="",
+    stroke="#2563eb",
+    fill="#93c5fd55",
+    point_r=GALLERY_POINT_R,
+    stroke_w=GALLERY_STROKE_W,
+):
     if not points:
         return ""
     x0, y0, x1, y1 = bbox_of_points(points)
     tx, ty = fit_transform(x0, y0, x1, y1)
     pts = " ".join(format_point(tx, ty, x, y) for x, y in points)
     dots = "\n".join(
-        f'  <circle cx="{tx(x):.1f}" cy="{ty(y):.1f}" r="{GALLERY_POINT_R}" '
+        f'  <circle cx="{tx(x):.1f}" cy="{ty(y):.1f}" r="{point_r}" '
         f'fill="{stroke}"/>'
         for x, y in points
     )
@@ -75,14 +96,20 @@ def render_polygon_svg(points, title="", stroke="#2563eb", fill="#93c5fd55"):
     return (
         svg_header(title)
         + f'  <polygon points="{pts}" fill="{fill}" fill-rule="nonzero" '
-        + f'stroke="{stroke}" stroke-width="{GALLERY_STROKE_W}" '
+        + f'stroke="{stroke}" stroke-width="{stroke_w}" '
         f'stroke-linejoin="round"/>\n'
         + dots
         + "\n</svg>\n"
     )
 
 
-def render_scatter_svg(points, title="", stroke="#2563eb", fill="#2563eb"):
+def render_scatter_svg(
+    points,
+    title="",
+    stroke="#2563eb",
+    fill="#2563eb",
+    point_r=GALLERY_POINT_R,
+):
     if not points:
         return ""
     x0, y0, x1, y1 = bbox_of_points(points)
@@ -91,12 +118,12 @@ def render_scatter_svg(points, title="", stroke="#2563eb", fill="#2563eb"):
     avail = CANVAS_SIZE - 2 * MARGIN
     scale = min(avail / data_w, avail / data_h)
     x0, y0, x1, y1 = bbox_of_points(
-        points, extra_pad=(GALLERY_POINT_R * 2) / scale
+        points, extra_pad=(point_r * 2) / scale
     )
     tx, ty = fit_transform(x0, y0, x1, y1)
 
     dots = "\n".join(
-        f'  <circle cx="{tx(x):.1f}" cy="{ty(y):.1f}" r="{GALLERY_POINT_R}" '
+        f'  <circle cx="{tx(x):.1f}" cy="{ty(y):.1f}" r="{point_r}" '
         f'fill="{fill}"/>'
         for x, y in points
     )
@@ -114,10 +141,13 @@ def process_file(src, dst):
         return
     kind = data.get("kind", "polygon")
     points = data.get("points", [])
+    point_r, stroke_w = gallery_point_style(stem)
     if kind == "scatter":
-        svg = render_scatter_svg(points, title=title)
+        svg = render_scatter_svg(points, title=title, point_r=point_r)
     else:
-        svg = render_polygon_svg(points, title=title)
+        svg = render_polygon_svg(
+            points, title=title, point_r=point_r, stroke_w=stroke_w
+        )
     with open(dst, "w", encoding="utf-8") as f:
         f.write(svg)
     print(f"Wrote {dst}")

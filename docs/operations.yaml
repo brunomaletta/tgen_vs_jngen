@@ -7,8 +7,8 @@ categories:
   lists: Lists and sequences
   math: Math
   geometry: Geometry
-  strings: Strings and hashing
-  adversarial: Adversarial / hack generators
+  strings: Strings
+  hacks: Hacks
   other: Other
 
 operations:
@@ -375,6 +375,7 @@ operations:
     benchmark: true
     benchmark_id: geometry_convex_polygon
     visualize: true
+    gallery_params: "n=80, min=0, max=1000"
 
   - id: geometry_points_general_position
     name: Points in general position (no three collinear)
@@ -393,6 +394,7 @@ operations:
     benchmark: false
     benchmark_id: geometry_points_general_position
     visualize: true
+    gallery_params: "n=2000, min=0, max=3e6"
 
   - id: geometry_simple_polygon
     name: Random simple polygon
@@ -410,6 +412,7 @@ operations:
     benchmark: false
     benchmark_id: geometry_random_simple_polygon
     visualize: true
+    gallery_params: "n=80, min=0, max=1000"
 
   - id: geometry_simple_polygon_through_points
     name: Simple polygon through given points
@@ -427,6 +430,7 @@ operations:
     benchmark: false
     benchmark_id: geometry_simple_polygon_through_points
     visualize: true
+    gallery_params: "10×10 input grid, min=0, max=1000"
 
   - id: geometry_convex_polygon_tgen_n1e6
     name: Random convex polygon at n=1e6 (tgen scale)
@@ -476,7 +480,7 @@ operations:
       uniform: ""
       complexity: "Drawer for points, segments, circles, polygons."
 
-  # --- Strings and hashing ---
+  # --- Strings ---
   - id: str_regex
     name: Regex / pattern strings
     category: strings
@@ -492,9 +496,10 @@ operations:
       complexity: "O(output length) (inferred); testlib-compatible pattern generation"
     notes: "Same testlib-style regex syntax. tgen samples uniformly among matches (documented); jngen explicitly does not — e.g. rnd.next(\"[1-9][0-9]{1,2}\") does not yield uniform digit strings."
 
+  # --- Hacks (hack::) ---
   - id: anti_hash_strings
     name: Polynomial hash collision strings (signed mod)
-    category: strings
+    category: hacks
     tgen:
       has: true
       api: "hack::polynomial_hash_hack(alphabet, base, mod)"
@@ -509,7 +514,7 @@ operations:
 
   - id: hack_unsigned_polynomial_hash
     name: Polynomial hash collision (unsigned / power-of-two mod)
-    category: strings
+    category: hacks
     tgen:
       has: true
       api: "hack::unsigned_polynomial_hash_hack()"
@@ -521,10 +526,9 @@ operations:
       uniform: ""
       complexity: ""
 
-  # --- Adversarial / hacks (hack) ---
   - id: anti_unordered_set
     name: std::unordered_set collision inputs
-    category: adversarial
+    category: hacks
     tgen:
       has: true
       api: "hack::std_unordered(size)"
@@ -539,7 +543,7 @@ operations:
 
   - id: hack_string_set
     name: std::set collision strings
-    category: adversarial
+    category: hacks
     tgen:
       has: true
       api: "hack::string_set(size)"
@@ -553,7 +557,7 @@ operations:
 
   - id: hack_dinitz
     name: Max-flow worst case (Dinitz / Edmonds-Karp)
-    category: adversarial
+    category: hacks
     tgen:
       has: true
       api: "hack::dinitz_worst_case(k, l)"
@@ -567,7 +571,7 @@ operations:
 
   - id: hack_mo
     name: Mo's algorithm worst-case queries
-    category: adversarial
+    category: hacks
     tgen:
       has: true
       api: "hack::mo(n, q)"
@@ -581,7 +585,7 @@ operations:
 
   - id: hack_spfa
     name: SPFA TLE graph
-    category: adversarial
+    category: hacks
     tgen:
       has: true
       api: "hack::spfa_hack(n)"
@@ -595,7 +599,7 @@ operations:
 
   - id: hack_stale_heap_dijkstra
     name: Stale-heap Dijkstra bug graph
-    category: adversarial
+    category: hacks
     tgen:
       has: true
       api: "hack::stale_heap_dijkstra_bug(n)"
@@ -609,7 +613,7 @@ operations:
 
   - id: hack_non_strict_dijkstra
     name: Non-strict relaxation Dijkstra bug graph
-    category: adversarial
+    category: hacks
     tgen:
       has: true
       api: "hack::non_strict_relaxation_dijkstra_bug(n)"
@@ -623,7 +627,7 @@ operations:
 
   - id: hack_mt19937_xor_hash
     name: mt19937 XOR-hash collision mask
-    category: adversarial
+    category: hacks
     tgen:
       has: true
       api: "hack::mt19937_xor_hash_hack<T>()"
@@ -637,7 +641,7 @@ operations:
 
   - id: hack_segment_tree_beats
     name: Segment-tree-beats worst case
-    category: adversarial
+    category: hacks
     tgen:
       has: true
       api: "hack::segment_tree_beats_hack(k, q)"
@@ -651,7 +655,7 @@ operations:
 
   - id: hack_rotating_calipers
     name: Rotating calipers bug polygon
-    category: adversarial
+    category: hacks
     tgen:
       has: true
       api: "hack::naive_rotating_calipers_max_dist_bug()"

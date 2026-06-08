@@ -1,6 +1,6 @@
 # tgen vs jngen — Feature Comparison
 
-*Generated 2026-06-08 02:16 UTC*
+*Generated 2026-06-08 02:38 UTC*
 
 > **Styled tables and geometry samples:** [view on GitHub Pages](https://brunomaletta.github.io/tgen_vs_jngen/). GitHub's Markdown renderer cannot reproduce the HTML layout.
 
@@ -62,23 +62,23 @@ Comparison of non-trivial generation operations. See [benchmarks.md](benchmarks.
 
 | Operation | jngen | tgen |
 |-----------|-------|------|
-| Random convex polygon | Yes<br><code>rndg.convexPolygon(n, min, max)</code><br><img src="gallery/geometry_convex_polygon_jngen.svg" alt="jngen sample"> | Yes<br><code>geometry::random_convex_polygon(n, min, max)</code><br><img src="gallery/geometry_convex_polygon_tgen.svg" alt="tgen sample"> |
-| Points in general position (no three collinear) | Yes<br><code>rndg.pointsInGeneralPosition(n, min, max)</code><br><img src="gallery/geometry_points_general_position_jngen.svg" alt="jngen sample"> | Yes<br><code>geometry::random_points_general_position(n, min, max)</code><br><img src="gallery/geometry_points_general_position_tgen.svg" alt="tgen sample"> |
-| Random simple polygon | **No** | Yes<br><code>geometry::random_simple_polygon(n, min, max)</code><br><img src="gallery/geometry_simple_polygon_tgen.svg" alt="tgen sample"> |
-| Simple polygon through given points | **No** | Yes<br><code>geometry::random_simple_polygon_through_points(pts)</code><br><img src="gallery/geometry_simple_polygon_through_points_tgen.svg" alt="tgen sample"> |
+| Random convex polygon | Yes<br><code>rndg.convexPolygon(n, min, max)</code><br><sub>n=80, min=0, max=1000</sub><br><img src="gallery/geometry_convex_polygon_jngen.svg" alt="jngen sample"> | Yes<br><code>geometry::random_convex_polygon(n, min, max)</code><br><sub>n=80, min=0, max=1000</sub><br><img src="gallery/geometry_convex_polygon_tgen.svg" alt="tgen sample"> |
+| Points in general position (no three collinear) | Yes<br><code>rndg.pointsInGeneralPosition(n, min, max)</code><br><sub>n=2000, min=0, max=3e6</sub><br><img src="gallery/geometry_points_general_position_jngen.svg" alt="jngen sample"> | Yes<br><code>geometry::random_points_general_position(n, min, max)</code><br><sub>n=2000, min=0, max=3e6</sub><br><img src="gallery/geometry_points_general_position_tgen.svg" alt="tgen sample"> |
+| Random simple polygon | **No** | Yes<br><code>geometry::random_simple_polygon(n, min, max)</code><br><sub>n=80, min=0, max=1000</sub><br><img src="gallery/geometry_simple_polygon_tgen.svg" alt="tgen sample"> |
+| Simple polygon through given points | **No** | Yes<br><code>geometry::random_simple_polygon_through_points(pts)</code><br><sub>10×10 input grid, min=0, max=1000</sub><br><img src="gallery/geometry_simple_polygon_through_points_tgen.svg" alt="tgen sample"> |
 
-## Strings and hashing
+## Strings
 
 | Operation | jngen | tgen | Uniformity | Complexity / notes | Benchmark |
 |-----------|-------|------|------------|-------------------|-----------|
 | Regex / pattern strings | Yes<br><code>rnd.next("[a-z]{10}") / rnds.random(pattern)</code> | Yes<br><code>str("[a-z]{10}").gen()</code> | **jngen:**<br>Non‑uniform<br>**tgen:**<br>Uniform | **jngen:** **O(output length)** (inferred); testlib-compatible pattern generation<br>**tgen:** **O(n)**; uniform over matches when each string has a unique parse<hr>Same testlib-style regex syntax. **tgen** samples uniformly among matches (documented); **jngen** explicitly does not — e.g. rnd.next("[1-9][0-9]{1,2}") does not yield uniform digit strings. | — |
-| Polynomial hash collision strings (signed mod) | Yes<br><code>rnds.antiHash({{mod, base}, ...}, alphabet, len)</code> | Yes<br><code>hack::polynomial_hash_hack(alphabet, base, mod)</code> | **jngen:**<br>Undocumented<br>**tgen:**<br>Undocumented | **jngen:** **O(√mod)** expected (inferred); brute force over short strings<br>**tgen:** Birthday attack; up to 2 (base, mod) pairs<hr>Deterministic collision construction, not random sampling. Both generate colliding strings for rolling hash. | — |
-| Polynomial hash collision (unsigned / power-of-two mod) | **No** | Yes<br><code>hack::unsigned_polynomial_hash_hack()</code> | — | **tgen:** **O(1)**; Thue–Morse construction | — |
 
-## Adversarial / hack generators
+## Hacks
 
 | Operation | jngen | tgen | Uniformity | Complexity / notes | Benchmark |
 |-----------|-------|------|------------|-------------------|-----------|
+| Polynomial hash collision strings (signed mod) | Yes<br><code>rnds.antiHash({{mod, base}, ...}, alphabet, len)</code> | Yes<br><code>hack::polynomial_hash_hack(alphabet, base, mod)</code> | **jngen:**<br>Undocumented<br>**tgen:**<br>Undocumented | **jngen:** **O(√mod)** expected (inferred); brute force over short strings<br>**tgen:** Birthday attack; up to 2 (base, mod) pairs<hr>Deterministic collision construction, not random sampling. Both generate colliding strings for rolling hash. | — |
+| Polynomial hash collision (unsigned / power-of-two mod) | **No** | Yes<br><code>hack::unsigned_polynomial_hash_hack()</code> | — | **tgen:** **O(1)**; Thue–Morse construction | — |
 | std::unordered_set collision inputs | Yes<br><code>rnda.antiUnorderedSet(n, maxLoadFactor, reserve)</code> | Yes<br><code>hack::std_unordered(size)</code> | — | **jngen:** GCC 4.x only; tuned load factor/reserve<br>**tgen:** GCC multiplier-based collision keys<hr>Overlap in purpose; different APIs and compiler support. | — |
 | std::set collision strings | **No** | Yes<br><code>hack::string_set(size)</code> | — | **tgen:** Distinct strings with equal std::set ordering keys | — |
 | Max-flow worst case (Dinitz / Edmonds-Karp) | **No** | Yes<br><code>hack::dinitz_worst_case(k, l)</code> | — | **tgen:** **O(k·l)** vertices; Zadeh network | — |

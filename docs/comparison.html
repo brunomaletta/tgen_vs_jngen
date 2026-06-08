@@ -59,6 +59,7 @@
     table.comparison-table .col-api { width: 15%; }
     table.comparison-table.samples-table .col-op { width: 22%; }
     table.comparison-table.samples-table .col-api { width: 39%; }
+    .gallery-params { display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; }
     table.comparison-table .col-uni { width: 13%; }
     table.comparison-table .col-notes { width: 30%; }
     table.comparison-table .col-bench { width: 16%; }
@@ -190,8 +191,6 @@
       width: 100%;
       max-width: 420px;
       margin: 0.65rem auto 0;
-      border-radius: 4px;
-      border: 1px solid var(--border);
     }
     td.cell-unavailable {
       vertical-align: middle;
@@ -219,7 +218,7 @@
   </nav>
   <section id="comparison">
 <h1>tgen vs jngen — Feature Comparison</h1>
-<p><em>Generated 2026-06-08 02:16 UTC</em></p>
+<p><em>Generated 2026-06-08 02:38 UTC</em></p>
 <p>Comparison of non-trivial generation operations. See <a href="#benchmarks">benchmarks</a> below.</p>
 <h2>Graphs</h2>
 <div class="table-scroll"><table class="comparison-table">
@@ -277,23 +276,23 @@
 <div class="table-scroll"><table class="comparison-table samples-table">
 <colgroup><col class="col-op"><col class="col-api"><col class="col-api"></colgroup>
 <tr><th class="col-op sample-op">Operation</th><th class="col-api"><strong class="lib-label lib-jngen">jngen</strong></th><th class="col-api"><strong class="lib-label lib-tgen">tgen</strong></th></tr>
-<tr><td class="col-op sample-op">Random convex polygon</td><td class="col-api sample-has-visual">Yes<br><code>rndg.convexPolygon(n, min, max)</code><img class="sample-img" src="gallery/geometry_convex_polygon_jngen.svg" alt="jngen sample"></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_convex_polygon(n, min, max)</code><img class="sample-img" src="gallery/geometry_convex_polygon_tgen.svg" alt="tgen sample"></td></tr>
-<tr><td class="col-op sample-op">Points in general position (no three collinear)</td><td class="col-api sample-has-visual">Yes<br><code>rndg.pointsInGeneralPosition(n, min, max)</code><img class="sample-img" src="gallery/geometry_points_general_position_jngen.svg" alt="jngen sample"></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_points_general_position(n, min, max)</code><img class="sample-img" src="gallery/geometry_points_general_position_tgen.svg" alt="tgen sample"></td></tr>
-<tr><td class="col-op sample-op">Random simple polygon</td><td class="col-api cell-unavailable"><strong>No</strong></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_simple_polygon(n, min, max)</code><img class="sample-img" src="gallery/geometry_simple_polygon_tgen.svg" alt="tgen sample"></td></tr>
-<tr><td class="col-op sample-op">Simple polygon through given points</td><td class="col-api cell-unavailable"><strong>No</strong></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_simple_polygon_through_points(pts)</code><img class="sample-img" src="gallery/geometry_simple_polygon_through_points_tgen.svg" alt="tgen sample"></td></tr>
+<tr><td class="col-op sample-op">Random convex polygon</td><td class="col-api sample-has-visual">Yes<br><code>rndg.convexPolygon(n, min, max)</code><br><span class="gallery-params">n=80, min=0, max=1000</span><img class="sample-img" src="gallery/geometry_convex_polygon_jngen.svg" alt="jngen sample"></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_convex_polygon(n, min, max)</code><br><span class="gallery-params">n=80, min=0, max=1000</span><img class="sample-img" src="gallery/geometry_convex_polygon_tgen.svg" alt="tgen sample"></td></tr>
+<tr><td class="col-op sample-op">Points in general position (no three collinear)</td><td class="col-api sample-has-visual">Yes<br><code>rndg.pointsInGeneralPosition(n, min, max)</code><br><span class="gallery-params">n=2000, min=0, max=3e6</span><img class="sample-img" src="gallery/geometry_points_general_position_jngen.svg" alt="jngen sample"></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_points_general_position(n, min, max)</code><br><span class="gallery-params">n=2000, min=0, max=3e6</span><img class="sample-img" src="gallery/geometry_points_general_position_tgen.svg" alt="tgen sample"></td></tr>
+<tr><td class="col-op sample-op">Random simple polygon</td><td class="col-api cell-unavailable"><strong>No</strong></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_simple_polygon(n, min, max)</code><br><span class="gallery-params">n=80, min=0, max=1000</span><img class="sample-img" src="gallery/geometry_simple_polygon_tgen.svg" alt="tgen sample"></td></tr>
+<tr><td class="col-op sample-op">Simple polygon through given points</td><td class="col-api cell-unavailable"><strong>No</strong></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_simple_polygon_through_points(pts)</code><br><span class="gallery-params">10×10 input grid, min=0, max=1000</span><img class="sample-img" src="gallery/geometry_simple_polygon_through_points_tgen.svg" alt="tgen sample"></td></tr>
 </table></div>
-<h2>Strings and hashing</h2>
+<h2>Strings</h2>
 <div class="table-scroll"><table class="comparison-table">
 <colgroup><col class="col-op"><col class="col-api"><col class="col-api"><col class="col-uni"><col class="col-notes"><col class="col-bench"></colgroup>
 <tr><th>Operation</th><th class="col-api"><strong class="lib-label lib-jngen">jngen</strong></th><th class="col-api"><strong class="lib-label lib-tgen">tgen</strong></th><th>Uniformity</th><th>Complexity / notes</th><th>Benchmark</th></tr>
 <tr><td>Regex / pattern strings</td><td class="col-api">Yes<br><code>rnd.next(&quot;[a-z]{10}&quot;) / rnds.random(pattern)</code></td><td class="col-api">Yes<br><code>str(&quot;[a-z]{10}&quot;).gen()</code></td><td class="col-uni"><div class="uniform-entry"><strong class="lib-label lib-jngen">jngen:</strong><span class="uniform-val">Non‑uniform</span></div><div class="uniform-entry"><strong class="lib-label lib-tgen">tgen:</strong><span class="uniform-val">Uniform</span></div></td><td class="col-notes"><strong class="lib-label lib-jngen">jngen:</strong> <strong class="complexity">O(output length)</strong> (inferred); testlib-compatible pattern generation<br><strong class="lib-label lib-tgen">tgen:</strong> <strong class="complexity">O(n)</strong>; uniform over matches when each string has a unique parse<hr class="notes-sep">Same testlib-style regex syntax. <strong class="lib-label lib-tgen">tgen</strong> samples uniformly among matches (documented); <strong class="lib-label lib-jngen">jngen</strong> explicitly does not — e.g. rnd.next(&quot;[1-9][0-9]{1,2}&quot;) does not yield uniform digit strings.</td><td class="col-bench cell-unavailable">—</td></tr>
-<tr><td>Polynomial hash collision strings (signed mod)</td><td class="col-api">Yes<br><code>rnds.antiHash({{mod, base}, ...}, alphabet, len)</code></td><td class="col-api">Yes<br><code>hack::polynomial_hash_hack(alphabet, base, mod)</code></td><td class="col-uni"><div class="uniform-entry"><strong class="lib-label lib-jngen">jngen:</strong><span class="uniform-val">Undocumented</span></div><div class="uniform-entry"><strong class="lib-label lib-tgen">tgen:</strong><span class="uniform-val">Undocumented</span></div></td><td class="col-notes"><strong class="lib-label lib-jngen">jngen:</strong> <strong class="complexity">O(√mod)</strong> expected (inferred); brute force over short strings<br><strong class="lib-label lib-tgen">tgen:</strong> Birthday attack; up to 2 (base, mod) pairs<hr class="notes-sep">Deterministic collision construction, not random sampling. Both generate colliding strings for rolling hash.</td><td class="col-bench cell-unavailable">—</td></tr>
-<tr><td>Polynomial hash collision (unsigned / power-of-two mod)</td><td class="col-api cell-unavailable"><strong>No</strong></td><td class="col-api">Yes<br><code>hack::unsigned_polynomial_hash_hack()</code></td><td class="col-uni cell-unavailable">—</td><td class="col-notes"><strong class="lib-label lib-tgen">tgen:</strong> <strong class="complexity">O(1)</strong>; Thue–Morse construction</td><td class="col-bench cell-unavailable">—</td></tr>
 </table></div>
-<h2>Adversarial / hack generators</h2>
+<h2>Hacks</h2>
 <div class="table-scroll"><table class="comparison-table">
 <colgroup><col class="col-op"><col class="col-api"><col class="col-api"><col class="col-uni"><col class="col-notes"><col class="col-bench"></colgroup>
 <tr><th>Operation</th><th class="col-api"><strong class="lib-label lib-jngen">jngen</strong></th><th class="col-api"><strong class="lib-label lib-tgen">tgen</strong></th><th>Uniformity</th><th>Complexity / notes</th><th>Benchmark</th></tr>
+<tr><td>Polynomial hash collision strings (signed mod)</td><td class="col-api">Yes<br><code>rnds.antiHash({{mod, base}, ...}, alphabet, len)</code></td><td class="col-api">Yes<br><code>hack::polynomial_hash_hack(alphabet, base, mod)</code></td><td class="col-uni"><div class="uniform-entry"><strong class="lib-label lib-jngen">jngen:</strong><span class="uniform-val">Undocumented</span></div><div class="uniform-entry"><strong class="lib-label lib-tgen">tgen:</strong><span class="uniform-val">Undocumented</span></div></td><td class="col-notes"><strong class="lib-label lib-jngen">jngen:</strong> <strong class="complexity">O(√mod)</strong> expected (inferred); brute force over short strings<br><strong class="lib-label lib-tgen">tgen:</strong> Birthday attack; up to 2 (base, mod) pairs<hr class="notes-sep">Deterministic collision construction, not random sampling. Both generate colliding strings for rolling hash.</td><td class="col-bench cell-unavailable">—</td></tr>
+<tr><td>Polynomial hash collision (unsigned / power-of-two mod)</td><td class="col-api cell-unavailable"><strong>No</strong></td><td class="col-api">Yes<br><code>hack::unsigned_polynomial_hash_hack()</code></td><td class="col-uni cell-unavailable">—</td><td class="col-notes"><strong class="lib-label lib-tgen">tgen:</strong> <strong class="complexity">O(1)</strong>; Thue–Morse construction</td><td class="col-bench cell-unavailable">—</td></tr>
 <tr><td>std::unordered_set collision inputs</td><td class="col-api">Yes<br><code>rnda.antiUnorderedSet(n, maxLoadFactor, reserve)</code></td><td class="col-api">Yes<br><code>hack::std_unordered(size)</code></td><td class="col-uni cell-unavailable">—</td><td class="col-notes"><strong class="lib-label lib-jngen">jngen:</strong> GCC 4.x only; tuned load factor/reserve<br><strong class="lib-label lib-tgen">tgen:</strong> GCC multiplier-based collision keys<hr class="notes-sep">Overlap in purpose; different APIs and compiler support.</td><td class="col-bench cell-unavailable">—</td></tr>
 <tr><td>std::set collision strings</td><td class="col-api cell-unavailable"><strong>No</strong></td><td class="col-api">Yes<br><code>hack::string_set(size)</code></td><td class="col-uni cell-unavailable">—</td><td class="col-notes"><strong class="lib-label lib-tgen">tgen:</strong> Distinct strings with equal std::set ordering keys</td><td class="col-bench cell-unavailable">—</td></tr>
 <tr><td>Max-flow worst case (Dinitz / Edmonds-Karp)</td><td class="col-api cell-unavailable"><strong>No</strong></td><td class="col-api">Yes<br><code>hack::dinitz_worst_case(k, l)</code></td><td class="col-uni cell-unavailable">—</td><td class="col-notes"><strong class="lib-label lib-tgen">tgen:</strong> <strong class="complexity">O(k·l)</strong> vertices; Zadeh network</td><td class="col-bench cell-unavailable">—</td></tr>

@@ -1,4 +1,5 @@
 #include "../vendor/tgen/single_include/tgen.h"
+#include "samples.h"
 
 #include <fstream>
 #include <string>
@@ -42,27 +43,29 @@ rectangular_grid(int rows, int cols, long long min_coord, long long max_coord) {
 
 void run_tgen_samples(const std::string &out_dir) {
 	tgen::register_gen(42);
-	const int n = 80;
-	const int coord = 1000;
 
 	write_points_json(
 		out_dir + "/geometry_convex_polygon.points.json",
-		tgen::geometry::random_convex_polygon(n, 0, coord), "polygon", coord);
+		tgen::geometry::random_convex_polygon(
+			GALLERY_CONVEX_N, 0, GALLERY_CONVEX_COORD),
+		"polygon", GALLERY_CONVEX_COORD);
 
 	write_points_json(
 		out_dir + "/geometry_simple_polygon.points.json",
-		tgen::geometry::random_simple_polygon(n, 0, coord), "polygon", coord);
+		tgen::geometry::random_simple_polygon(GALLERY_N, 0, GALLERY_COORD),
+		"polygon", GALLERY_COORD);
 
 	write_points_json(
 		out_dir + "/geometry_points_general_position.points.json",
-		tgen::geometry::random_points_general_position(n, 0, coord), "scatter",
-		coord);
+		tgen::geometry::random_points_general_position(
+			GALLERY_GENERAL_POSITION_N, 0, GALLERY_GENERAL_POSITION_COORD),
+		"scatter", GALLERY_GENERAL_POSITION_COORD);
 
 	const int grid_rows = 10;
 	const int grid_cols = 10;
-	const auto grid = rectangular_grid(grid_rows, grid_cols, 0, coord);
+	const auto grid = rectangular_grid(grid_rows, grid_cols, 0, GALLERY_COORD);
 	write_points_json(
 		out_dir + "/geometry_simple_polygon_through_points.points.json",
 		tgen::geometry::random_simple_polygon_through_points(grid), "polygon",
-		coord);
+		GALLERY_COORD);
 }

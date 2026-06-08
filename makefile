@@ -38,6 +38,7 @@ help:
 vendor:
 	git submodule update --init --recursive
 	cd vendor/jngen && python3 build.py
+	cd vendor/jngen && git restore jngen.h
 
 $(BENCH_BIN): benchmarks/main.cpp benchmarks/tgen_cases.cpp benchmarks/jngen_cases.cpp benchmarks/benchmark.h benchmarks/cases.h vendor/tgen/single_include/tgen.h vendor/jngen/jngen.h
 	@mkdir -p build/benchmarks results
@@ -48,7 +49,7 @@ benchmark: vendor $(BENCH_BIN)
 	@mkdir -p docs
 	./$(BENCH_BIN) --json $(BENCH_JSON)
 
-$(VIZ_BIN): visualize/main.cpp visualize/tgen_samples.cpp visualize/jngen_samples.cpp vendor/tgen/single_include/tgen.h vendor/jngen/jngen.h
+$(VIZ_BIN): visualize/main.cpp visualize/tgen_samples.cpp visualize/jngen_samples.cpp visualize/samples.h vendor/tgen/single_include/tgen.h vendor/jngen/jngen.h
 	@mkdir -p build/visualize results/svg docs/gallery
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ \
 		visualize/main.cpp visualize/tgen_samples.cpp visualize/jngen_samples.cpp

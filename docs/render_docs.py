@@ -107,7 +107,7 @@ NO_DEFAULT_UNIFORM_OPS = frozenset({
     "geometry_svg_drawer",
 })
 
-NO_DEFAULT_UNIFORM_CATEGORIES = frozenset({"adversarial", "other"})
+NO_DEFAULT_UNIFORM_CATEGORIES = frozenset({"hacks", "other"})
 
 
 def effective_uniform(lib_info, category, op_id):
@@ -416,16 +416,24 @@ def sample_svg_exists(op_id, lib):
     return os.path.isfile(os.path.join("docs", sample_svg_path(op_id, lib)))
 
 
-def format_sample_cell_md(op_id, lib_info, lib):
+def format_sample_cell_md(op_id, op, lib_info, lib):
     cell = format_lib_api_cell_md(lib_info, lib=lib)
+    params = op.get("gallery_params", "")
+    if params and lib_info.get("has"):
+        cell += f"<br><sub>{html.escape(params)}</sub>"
     if sample_svg_exists(op_id, lib):
         path = sample_svg_path(op_id, lib)
         cell += f'<br><img src="{path}" alt="{lib} sample">'
     return cell
 
 
-def format_sample_cell_html(op_id, lib_info, lib):
+def format_sample_cell_html(op_id, op, lib_info, lib):
     cell = format_lib_api_cell_html(lib_info, lib=lib)
+    params = op.get("gallery_params", "")
+    if params and lib_info.get("has"):
+        cell += (
+            f'<br><span class="gallery-params">{html.escape(params)}</span>'
+        )
     if sample_svg_exists(op_id, lib):
         path = sample_svg_path(op_id, lib)
         cell += (
@@ -484,8 +492,8 @@ def render_geometry_samples_md(operations):
         oid = op["id"]
         lines.append(
             f"| {op['name']} | "
-            f"{format_sample_cell_md(oid, op.get('jngen', {}), 'jngen')} | "
-            f"{format_sample_cell_md(oid, op.get('tgen', {}), 'tgen')} |"
+            f"{format_sample_cell_md(oid, op, op.get('jngen', {}), 'jngen')} | "
+            f"{format_sample_cell_md(oid, op, op.get('tgen', {}), 'tgen')} |"
         )
     lines.append("")
     return lines
@@ -511,9 +519,9 @@ def render_geometry_samples_html(operations):
             "<tr>"
                 f"<td class=\"col-op sample-op\">{html.escape(op['name'])}</td>"
                 f'<td class="{sample_cell_td_class(oid, op.get("jngen", {}), "jngen")}">'
-                f'{format_sample_cell_html(oid, op.get("jngen", {}), "jngen")}</td>'
+                f'{format_sample_cell_html(oid, op, op.get("jngen", {}), "jngen")}</td>'
                 f'<td class="{sample_cell_td_class(oid, op.get("tgen", {}), "tgen")}">'
-                f'{format_sample_cell_html(oid, op.get("tgen", {}), "tgen")}</td>'
+                f'{format_sample_cell_html(oid, op, op.get("tgen", {}), "tgen")}</td>'
             "</tr>"
         )
     parts.append("</table></div>")
@@ -1018,6 +1026,7 @@ def render_html(comparison_body, benchmarks_body):
     table.comparison-table .col-api {{ width: 15%; }}
     table.comparison-table.samples-table .col-op {{ width: 22%; }}
     table.comparison-table.samples-table .col-api {{ width: 39%; }}
+    .gallery-params {{ display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; }}
     table.comparison-table .col-uni {{ width: 13%; }}
     table.comparison-table .col-notes {{ width: 30%; }}
     table.comparison-table .col-bench {{ width: 16%; }}
@@ -1149,8 +1158,6 @@ def render_html(comparison_body, benchmarks_body):
       width: 100%;
       max-width: 420px;
       margin: 0.65rem auto 0;
-      border-radius: 4px;
-      border: 1px solid var(--border);
     }}
     td.cell-unavailable {{
       vertical-align: middle;
