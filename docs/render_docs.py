@@ -35,7 +35,19 @@ LIB_MENTION_RE = re.compile(r"\b(jngen|tgen)(?=\s)")
 def format_generated_at(ts):
     if not ts or ts == "—":
         return "—"
-    return ts.replace("T", " ", 1)
+    text = ts.strip()
+    try:
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        dt = datetime.fromisoformat(text)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        else:
+            dt = dt.astimezone(timezone.utc)
+        return dt.strftime("%Y-%m-%d %H:%M UTC")
+    except ValueError:
+        cleaned = text.replace("T", " ", 1).removesuffix("Z")
+        return f"{cleaned} UTC"
 
 
 def format_compiler_display(compiler):
@@ -837,7 +849,7 @@ def format_sample_complexity_html(sid, parent_op, operations_by_id, lib):
         return ""
     return (
         f'<span class="sample-complexity">'
-        f"{format_inferred_text_html(complexity)}</span>"
+        f"{format_inferred_text_html(complexity)} time</span>"
     )
 
 
@@ -920,7 +932,7 @@ def comparison_table_header_row():
         "<tr><th>Operation</th>"
         '<th class="col-api"><strong class="lib-label lib-jngen">jngen</strong></th>'
         '<th class="col-api"><strong class="lib-label lib-tgen">tgen</strong></th>'
-        "<th>Uniformity</th><th>Complexity / notes</th><th>Benchmark</th></tr>"
+        "<th>Uniformity</th><th>Time complexity / notes</th><th>Benchmark</th></tr>"
     )
 
 
@@ -1222,7 +1234,6 @@ def render_comparison_html(operations, categories, bench_index, source_resolver=
     parts = [
         "<section id=\"comparison\">",
         "<h1>tgen vs jngen — Feature Comparison</h1>",
-        f"<p><em>Generated {html.escape(datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC'))}</em></p>",
         "<p>Comparison of non-trivial generation operations. "
         "See <a href=\"#benchmarks\">benchmarks</a> below.</p>",
     ]
@@ -1296,8 +1307,6 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
     vendors = bench.get("vendors", {})
     parts.extend([
         "<ul>",
-        f"<li><strong>Generated:</strong> "
-        f"{html.escape(format_generated_at(bench.get('generated_at', '—')))}</li>",
         f"<li><strong>Compiler:</strong> "
         f"{html.escape(format_compiler_display(bench.get('compiler', '—')))}</li>",
         f"<li><strong>Flags:</strong> {html.escape(bench.get('flags', '—'))}</li>",
