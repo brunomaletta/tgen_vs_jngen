@@ -167,30 +167,6 @@ def format_inferred_text_html(text):
     )
 
 
-def format_lib_part_md(part):
-    if part.startswith("jngen: "):
-        label = "**jngen:** "
-        rest = part[7:]
-    elif part.startswith("tgen: "):
-        label = "**tgen:** "
-        rest = part[6:]
-    else:
-        return format_inferred_text_md(part)
-    return label + format_inferred_text_md(rest)
-
-
-def format_lib_part_html(part):
-    if part.startswith("jngen: "):
-        label = '<strong class="lib-label lib-jngen">jngen:</strong> '
-        rest = part[7:]
-    elif part.startswith("tgen: "):
-        label = '<strong class="lib-label lib-tgen">tgen:</strong> '
-        rest = part[6:]
-    else:
-        return format_inferred_text_html(part)
-    return label + format_inferred_text_html(rest)
-
-
 def load_yaml(path):
     with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f)
@@ -346,12 +322,9 @@ def yes_no(val):
     return val or "—"
 
 
-def lib_label(text, lib):
-    return f"{lib}: {text}"
-
-
 # Ops where uniformity is N/A (deterministic construction or not random sampling).
 NO_DEFAULT_UNIFORM_OPS = frozenset({
+    "declarative_generators",
     "hack_unsigned_polynomial_hash",
     "hack_mt19937_xor_hash",
     "hack_rotating_calipers",
@@ -368,7 +341,6 @@ def uniform_label(base):
         "uniform": "Uniform",
         "non-uniform": "Non\u2011uniform",
         "undocumented": "Undocumented",
-        "varies": "Varies",
     }
     return mapping.get(base, base)
 
@@ -392,15 +364,6 @@ def lib_uniformity_parts(tg, jg, category, op_id):
         base, inferred = get_uniform_raw(info, category, op_id)
         if base:
             parts.append((lib, uniform_label(base), inferred))
-    return parts
-
-
-def lib_complexity_parts(tg, jg):
-    parts = []
-    if jg.get("complexity"):
-        parts.append(lib_label(jg["complexity"], "jngen"))
-    if tg.get("complexity"):
-        parts.append(lib_label(tg["complexity"], "tgen"))
     return parts
 
 
@@ -479,18 +442,6 @@ def show_exclusive_badge(tg, jg, exclusive):
     return True
 
 
-def format_lib_parts_md(parts):
-    if not parts:
-        return ""
-    return "<br>".join(format_lib_part_md(part) for part in parts)
-
-
-def format_lib_parts_html(parts):
-    if not parts:
-        return ""
-    return "<br>".join(format_lib_part_html(part) for part in parts)
-
-
 def format_uniformity_md(tg, jg, category, op_id):
     parts = lib_uniformity_parts(tg, jg, category, op_id)
     if not parts:
@@ -561,6 +512,104 @@ def format_uniformity_html(tg, jg, category, op_id):
     return "".join(rows)
 
 
+def format_lib_uniformity_html(lib_info, category, op_id):
+    base, inferred = get_uniform_raw(lib_info, category, op_id)
+    if not base:
+        return ""
+    label = uniform_label(base)
+    return (
+        '<span class="api-uniformity">'
+        f"{format_uniform_value_html(label, inferred)}"
+        "</span>"
+    )
+
+
+def complexity_first_clause(complexity):
+    if not complexity:
+        return complexity
+    return complexity.split(";", 1)[0].strip()
+
+
+TIME_QUALIFIERS = ("expected",)
+
+
+def complexity_clause_with_time(clause):
+    text = clause.strip()
+    if not text:
+        return text
+    if text.endswith("."):
+        text = text[:-1].rstrip()
+    inferred = INFERRED_SUFFIX in text
+    if inferred:
+        text = text.replace(INFERRED_SUFFIX, "")
+        text = re.sub(r"\s+", " ", text).strip()
+    match = COMPLEXITY_RE.search(text)
+    if not match:
+        return clause.strip()
+    head = text[: match.end()]
+    tail = text[match.end() :].strip()
+    qualifier = ""
+    for word in TIME_QUALIFIERS:
+        if tail == word or tail.startswith(word + " "):
+            qualifier = word
+            tail = tail[len(word) :].strip()
+            break
+    out = head
+    if qualifier:
+        out += " " + qualifier
+    out += " time"
+    if inferred:
+        out += INFERRED_SUFFIX
+    if tail:
+        out += " " + tail
+    return out
+
+
+COMPLEXITY_OR_SEP = " or "
+COMPLEXITY_OR_MARKER = "__OR__"
+
+
+def complexity_alternatives(complexity):
+    if COMPLEXITY_OR_SEP not in complexity:
+        return [complexity]
+    alts = [part.strip() for part in complexity.split(COMPLEXITY_OR_SEP)]
+    if len(alts) >= 2 and all(COMPLEXITY_RE.search(part) for part in alts):
+        return alts
+    return [complexity]
+
+
+def complexity_with_time_clauses(complexity):
+    if not complexity:
+        return []
+    lines = []
+    for i, alternative in enumerate(complexity_alternatives(complexity)):
+        if i > 0:
+            lines.append(COMPLEXITY_OR_MARKER)
+        parts = alternative.split("; ") if "; " in alternative else [alternative]
+        lines.extend(complexity_clause_with_time(part) for part in parts)
+    return lines
+
+
+def format_lib_complexity_html(lib_info, brief=False):
+    complexity = lib_info.get("complexity", "")
+    if not complexity or not lib_info.get("has"):
+        return ""
+    if brief:
+        complexity = complexity_first_clause(complexity)
+    lines = []
+    for clause in complexity_with_time_clauses(complexity):
+        if clause == COMPLEXITY_OR_MARKER:
+            lines.append('<span class="api-complexity-or">or</span>')
+            continue
+        css = "api-complexity-line"
+        if not COMPLEXITY_RE.search(clause):
+            css += " api-complexity-note"
+        lines.append(
+            f'<span class="{css}">{format_inferred_text_html(clause)}</span>'
+        )
+    return '<span class="api-complexity">' + "".join(lines) + "</span>"
+
+
 NOTES_SEP_MD = "<hr>"
 NOTES_SEP_HTML = '<hr class="notes-sep">'
 
@@ -580,12 +629,7 @@ def join_notes_blocks(blocks, sep="<br>"):
 
 def format_notes_md(tg, jg, extra_notes, exclusive=None):
     blocks = []
-    complexity_parts = lib_complexity_parts(tg, jg)
-    if complexity_parts:
-        blocks.append(format_lib_parts_md(complexity_parts))
     if extra_notes:
-        if complexity_parts:
-            blocks.append(NOTES_SEP_MD)
         blocks.append(format_notes_text_md(extra_notes))
     if show_exclusive_badge(tg, jg, exclusive):
         blocks.append(format_exclusive_md(exclusive))
@@ -594,12 +638,7 @@ def format_notes_md(tg, jg, extra_notes, exclusive=None):
 
 def format_notes_html(tg, jg, extra_notes, exclusive=None):
     blocks = []
-    complexity_parts = lib_complexity_parts(tg, jg)
-    if complexity_parts:
-        blocks.append(format_lib_parts_html(complexity_parts))
     if extra_notes:
-        if complexity_parts:
-            blocks.append(NOTES_SEP_HTML)
         blocks.append(format_notes_text_html(extra_notes))
     if show_exclusive_badge(tg, jg, exclusive):
         blocks.append(format_exclusive_html(exclusive))
@@ -657,14 +696,19 @@ def format_api_md(api):
     return f"<code>{wrap_api(api)}</code>"
 
 
-def format_api_html(api, source_url=None, doc_url=None):
+def format_api_code_box_html(api, source_url=None):
     code = f"<code>{wrap_api_html(api)}</code>"
+    inner = code
     if source_url:
-        code = (
+        inner = (
             f'<a class="api-source-link" href="{html.escape(source_url)}" '
             f'target="_blank" rel="noopener">{code}</a>'
         )
-    return code + format_doc_line_html(doc_url)
+    return f'<div class="api-code-box">{inner}</div>'
+
+
+def format_api_html(api, source_url=None, doc_url=None):
+    return format_api_code_box_html(api, source_url) + format_doc_line_html(doc_url)
 
 
 def format_doc_line_html(doc_url):
@@ -690,10 +734,17 @@ def format_lib_api_cell_md(lib_info, lib=None):
     return cell
 
 
-def format_lib_api_cell_html(lib_info, lib=None, op_id=None, source_resolver=None):
+def format_lib_api_cell_html(
+    lib_info,
+    lib=None,
+    op_id=None,
+    source_resolver=None,
+    category=None,
+    complexity_brief=False,
+):
     if not lib_info.get("has"):
         return "<strong>No</strong>"
-    cell = "Yes"
+    parts = ['<div class="api-cell">', '<div class="api-cell-yes">Yes</div>']
     if lib_info.get("api"):
         api = lib_info["api"]
         if lib == "tgen":
@@ -703,8 +754,16 @@ def format_lib_api_cell_html(lib_info, lib=None, op_id=None, source_resolver=Non
         if source_resolver and op_id and lib:
             source_url = source_resolver.url(op_id, lib)
             doc_url = source_resolver.doc_url(op_id, lib)
-        cell += f"<br>{format_api_html(api, source_url, doc_url)}"
-    return cell
+        parts.append(format_api_code_box_html(api, source_url))
+        parts.append(format_doc_line_html(doc_url))
+    uniformity = format_lib_uniformity_html(lib_info, category, op_id)
+    if uniformity:
+        parts.append(uniformity)
+    complexity = format_lib_complexity_html(lib_info, brief=complexity_brief)
+    if complexity:
+        parts.append(complexity)
+    parts.append("</div>")
+    return "".join(parts)
 
 
 def wrap_benchmark_name(name):
@@ -735,6 +794,12 @@ def _format_scientific_number_html(num_str, min_exp_gt=2):
     except ValueError:
         return html.escape(num_str)
     if abs(exp_val) <= min_exp_gt:
+        try:
+            val = float(num_str)
+            if val == int(val):
+                return html.escape(str(int(val)))
+        except ValueError:
+            pass
         return html.escape(num_str)
 
     exp_html = html.escape(exponent)
@@ -835,24 +900,6 @@ def _sample_lib_info(sid, parent_op, operations_by_id, lib):
     return parent_op.get(lib, {})
 
 
-def sample_complexity_brief(complexity):
-    """First clause only — drop '; …' algorithm descriptions."""
-    if not complexity:
-        return ""
-    return complexity.split(";", 1)[0].strip()
-
-
-def format_sample_complexity_html(sid, parent_op, operations_by_id, lib):
-    lib_info = _sample_lib_info(sid, parent_op, operations_by_id, lib)
-    complexity = sample_complexity_brief(lib_info.get("complexity", ""))
-    if not complexity or not lib_info.get("has"):
-        return ""
-    return (
-        f'<span class="sample-complexity">'
-        f"{format_inferred_text_html(complexity)} time</span>"
-    )
-
-
 def _append_sample_images_html(cell, op, lib, operations_by_id):
     stack = _sample_stack_ids(op)
     if stack:
@@ -881,24 +928,17 @@ def format_sample_cell_html(
     op_id, op, lib_info, lib, operations_by_id, source_resolver=None
 ):
     cell = format_lib_api_cell_html(
-        lib_info, lib=lib, op_id=op_id, source_resolver=source_resolver
+        lib_info,
+        lib=lib,
+        op_id=op_id,
+        source_resolver=source_resolver,
+        category=op.get("category"),
+        complexity_brief=True,
     )
     if not lib_info.get("has"):
         return cell
 
     stack = _sample_stack_ids(op)
-    if stack:
-        for sid in stack:
-            if sample_svg_exists(sid, lib):
-                cell += format_sample_complexity_html(
-                    sid, op, operations_by_id, lib
-                )
-                break
-    elif sample_svg_exists(op_id, lib):
-        cell += format_sample_complexity_html(
-            op_id, op, operations_by_id, lib
-        )
-
     params = op.get("gallery_params", "")
     if params and not stack:
         cell += (
@@ -932,7 +972,7 @@ def comparison_table_header_row():
         "<tr><th>Operation</th>"
         '<th class="col-api"><strong class="lib-label lib-jngen">jngen</strong></th>'
         '<th class="col-api"><strong class="lib-label lib-tgen">tgen</strong></th>'
-        "<th>Uniformity</th><th>Time complexity / notes</th><th>Benchmark</th></tr>"
+        "<th>Notes</th><th>Benchmark</th></tr>"
     )
 
 
@@ -956,6 +996,7 @@ def samples_have_inferred(ops, operations_by_id):
     for op in ops:
         stack = _sample_stack_ids(op)
         sids = stack if stack else [op["id"]]
+        category = op.get("category")
         for sid in sids:
             for lib in ("jngen", "tgen"):
                 if not sample_svg_exists(sid, lib):
@@ -964,6 +1005,15 @@ def samples_have_inferred(ops, operations_by_id):
                 complexity = lib_info.get("complexity", "")
                 if complexity and INFERRED_SUFFIX in complexity:
                     return True
+                uniform = lib_info.get("uniform")
+                if uniform and isinstance(uniform, str) and uniform.endswith(
+                    INFERRED_SUFFIX
+                ):
+                    return True
+                if not lib_info.get("uniform"):
+                    base, inferred = get_uniform_raw(lib_info, category, sid)
+                    if inferred:
+                        return True
     return False
 
 
@@ -1252,7 +1302,6 @@ def render_comparison_html(operations, categories, bench_index, source_resolver=
             '<col class="col-op">'
             '<col class="col-api">'
             '<col class="col-api">'
-            '<col class="col-uni">'
             '<col class="col-notes">'
             '<col class="col-bench">'
             "</colgroup>"
@@ -1264,13 +1313,20 @@ def render_comparison_html(operations, categories, bench_index, source_resolver=
             tg = op.get("tgen", {})
             jg = op.get("jngen", {})
             jngen_cell = format_lib_api_cell_html(
-                jg, lib="jngen", op_id=op["id"], source_resolver=source_resolver
+                jg,
+                lib="jngen",
+                op_id=op["id"],
+                source_resolver=source_resolver,
+                category=cat_id,
             )
             tgen_cell = format_lib_api_cell_html(
-                tg, lib="tgen", op_id=op["id"], source_resolver=source_resolver
+                tg,
+                lib="tgen",
+                op_id=op["id"],
+                source_resolver=source_resolver,
+                category=cat_id,
             )
 
-            uni = format_uniformity_html(tg, jg, cat_id, op["id"])
             notes = format_notes_html(tg, jg, op.get("notes", ""), op.get("exclusive"))
             bench = format_benchmark_cell_html(op, bench_index)
 
@@ -1279,7 +1335,6 @@ def render_comparison_html(operations, categories, bench_index, source_resolver=
                 f"<td>{html.escape(op['name'])}</td>"
                 f'<td class="{api_cell_td_class(jg)}">{jngen_cell}</td>'
                 f'<td class="{api_cell_td_class(tg)}">{tgen_cell}</td>'
-                f'<td class="{"col-uni cell-unavailable" if uni == "—" else "col-uni"}">{uni}</td>'
                 f'<td class="col-notes">{notes}</td>'
                 f'<td class="{"col-bench cell-unavailable" if bench == "—" else "col-bench"}">{bench}</td>'
                 "</tr>"
@@ -1472,37 +1527,40 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       min-width: 0;
     }}
     table.comparison-table .col-op {{ width: 11%; }}
-    table.comparison-table .col-api {{ width: 15%; }}
+    table.comparison-table .col-api {{ width: 23%; }}
     table.comparison-table.samples-table .col-op {{ width: 22%; }}
     table.comparison-table.samples-table .col-api {{ width: 39%; }}
-    .gallery-params {{ display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; }}
-    .sample-complexity {{
+    .api-uniformity,
+    .api-complexity {{
       display: block;
       font-size: 0.85rem;
-      margin: 0.35rem auto 0;
-      text-align: center;
+      margin-top: 0.2rem;
       line-height: 1.35;
     }}
+    .api-complexity-line {{
+      display: block;
+    }}
+    .api-complexity-line + .api-complexity-line {{
+      margin-top: 0.2rem;
+    }}
+    .api-complexity-note {{
+      color: var(--muted);
+    }}
+    .api-complexity-or {{
+      display: block;
+      margin-top: 0.25rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-style: italic;
+    }}
+    .gallery-params {{ display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; }}
     .api-doc-line {{ display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.15rem; }}
     a.api-doc-link {{ color: var(--link); text-decoration: none; }}
     a.api-doc-link:hover, a.api-doc-link:focus-visible {{ text-decoration: underline; }}
-    table.comparison-table .col-uni {{ width: 13%; }}
-    table.comparison-table .col-notes {{ width: 30%; }}
+    table.comparison-table .col-notes {{ width: 27%; }}
     table.comparison-table .col-bench {{ width: 16%; }}
-    td.col-uni, th.col-uni {{
-      overflow: hidden;
-      word-break: normal;
-      overflow-wrap: break-word;
-    }}
-    .uniform-entry + .uniform-entry {{
-      margin-top: 0.45rem;
-    }}
-    .uniform-entry .lib-label {{
-      display: block;
-    }}
     .uniform-val {{
-      display: block;
-      margin-top: 0.1rem;
+      display: inline;
     }}
     .uniform-val.uniform-undocumented {{
       color: var(--muted);
@@ -1538,8 +1596,23 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     tr:nth-child(even) td {{ background: rgba(255, 255, 255, 0.02); }}
     td.col-api, th.col-api {{
       overflow: hidden;
+      vertical-align: top;
     }}
-    td.col-api code {{
+    .api-cell {{
+      width: 100%;
+      min-width: 0;
+    }}
+    .api-cell-yes {{
+      margin-bottom: 0.25rem;
+    }}
+    .api-code-box {{
+      min-width: 0;
+    }}
+    .api-code-box .api-source-link {{
+      display: block;
+    }}
+    td.col-api code,
+    .api-code-box code {{
       display: block;
       max-width: 100%;
       white-space: pre-line;
@@ -1547,6 +1620,7 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       word-break: break-word;
       line-height: 1.35;
       box-sizing: border-box;
+      padding: 0.25rem 0.35rem;
     }}
     code {{
       background: var(--code-bg);
@@ -1672,10 +1746,26 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       vertical-align: middle;
       text-align: center;
     }}
-    table.samples-table td.col-api code {{
-      display: inline-block;
-      text-align: left;
+    table.samples-table td.col-api .api-cell {{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }}
+    table.samples-table td.col-api .api-code-box {{
+      width: fit-content;
+      max-width: 100%;
       margin: 0 auto;
+    }}
+    table.samples-table td.col-api .api-code-box code {{
+      text-align: center;
+      display: block;
+    }}
+    table.samples-table td.col-api .api-doc-line,
+    table.samples-table td.col-api .api-uniformity,
+    table.samples-table td.col-api .api-complexity {{
+      text-align: center;
+      width: 100%;
+      max-width: 420px;
     }}
     .sample-widget {{
       display: flex;
@@ -1774,6 +1864,39 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
   (function () {{
     const PREFETCH_AHEAD = 5;
     const prefetched = new Set();
+
+    function equalizeApiCodeBoxes() {{
+      document.querySelectorAll("table.comparison-table:not(.samples-table)").forEach(function (table) {{
+        table.querySelectorAll("tr").forEach(function (row) {{
+          const boxes = Array.from(
+            row.querySelectorAll("td.col-api:not(.cell-unavailable) .api-code-box")
+          );
+          if (boxes.length < 2) return;
+          boxes.forEach(function (box) {{
+            box.style.minHeight = "";
+          }});
+          let max = 0;
+          boxes.forEach(function (box) {{
+            max = Math.max(max, box.getBoundingClientRect().height);
+          }});
+          if (max <= 0) return;
+          const height = Math.ceil(max) + "px";
+          boxes.forEach(function (box) {{
+            box.style.minHeight = height;
+          }});
+        }});
+      }});
+    }}
+
+    let resizeTimer;
+    window.addEventListener("resize", function () {{
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(equalizeApiCodeBoxes, 100);
+    }});
+    equalizeApiCodeBoxes();
+    if (document.fonts && document.fonts.ready) {{
+      document.fonts.ready.then(equalizeApiCodeBoxes);
+    }}
 
     function runWhenIdle(fn) {{
       if (typeof requestIdleCallback === "function") {{
