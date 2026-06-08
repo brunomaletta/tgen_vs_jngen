@@ -20,13 +20,18 @@ make benchmark QUICK=1
 
 Requires Python 3 with PyYAML (`pip install pyyaml`).
 
+**Live site (styled tables + geometry samples):**  
+<https://brunomaletta.github.io/tgen_vs_jngen/>
+
 | Document | Description |
 |----------|-------------|
-| [docs/comparison.md](docs/comparison.md) | Feature comparison table (API, uniformity, complexity) |
+| [docs/comparison.md](docs/comparison.md) | Feature comparison (plain GitHub Markdown) |
 | [docs/benchmarks.md](docs/benchmarks.md) | Head-to-head timing results |
-| [docs/comparison.html](docs/comparison.html) | Same content as Markdown, styled for local viewing |
+| [docs/comparison.html](docs/comparison.html) | Styled comparison (same as the Pages site) |
 
-Geometry sample SVGs live under `docs/gallery/` and are embedded in the comparison table.
+Run `make site` to rebuild the Pages bundle locally (`docs/site/index.html`).
+
+Geometry sample SVGs live under `docs/gallery/` and are embedded in the HTML comparison.
 
 ## What is compared
 

@@ -14,7 +14,7 @@ DOC_PATH := $(abspath $(DOC))
 
 .DEFAULT_GOAL := help
 
-.PHONY: all vendor benchmark visualize docs doc opendoc clean help
+.PHONY: all vendor benchmark visualize docs doc site opendoc clean help
 
 all: vendor benchmark visualize docs
 
@@ -24,6 +24,7 @@ help:
 	@echo "  benchmark  - run performance comparison"
 	@echo "  visualize  - generate geometry sample SVGs"
 	@echo "  docs       - regenerate comparison.md and benchmarks.md"
+	@echo "  site       - build GitHub Pages bundle (docs/site/)"
 	@echo "  doc        - alias for docs"
 	@echo "  opendoc    - open comparison.html in Chrome (DOC=docs/benchmarks.md for raw md)"
 	@echo "  all        - vendor + benchmark + visualize + docs"
@@ -59,6 +60,9 @@ visualize: vendor $(VIZ_BIN)
 
 docs:
 	python3 docs/render_docs.py
+
+site: vendor benchmark visualize
+	BUILD_PAGES_SITE=1 python3 docs/render_docs.py
 
 doc: docs
 

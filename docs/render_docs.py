@@ -361,6 +361,10 @@ def render_comparison_md(meta, operations, categories, bench_index):
         "",
         f"*Generated {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}*",
         "",
+        "> **Styled tables and geometry samples:** "
+        "[view on GitHub Pages](https://brunomaletta.github.io/tgen_vs_jngen/). "
+        "GitHub's Markdown renderer cannot reproduce the HTML layout.",
+        "",
         "Comparison of non-trivial generation operations. See "
         "[benchmarks.md](benchmarks.md) for timing results.",
         "",
@@ -807,7 +811,7 @@ def render_html(comparison_body, benchmarks_body):
   <nav>
     <a href="#comparison">Feature comparison</a>
     <a href="#benchmarks">Benchmarks</a>
-    <a href="comparison.md">comparison.md</a> (GitHub)
+    <a href="https://github.com/brunomaletta/tgen_vs_jngen/blob/main/docs/comparison.md">comparison.md</a> (GitHub)
   </nav>
   {comparison_body}
   {benchmarks_body}
@@ -816,11 +820,32 @@ def render_html(comparison_body, benchmarks_body):
 """
 
 
+def build_site(out_dir, site_dir):
+    import shutil
+
+    html_path = os.path.join(out_dir, "comparison.html")
+    if not os.path.isfile(html_path):
+        raise FileNotFoundError(f"build_site: missing {html_path}")
+
+    gallery_src = os.path.join(out_dir, "gallery")
+    if os.path.isdir(site_dir):
+        shutil.rmtree(site_dir)
+    os.makedirs(site_dir, exist_ok=True)
+    shutil.copy2(html_path, os.path.join(site_dir, "index.html"))
+    if os.path.isdir(gallery_src):
+        shutil.copytree(gallery_src, os.path.join(site_dir, "gallery"))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--yaml", default="docs/operations.yaml")
     parser.add_argument("--json", default="results/benchmark_results.json")
     parser.add_argument("--out-dir", default="docs")
+    parser.add_argument(
+        "--site-dir",
+        default="",
+        help="if set, also build a GitHub Pages site (index.html + gallery/)",
+    )
     args = parser.parse_args()
 
     meta = load_yaml(args.yaml)
@@ -835,12 +860,17 @@ def main():
     benchmarks_html = render_benchmarks_html(bench)
 
     os.makedirs(args.out_dir, exist_ok=True)
+    page_html = render_html(comparison_html, benchmarks_html)
     with open(os.path.join(args.out_dir, "comparison.md"), "w", encoding="utf-8") as f:
         f.write(comparison_md)
     with open(os.path.join(args.out_dir, "benchmarks.md"), "w", encoding="utf-8") as f:
         f.write(benchmarks_md)
     with open(os.path.join(args.out_dir, "comparison.html"), "w", encoding="utf-8") as f:
-        f.write(render_html(comparison_html, benchmarks_html))
+        f.write(page_html)
+    site_dir = args.site_dir or os.path.join(args.out_dir, "site")
+    if args.site_dir or os.environ.get("BUILD_PAGES_SITE") == "1":
+        build_site(args.out_dir, site_dir)
+        print(f"Wrote {site_dir}/")
 
     print(f"Wrote {args.out_dir}/comparison.md")
     print(f"Wrote {args.out_dir}/benchmarks.md")
