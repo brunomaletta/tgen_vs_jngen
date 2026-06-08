@@ -959,6 +959,70 @@ def render_bench_bars_html(jg_ms, tg_ms, show_times=True):
     return "".join(parts)
 
 
+def lib_benchmark_ok(lib_result):
+    return lib_result.get("status") == "ok"
+
+
+def render_bench_fail_row(label, label_class, lib_result):
+    status = lib_result.get("status", "failed")
+    if status == "error":
+        badge = "FAILS"
+    elif status == "timeout":
+        badge = "TIMEOUT"
+    else:
+        badge = status.upper()
+
+    error = lib_result.get("error", "").strip()
+    detail = ""
+    if error and status in ("error", "timeout"):
+        if len(error) > 140:
+            error = error[:137] + "..."
+        detail = f'<div class="bench-fail-detail">{html.escape(error)}</div>'
+
+    return (
+        f'<div class="bench-bar-row bench-fail-row bench-fail-row-{label_class}">'
+        f'<span class="bench-bar-label {label_class}">{html.escape(label)}</span>'
+        f'<div class="bench-bar-body">'
+        f'<div class="bench-bar-track">'
+        f'<div class="bench-bar-fill bench-bar-fill-fail {label_class}" '
+        f'style="width:100.0%">'
+        f'<span class="bench-fail-label">{html.escape(badge)}</span>'
+        f"</div></div>"
+        f"{detail}"
+        f"</div>"
+        f"</div>"
+    )
+
+
+def render_bench_comparison_html(jg_result, tg_result, show_times=True):
+    jg_ok = lib_benchmark_ok(jg_result)
+    tg_ok = lib_benchmark_ok(tg_result)
+    jg_ms = lib_median_ms_raw(jg_result) if jg_ok else None
+    tg_ms = lib_median_ms_raw(tg_result) if tg_ok else None
+
+    if jg_ok and tg_ok and jg_ms is not None and tg_ms is not None:
+        return render_bench_bars_html(jg_ms, tg_ms, show_times)
+
+    ms_values = [m for m in (jg_ms, tg_ms) if m is not None]
+    max_ms = max(ms_values) if ms_values else 1
+
+    parts = ['<div class="bench-bars">']
+    if jg_ok and jg_ms is not None:
+        parts.append(
+            render_bench_bar_row("jngen", "lib-jngen", jg_ms, max_ms, show_times)
+        )
+    else:
+        parts.append(render_bench_fail_row("jngen", "lib-jngen", jg_result))
+    if tg_ok and tg_ms is not None:
+        parts.append(
+            render_bench_bar_row("tgen", "lib-tgen", tg_ms, max_ms, show_times)
+        )
+    else:
+        parts.append(render_bench_fail_row("tgen", "lib-tgen", tg_result))
+    parts.append("</div>")
+    return "".join(parts)
+
+
 def bench_ratio(row):
     jg_ms = lib_median_ms_raw(row.get("jngen", {}))
     tg_ms = lib_median_ms_raw(row.get("tgen", {}))
@@ -1000,48 +1064,59 @@ def lib_timing_ms(lib_result):
     return str(lib_result.get("status", "—"))
 
 
-def format_benchmark_cell_html(op, bench_index):
-    bid = op.get("benchmark_id")
-    if not bid:
-        return "—"
-
-    row = bench_index.get(bid)
-    if not row:
-        return "—"
-
+def render_benchmark_row_lines(row, *, include_ratio=False, include_params=True):
     lines = []
     if row.get("compare_both"):
-        jg_ms = lib_median_ms_raw(row.get("jngen", {}))
-        tg_ms = lib_median_ms_raw(row.get("tgen", {}))
-        bars = render_bench_bars_html(jg_ms, tg_ms, show_times=True)
-        if bars != "—":
-            lines.append(bars)
-        else:
-            lines.append(
-                '<strong class="lib-label lib-jngen">jngen:</strong> '
-                + html.escape(lib_timing_ms(row.get("jngen", {})))
+        lines.append(
+            render_bench_comparison_html(
+                row.get("jngen", {}), row.get("tgen", {}), show_times=True
             )
-            lines.append(
-                '<strong class="lib-label lib-tgen">tgen:</strong> '
-                + html.escape(lib_timing_ms(row.get("tgen", {})))
-            )
-        if benchmark_is_comparable(row) and bench_ratio(row) is not None:
-            lines.append(format_ratio_html(row))
-        elif not benchmark_is_comparable(row):
-            lines.append(
-                '<em class="bench-params">different n — not comparable</em>'
-            )
+        )
+        if include_ratio:
+            if benchmark_is_comparable(row) and bench_ratio(row) is not None:
+                lines.append(format_ratio_html(row))
+            elif not benchmark_is_comparable(row):
+                lines.append(
+                    '<em class="bench-params">different n — not comparable</em>'
+                )
     else:
         lines.append(
             '<strong class="lib-label lib-tgen">tgen:</strong> '
             + html.escape(lib_timing_ms(row.get("tgen", {})))
         )
 
-    params = row.get("params", "")
-    if params:
-        lines.append(f'<span class="bench-params">{format_params_html(params)}</span>')
+    if include_params:
+        params = row.get("params", "")
+        if params:
+            lines.append(
+                f'<span class="bench-params">{format_params_html(params)}</span>'
+            )
 
-    return "<br>".join(lines)
+    return lines
+
+
+def format_benchmark_cell_html(op, bench_index):
+    bids = []
+    if op.get("benchmark_id"):
+        bids.append(op["benchmark_id"])
+    bids.extend(op.get("secondary_benchmark_ids", []))
+    if not bids:
+        return "—"
+
+    blocks = []
+    for bid in bids:
+        row = bench_index.get(bid)
+        if not row:
+            continue
+        lines = render_benchmark_row_lines(row, include_ratio=True)
+        suffix = row.get("name_suffix", "").strip()
+        if suffix and len(bids) > 1:
+            lines.insert(
+                0, f'<em class="bench-variant">{html.escape(suffix.lstrip())}</em>'
+            )
+        blocks.append("<br>".join(lines))
+
+    return "<br><br>".join(blocks) if blocks else "—"
 
 
 def render_comparison_html(operations, categories, bench_index, source_resolver=None):
@@ -1141,7 +1216,10 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
         "Bar length is relative to the slower library per operation "
         "(<span class=\"lib-label lib-jngen\">jngen</span> vs "
         "<span class=\"lib-label lib-tgen\">tgen</span>). "
-        "Ratio is colored by the faster library.</p>",
+        "Ratio is colored by the faster library. "
+        "Cases where <span class=\"lib-label lib-jngen\">jngen</span> cannot "
+        'complete are marked <span class="bench-fail-badge bench-fail-badge-inline">'
+        "FAILS</span> in red.</p>",
         '<div class="table-scroll"><table class="bench-table">',
         "<tr><th>Operation</th><th>Parameters</th><th>Comparison</th>"
         "<th>Ratio (tgen/jngen)</th></tr>",
@@ -1153,9 +1231,9 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
     for row in shared:
         name = row.get("name", "") + row.get("name_suffix", "")
         params = row.get("params", "")
-        jg_ms = lib_median_ms_raw(row.get("jngen", {}))
-        tg_ms = lib_median_ms_raw(row.get("tgen", {}))
-        bars = render_bench_bars_html(jg_ms, tg_ms, show_times=True)
+        comparison = "<br>".join(
+            render_benchmark_row_lines(row, include_params=False)
+        )
         source_url = None
         doc_url = None
         if source_resolver:
@@ -1166,7 +1244,7 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
             "<tr>"
             f"<td>{format_benchmark_name_html(name, source_url, doc_url)}</td>"
             f"<td>{format_params_html(params)}</td>"
-            f"<td>{bars}</td>"
+            f"<td>{comparison}</td>"
             f"<td>{format_ratio_html(row)}</td>"
             "</tr>"
         )
@@ -1421,6 +1499,49 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     }}
     td.col-bench .bench-bars {{
       margin-top: 0.25rem;
+    }}
+    .bench-bar-fill-fail {{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 100%;
+      background: #da3633;
+      border: 1px solid #ff7b72;
+      box-shadow: 0 0 8px rgba(248, 81, 73, 0.45);
+      box-sizing: border-box;
+    }}
+    .bench-bar-fill-fail.lib-jngen {{
+      background: #f85149;
+      box-shadow: 0 0 10px rgba(248, 81, 73, 0.65);
+    }}
+    .bench-fail-label {{
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-transform: uppercase;
+      user-select: none;
+    }}
+    .bench-fail-badge-inline {{
+      display: inline-block;
+      background: #f85149;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.62rem;
+      padding: 1px 5px;
+      border-radius: 3px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid #ff7b72;
+      vertical-align: middle;
+      line-height: 1.3;
+    }}
+    .bench-fail-detail {{
+      color: #ff7b72;
+      font-size: 0.72rem;
+      line-height: 1.35;
+      word-break: break-word;
     }}
     table.bench-table td:nth-child(3) {{
       min-width: 140px;

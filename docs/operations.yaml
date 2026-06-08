@@ -62,6 +62,8 @@ operations:
     notes: "Same high-level algorithm: skewed spanning tree, then ancestor-biased extra edges. Extra edges reject duplicates; jngen resets an attempt counter on success and throws after MAX_ATTEMPTS=1000 consecutive failures, while tgen uses its unique generation framework. For large spread, tgen uses binary lifting; jngen uses trivial parent-by-parent lifting."
     benchmark: true
     benchmark_id: graph_gen_skewed_m_eq_n
+    secondary_benchmark_ids:
+      - graph_gen_skewed_distinct_worst
 
   - id: graph_bipartite
     name: Bipartite graph (random / complete)
@@ -364,7 +366,7 @@ operations:
     tgen:
       has: true
       api: "tgen::distinct<Func, Args>"
-      uniform: varies
+      uniform: uniform
       complexity: "O(k log n) for k distinct values; composable constraint machinery"
     jngen:
       has: false
