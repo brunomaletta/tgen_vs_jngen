@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-08T16:03:18Z",
+  "generated_at": "2026-06-08T16:57:11Z",
   "compiler": "15.2.0",
   "flags": "-std=c++17 -O2",
   "hostname": "bruno-inspiron14",
@@ -16,15 +16,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 1259,
-      "runs_ms": [1300, 1259, 1257]
+      "median_ms": 1351.895,
+      "runs_ms": [1813.415, 1351.895, 1274.491]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1380,
-      "runs_ms": [1369, 1431, 1380]
+      "median_ms": 1571.201,
+      "runs_ms": [1452.24, 1571.201, 1859.747]
       },
-      "ratio": 0.912319
+      "ratio": 0.860421
     },
     {
       "id": "graph_connected_m_eq_2n",
@@ -34,15 +34,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 2451,
-      "runs_ms": [2484, 2451, 2430]
+      "median_ms": 2492.724,
+      "runs_ms": [2558.062, 2492.724, 2458.538]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 2229,
-      "runs_ms": [2134, 2229, 2334]
+      "median_ms": 2203.325,
+      "runs_ms": [2203.325, 2189.609, 2268.721]
       },
-      "ratio": 1.0996
+      "ratio": 1.13135
     },
     {
       "id": "graph_gen",
@@ -52,15 +52,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 918,
-      "runs_ms": [942, 918, 918]
+      "median_ms": 948.209,
+      "runs_ms": [948.209, 960.234, 938.377]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 652,
-      "runs_ms": [660, 650, 652]
+      "median_ms": 674.09,
+      "runs_ms": [674.09, 680.071, 668.182]
       },
-      "ratio": 1.40798
+      "ratio": 1.40665
     },
     {
       "id": "graph_gen_skewed_m_eq_n",
@@ -70,15 +70,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 217,
-      "runs_ms": [213, 217, 220]
+      "median_ms": 230.915,
+      "runs_ms": [230.12, 230.915, 233.62]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 848,
-      "runs_ms": [832, 848, 863]
+      "median_ms": 887.188,
+      "runs_ms": [895.158, 887.188, 881.277]
       },
-      "ratio": 0.255896
+      "ratio": 0.260277
     },
     {
       "id": "graph_gen_skewed_m_eq_2n",
@@ -88,15 +88,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 642,
-      "runs_ms": [633, 642, 648]
+      "median_ms": 643.976,
+      "runs_ms": [628.675, 644.226, 643.976]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1920,
-      "runs_ms": [1967, 1886, 1920]
+      "median_ms": 2002.867,
+      "runs_ms": [2002.867, 1944.782, 2619.16]
       },
-      "ratio": 0.334375
+      "ratio": 0.321527
     },
     {
       "id": "graph_gen_skewed_distinct_worst",
@@ -106,8 +106,8 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 486,
-      "runs_ms": [475, 486, 488]
+      "median_ms": 498.431,
+      "runs_ms": [478.994, 498.431, 500.903]
       },
       "jngen": {
       "status": "error",
@@ -122,15 +122,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 586,
-      "runs_ms": [583, 586, 590]
+      "median_ms": 597.719,
+      "runs_ms": [574.74, 601.311, 597.719]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 757,
-      "runs_ms": [757, 778, 755]
+      "median_ms": 782.827,
+      "runs_ms": [782.827, 786.099, 771.392]
       },
-      "ratio": 0.774108
+      "ratio": 0.763539
     },
     {
       "id": "tree_gen_skewed",
@@ -140,15 +140,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 179,
-      "runs_ms": [177, 179, 180]
+      "median_ms": 180.737,
+      "runs_ms": [176.622, 180.737, 187.124]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 317,
-      "runs_ms": [317, 317, 315]
+      "median_ms": 333.442,
+      "runs_ms": [330.977, 333.442, 338.819]
       },
-      "ratio": 0.564669
+      "ratio": 0.542035
     },
     {
       "id": "list_all_different",
@@ -158,15 +158,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 1948,
-      "runs_ms": [2045, 1948, 1706]
+      "median_ms": 2144.871,
+      "runs_ms": [2216.572, 2144.871, 2001.627]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 206,
-      "runs_ms": [203, 206, 211]
+      "median_ms": 274.892,
+      "runs_ms": [270.838, 274.892, 281.632]
       },
-      "ratio": 9.45631
+      "ratio": 7.8026
     },
     {
       "id": "geometry_convex_polygon",
@@ -176,15 +176,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 1640,
-      "runs_ms": [1645, 1627, 1640]
+      "median_ms": 2219.362,
+      "runs_ms": [2242.093, 2219.262, 2219.362]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 2692,
-      "runs_ms": [2669, 2693, 2692]
+      "median_ms": 3413.895,
+      "runs_ms": [3400.993, 3413.895, 3420.137]
       },
-      "ratio": 0.609212
+      "ratio": 0.650097
     },
     {
       "id": "geometry_points_general_position",
@@ -194,15 +194,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 0,
-      "runs_ms": [0, 0, 0]
+      "median_ms": 0.271,
+      "runs_ms": [0.278, 0.271, 0.263]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1767,
-      "runs_ms": [1767, 1768, 1764]
+      "median_ms": 2231.459,
+      "runs_ms": [2284.782, 2227.87, 2231.459]
       },
-      "ratio": 0
+      "ratio": 0.000121471
     },
     {
       "id": "geometry_random_simple_polygon",
@@ -212,8 +212,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 1078,
-      "runs_ms": [1064, 1084, 1078]
+      "median_ms": 1402.122,
+      "runs_ms": [1373.907, 1412.208, 1402.122]
       },
       "jngen": {
       "status": "skipped",
@@ -228,8 +228,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 923,
-      "runs_ms": [918, 923, 925]
+      "median_ms": 1223.925,
+      "runs_ms": [1232.177, 1223.925, 1181.368]
       },
       "jngen": {
       "status": "skipped",
@@ -244,15 +244,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 11,
-      "runs_ms": [12, 11, 11]
+      "median_ms": 11.905,
+      "runs_ms": [12.243, 11.749, 11.905]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 16,
-      "runs_ms": [16, 16, 16]
+      "median_ms": 17.02,
+      "runs_ms": [17.198, 17.02, 16.883]
       },
-      "ratio": 0.6875
+      "ratio": 0.69946
     },
     {
       "id": "graph_bipartite",
@@ -262,15 +262,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 739,
-      "runs_ms": [749, 739, 738]
+      "median_ms": 917.2,
+      "runs_ms": [888.89, 1043.981, 917.2]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 185,
-      "runs_ms": [184, 185, 185]
+      "median_ms": 227.392,
+      "runs_ms": [227.392, 221.904, 275.773]
       },
-      "ratio": 3.99459
+      "ratio": 4.03356
     },
     {
       "id": "graph_directed",
@@ -280,15 +280,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 359,
-      "runs_ms": [335, 378, 359]
+      "median_ms": 456.053,
+      "runs_ms": [484.006, 456.053, 432.558]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 545,
-      "runs_ms": [548, 545, 539]
+      "median_ms": 663.858,
+      "runs_ms": [663.858, 631.654, 670.755]
       },
-      "ratio": 0.658716
+      "ratio": 0.686974
     }
   ]
 }

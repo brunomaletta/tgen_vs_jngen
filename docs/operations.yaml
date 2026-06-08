@@ -140,8 +140,9 @@ operations:
     jngen:
       has: true
       api: "Tree::randomKruskal(n)"
-      uniform: non-uniform
-      complexity: "Undocumented"
+      uniform: non-uniform (inferred)
+      complexity: "O(n²) expected (inferred); Kruskal-like edge add until connected"
+    notes: "Not uniform over all labeled trees (unlike Tree::random / Prüfer); edges are uniform among non-cycle-forming pairs."
 
   # --- Lists and sequences ---
   - id: list_all_different
@@ -400,7 +401,8 @@ operations:
       has: true
       api: "Drawer d; d.polygon(...); d.dumpSvg(\"out.svg\")"
       uniform: ""
-      complexity: "Drawer for points, segments, circles, polygons."
+      complexity: ""
+    notes: "Drawer for points, segments, circles, polygons; outputs SVG."
 
   # --- Strings ---
   - id: str_regex
@@ -441,7 +443,8 @@ operations:
       has: true
       api: "hack::unsigned_polynomial_hash_hack()"
       uniform: ""
-      complexity: "O(1); Thue–Morse construction"
+      complexity: "O(1)"
+    notes: "Thue–Morse construction."
     jngen:
       has: false
       api: ""
@@ -470,7 +473,8 @@ operations:
       has: true
       api: "hack::string_set(size)"
       uniform: ""
-      complexity: "Distinct strings with equal std::set ordering keys"
+      complexity: "O(size log size)"
+    notes: "Distinct strings with equal std::set ordering keys."
     jngen:
       has: false
       api: ""
@@ -484,7 +488,8 @@ operations:
       has: true
       api: "hack::dinitz_worst_case(k, l)"
       uniform: ""
-      complexity: "O(k·l) vertices; Zadeh network"
+      complexity: "O(l + k²)"
+    notes: "Zadeh network."
     jngen:
       has: false
       api: ""
@@ -498,7 +503,7 @@ operations:
       has: true
       api: "hack::mo(n, q)"
       uniform: ""
-      complexity: "O(q) range queries on a path"
+      complexity: "O(n log n + q)"
     jngen:
       has: false
       api: ""

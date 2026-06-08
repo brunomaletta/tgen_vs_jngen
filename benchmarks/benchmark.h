@@ -123,7 +123,14 @@ inline std::string json_escape(const std::string &s) {
 }
 
 inline std::string format_ms(double ms) {
-	return std::to_string(static_cast<long long>(std::llround(ms)));
+	char buf[32];
+	std::snprintf(buf, sizeof(buf), "%.3f", ms);
+	std::string out(buf);
+	while (!out.empty() && out.back() == '0')
+		out.pop_back();
+	if (!out.empty() && out.back() == '.')
+		out.pop_back();
+	return out.empty() ? "0" : out;
 }
 
 inline std::string iso_timestamp() {

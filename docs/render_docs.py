@@ -906,6 +906,11 @@ def render_geometry_samples_html(operations, source_resolver=None):
 
 
 def fmt_ms(ms):
+    if ms < 1:
+        return "<1 ms"
+    if ms < 10:
+        text = f"{ms:.1f}".rstrip("0").rstrip(".")
+        return f"{text} ms"
     return f"{round(ms)} ms"
 
 
@@ -966,7 +971,10 @@ def format_ratio_html(row):
     ratio = bench_ratio(row)
     if ratio is None:
         return "—"
-    text = f"{ratio:.2f}x"
+    if ratio > 0 and ratio < 0.01:
+        text = "<0.01x"
+    else:
+        text = f"{ratio:.2f}x"
     if ratio > 1:
         css = "bench-ratio bench-ratio-jngen"
     elif ratio < 1:

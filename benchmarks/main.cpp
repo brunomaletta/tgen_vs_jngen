@@ -114,14 +114,8 @@ int main(int argc, char **argv) {
 		}
 
 		if (row.compare_both && row.tgen.status == "ok" &&
-			row.jngen.status == "ok") {
-			const auto jg_ms =
-				static_cast<long long>(std::llround(row.jngen.median_ms));
-			const auto tg_ms =
-				static_cast<long long>(std::llround(row.tgen.median_ms));
-			if (jg_ms > 0)
-				row.ratio = static_cast<double>(tg_ms) / jg_ms;
-		}
+			row.jngen.status == "ok" && row.jngen.median_ms > 0)
+			row.ratio = row.tgen.median_ms / row.jngen.median_ms;
 
 		report.results.push_back(std::move(row));
 	}
