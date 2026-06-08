@@ -19,6 +19,7 @@ except ImportError:
     sys.stderr.write("build_site: install PyYAML (pip install pyyaml)\n")
     sys.exit(1)
 
+from cpp_highlight import highlight_cpp_file  # noqa: E402
 from render_docs import (  # noqa: E402
     JNGEN_CATEGORY_DOC,
     JNGEN_OP_DOC,
@@ -28,6 +29,8 @@ from render_docs import (  # noqa: E402
 TGEN_VENDOR = os.path.join(ROOT_DIR, "vendor", "tgen")
 JNGEN_VENDOR = os.path.join(ROOT_DIR, "vendor", "jngen")
 TGEN_DOC_BUILD = os.path.join(TGEN_VENDOR, "docs", "build")
+TGEN_EMBED_CSS = os.path.join(DOCS_DIR, "tgen_embed.css")
+TGEN_EMBED_LINK = '<link href="tgen_embed.css" rel="stylesheet" type="text/css"/>'
 
 SOURCE_VIEWER_CSS = """
 :root {
@@ -38,6 +41,10 @@ SOURCE_VIEWER_CSS = """
   --line-bg: #161b22;
   --highlight: #1f3a5f;
   --link: #58a6ff;
+  --scroll-offset: 20vh;
+}
+html {
+  scroll-padding-top: var(--scroll-offset);
 }
 body {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -50,7 +57,7 @@ body {
 header {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
   padding: 0.75rem 1rem;
   background: var(--line-bg);
   border-bottom: 1px solid #30363d;
@@ -68,6 +75,7 @@ pre {
   padding: 0 1rem 0 4.5rem;
   white-space: pre;
   position: relative;
+  scroll-margin-top: var(--scroll-offset);
 }
 .line:target, .line.highlight {
   background: var(--highlight);
@@ -83,6 +91,42 @@ pre {
   user-select: none;
 }
 .line-num:hover { color: var(--link); }
+.code { display: inline; }
+.tok-kw { color: #ff7b72; }
+.tok-type { color: #79c0ff; }
+.tok-fn { color: #d2a8ff; }
+.tok-cm { color: #8b949e; font-style: italic; }
+.tok-str { color: #a5d6ff; }
+.tok-num { color: #79c0ff; }
+.tok-op { color: #e6edf3; }
+.tok-pp { color: #d2a8ff; }
+"""
+
+SOURCE_VIEWER_SCRIPT = """
+(function () {
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  function scrollToHash() {
+    var hash = location.hash;
+    if (!hash) return;
+    var el = document.querySelector(hash);
+    if (!el) return;
+    document.querySelectorAll('.line.highlight').forEach(function (n) {
+      n.classList.remove('highlight');
+    });
+    el.classList.add('highlight');
+    var offset = Math.round(window.innerHeight * 0.2);
+    var y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo(0, y);
+  }
+  window.addEventListener('hashchange', scrollToHash);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', scrollToHash);
+  } else {
+    scrollToHash();
+  }
+})();
 """
 
 DOC_VIEWER_CSS = """
@@ -183,12 +227,14 @@ def comparison_back_href(out_dir: str, out_path: str, comparison_page: str) -> s
 
 def render_source_html(rel_path: str, content: str, back_href: str) -> str:
     lines = content.splitlines()
+    highlighted = highlight_cpp_file(content)
     body = ["<pre>"]
     for i, line in enumerate(lines, 1):
-        escaped = html.escape(line)
+        code = highlighted[i - 1] if i - 1 < len(highlighted) else html.escape(line)
         body.append(
             f'<span class="line" id="L{i}">'
-            f'<a class="line-num" href="#L{i}">{i}</a>{escaped}</span>'
+            f'<a class="line-num" href="#L{i}">{i}</a>'
+            f'<span class="code">{code}</span></span>'
         )
     body.append("</pre>")
     return f"""<!DOCTYPE html>
@@ -201,14 +247,7 @@ def render_source_html(rel_path: str, content: str, back_href: str) -> str:
 <body>
   <header><a href="{html.escape(back_href)}">← comparison</a> · {html.escape(rel_path)}</header>
   {''.join(body)}
-  <script>
-    (function () {{
-      if (location.hash) {{
-        var el = document.querySelector(location.hash);
-        if (el) el.classList.add('highlight');
-      }}
-    }})();
-  </script>
+  <script>{SOURCE_VIEWER_SCRIPT}</script>
 </body>
 </html>
 """
@@ -347,6 +386,8 @@ def copy_tgen_docs(out_dir: str, comparison_page: str):
         dest,
         ignore=shutil.ignore_patterns("xml", "*.xml", "llms"),
     )
+    if os.path.isfile(TGEN_EMBED_CSS):
+        shutil.copy2(TGEN_EMBED_CSS, os.path.join(dest, "tgen_embed.css"))
     for fname in os.listdir(dest):
         if not fname.endswith(".html"):
             continue
@@ -354,17 +395,24 @@ def copy_tgen_docs(out_dir: str, comparison_page: str):
         back_href = comparison_back_href(out_dir, out_path, comparison_page)
         with open(out_path, encoding="utf-8") as f:
             content = f.read()
-        if "← comparison" in content:
-            continue
-        if "<body>" not in content:
-            continue
+        if TGEN_EMBED_LINK not in content:
+            content = content.replace("</head>", f"  {TGEN_EMBED_LINK}\n</head>", 1)
         banner = (
             f'<header style="margin:0 0 1rem;padding:0.75rem 1rem;'
             f'background:#161b22;border-bottom:1px solid #30363d;font-family:system-ui,sans-serif;font-size:0.9rem">'
             f'<a href="{html.escape(back_href)}" style="color:#58a6ff;text-decoration:none">'
             f"← comparison</a></header>"
         )
-        content = content.replace("<body>", f"<body>\n{banner}", 1)
+        if "← comparison" in content:
+            content = re.sub(
+                r'(<header[^>]*>.*?← comparison</a></header>)',
+                banner,
+                content,
+                count=1,
+                flags=re.DOTALL,
+            )
+        elif "<body>" in content:
+            content = content.replace("<body>", f"<body>\n{banner}", 1)
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(content)
 

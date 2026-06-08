@@ -68,7 +68,7 @@ $(TGEN_XML_INDEX): vendor
 
 docs: $(TGEN_XML_INDEX)
 	python3 docs/render_docs.py
-	cd vendor/tgen && $(MAKE) doc
+	cd vendor/tgen && $(MAKE) doc-rebuild
 	python3 docs/build_site.py --bundle-only
 
 check:

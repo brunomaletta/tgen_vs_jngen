@@ -1,0 +1,31 @@
+/* Overrides for tgen Doxygen HTML bundled under the comparison site. */
+
+@media screen and (min-width: 768px) {
+  #side-nav,
+  #nav-path,
+  #top {
+    display: none !important;
+  }
+
+  #container {
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  #doc-content {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin-left: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  #doc-content > div > div.contents,
+  .PageDoc > div.contents {
+    display: block !important;
+  }
+}
+
+html {
+  scroll-behavior: auto;
+}
