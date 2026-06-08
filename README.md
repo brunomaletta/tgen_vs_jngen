@@ -37,7 +37,7 @@ Requires Python 3 with PyYAML (`pip install pyyaml`). `make docs` also runs tgen
 
 Run `make site` to rebuild the Pages bundle locally (`docs/site/index.html`).
 
-Geometry sample SVGs live under `docs/gallery/` (50 variants per sample, seeds 42–91; **committed** so CI skips regeneration). Regenerate locally with `make visualize`, then commit `docs/gallery/*.svg`. Each sample has a ↻ button — click to cycle, Shift-click for a random variant.
+Geometry sample SVGs live under `docs/gallery/` (20 variants per sample, seeds 42–61; **committed** so CI skips regeneration). Regenerate locally with `make visualize`, then commit `docs/gallery/*.svg`. Each sample has a ↻ button — click to cycle, Shift-click for a random variant.
 
 ## What is compared
 

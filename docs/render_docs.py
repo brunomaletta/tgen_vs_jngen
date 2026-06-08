@@ -776,7 +776,7 @@ def format_params_md(params):
 
 
 GALLERY_SEED_BASE = 42
-GALLERY_VARIANT_COUNT = 50
+GALLERY_VARIANT_COUNT = 20
 
 
 def gallery_seeds():
@@ -1760,16 +1760,43 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
   {benchmarks_body}
   <script>
   (function () {{
+    const PREFETCH_AHEAD = 5;
+    const prefetched = new Set();
+
+    function sampleUrl(prefix, seed) {{
+      return prefix + "_s" + seed + ".svg";
+    }}
+
+    function prefetchVariant(widget, index) {{
+      const seeds = JSON.parse(widget.dataset.seeds);
+      const prefix = widget.dataset.prefix;
+      const i = ((index % seeds.length) + seeds.length) % seeds.length;
+      const url = sampleUrl(prefix, seeds[i]);
+      if (prefetched.has(url)) return;
+      prefetched.add(url);
+      const img = new Image();
+      img.src = url;
+    }}
+
+    function prefetchAhead(widget, fromIndex) {{
+      for (let off = 1; off <= PREFETCH_AHEAD; off++) {{
+        prefetchVariant(widget, fromIndex + off);
+      }}
+    }}
+
     function setVariant(widget, index) {{
       const seeds = JSON.parse(widget.dataset.seeds);
       const prefix = widget.dataset.prefix;
       const img = widget.querySelector("img.sample-img");
       const i = ((index % seeds.length) + seeds.length) % seeds.length;
       widget.dataset.index = String(i);
-      img.src = prefix + "_s" + seeds[i] + ".svg";
+      img.src = sampleUrl(prefix, seeds[i]);
+      prefetchAhead(widget, i);
     }}
 
     document.querySelectorAll(".sample-widget").forEach(function (widget) {{
+      const start = parseInt(widget.dataset.index || "0", 10);
+      prefetchAhead(widget, start);
       const btn = widget.querySelector(".sample-regen");
       if (!btn) return;
       btn.addEventListener("click", function (event) {{
