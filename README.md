@@ -10,10 +10,18 @@ make all       # benchmark + visualize + regenerate docs
 make opendoc   # open rendered docs/comparison.html in Chrome
 ```
 
-For faster benchmarks during development:
+Benchmarks run **locally** and are stored in `docs/benchmark_results.json` (committed). GitHub Actions only reads that file when building the Pages site.
 
 ```bash
-make benchmark QUICK=1
+make benchmark              # full timings (n=1e6)
+make benchmark QUICK=1      # faster refresh (n=1e5)
+git add docs/benchmark_results.json && git commit -m "Update benchmark results"
+```
+
+For docs/Pages without re-running benchmarks:
+
+```bash
+make site    # visualize + render docs + docs/site/
 ```
 
 ## Documentation
@@ -35,17 +43,16 @@ Geometry sample SVGs live under `docs/gallery/` and are embedded in the HTML com
 
 ## What is compared
 
-**Benchmarked head-to-head** (same parameters as [tgen's benchmark suite](https://github.com/brunomaletta/tgen/tree/main/benchmarks)):
+**Benchmarked head-to-head** (same parameters where both libraries support them):
 
 - Connected and random graphs, skewed graphs
 - Random and skewed trees
 - Distinct integer lists
-- Convex polygons
+- Convex polygons (n=3.6e5, max=3e9 — jngen-limited; both use the same n)
 
-**Comparison table only** (not timed against jngen):
+**Feature table** (not all rows are timed): graphs, trees, lists, math, geometry, strings, adversarial hacks — see [docs/comparison.html](docs/comparison.html).
 
-- Points in general position (jngen is O(n²); different algorithms)
-- Simple polygon generation (missing in jngen)
+**Tgen-only benchmarks** (in the table, not head-to-head): general-position points, simple polygons.
 
 ## Project layout
 
@@ -54,8 +61,8 @@ vendor/tgen/     git submodule
 vendor/jngen/    git submodule (run build.py to produce jngen.h)
 benchmarks/      C++ harness
 visualize/       sample generators + SVG output
-docs/            operations.yaml (source) + generated Markdown/HTML
-results/         generated benchmark JSON and SVG (gitignored)
+docs/            operations.yaml, benchmark_results.json (committed), generated Markdown/HTML
+results/         ephemeral build outputs (gitignored)
 ```
 
 ## License

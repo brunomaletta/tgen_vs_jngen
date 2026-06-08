@@ -11,8 +11,12 @@ void draw_polygon_svg(const string &path, const Polygon &poly,
 					  const string &stroke = "darkgreen") {
 	Drawer d;
 	d.enableGrid(false);
+	d.setStroke("");
+	d.setFill(stroke);
+	d.setOpacity(0.32);
+	d.polygon(poly);
 	d.setStroke(stroke);
-	d.setFill("lightblue");
+	d.setFill("");
 	d.setOpacity(0.85);
 	d.polygon(poly);
 	d.setFill(stroke);

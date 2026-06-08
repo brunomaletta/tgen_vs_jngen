@@ -8,7 +8,7 @@ endif
 
 BENCH_BIN = build/benchmarks/run
 VIZ_BIN = build/visualize/samples
-BENCH_JSON = results/benchmark_results.json
+BENCH_JSON = docs/benchmark_results.json
 DOC ?= docs/comparison.html
 DOC_PATH := $(abspath $(DOC))
 
@@ -21,15 +21,17 @@ all: vendor benchmark visualize docs
 help:
 	@echo "Targets:"
 	@echo "  vendor     - init submodules and build jngen.h"
-	@echo "  benchmark  - run performance comparison"
+	@echo "  benchmark  - run performance comparison → docs/benchmark_results.json"
 	@echo "  visualize  - generate geometry sample SVGs"
 	@echo "  docs       - regenerate comparison.md and benchmarks.md"
-	@echo "  site       - build GitHub Pages bundle (docs/site/)"
+	@echo "  site       - visualize + docs + GitHub Pages bundle (no benchmark)"
 	@echo "  doc        - alias for docs"
 	@echo "  opendoc    - open comparison.html in Chrome (DOC=docs/benchmarks.md for raw md)"
 	@echo "  all        - vendor + benchmark + visualize + docs"
 	@echo "  clean      - remove build/ and results/"
 	@echo ""
+	@echo "Benchmarks run locally; commit docs/benchmark_results.json."
+	@echo "CI/Pages consume that file (make site does not re-run benchmarks)."
 	@echo "Use QUICK=1 for n=1e5 instead of n=1e6 benchmarks."
 
 vendor:
@@ -42,7 +44,7 @@ $(BENCH_BIN): benchmarks/main.cpp benchmarks/tgen_cases.cpp benchmarks/jngen_cas
 		benchmarks/main.cpp benchmarks/tgen_cases.cpp benchmarks/jngen_cases.cpp
 
 benchmark: vendor $(BENCH_BIN)
-	@mkdir -p results
+	@mkdir -p docs
 	./$(BENCH_BIN) --json $(BENCH_JSON)
 
 $(VIZ_BIN): visualize/main.cpp visualize/tgen_samples.cpp visualize/jngen_samples.cpp vendor/tgen/single_include/tgen.h vendor/jngen/jngen.h
@@ -61,7 +63,7 @@ visualize: vendor $(VIZ_BIN)
 docs:
 	python3 docs/render_docs.py
 
-site: vendor benchmark visualize
+site: vendor visualize
 	BUILD_PAGES_SITE=1 python3 docs/render_docs.py
 
 doc: docs

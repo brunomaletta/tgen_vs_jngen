@@ -37,7 +37,7 @@ jobs:
           pip install pyyaml
 
       - name: Build comparison site
-        run: make site QUICK=1
+        run: make site
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

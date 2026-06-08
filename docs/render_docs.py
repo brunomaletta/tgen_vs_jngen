@@ -17,6 +17,7 @@ except ImportError:
 
 
 O_COMPLEXITY_RE = re.compile(r"O\([^)]+\)")
+LIB_MENTION_RE = re.compile(r"\b(jngen|tgen)(?=\s)")
 
 
 def bold_complexities_md(text):
@@ -92,12 +93,39 @@ def lib_label(text, lib):
     return f"{lib}: {text}"
 
 
-def lib_uniformity_parts(tg, jg):
+# Ops where uniformity is N/A (deterministic construction or not random sampling).
+NO_DEFAULT_UNIFORM_OPS = frozenset({
+    "tree_named_shapes",
+    "hack_unsigned_polynomial_hash",
+    "hack_mt19937_xor_hash",
+    "hack_rotating_calipers",
+    "geometry_svg_drawer",
+})
+
+NO_DEFAULT_UNIFORM_CATEGORIES = frozenset({"adversarial", "other"})
+
+
+def effective_uniform(lib_info, category, op_id):
+    if not lib_info.get("has"):
+        return None
+    uniform = lib_info.get("uniform")
+    if uniform:
+        return uniform
+    if category in NO_DEFAULT_UNIFORM_CATEGORIES:
+        return None
+    if op_id in NO_DEFAULT_UNIFORM_OPS:
+        return None
+    return "undocumented"
+
+
+def lib_uniformity_parts(tg, jg, category, op_id):
     parts = []
-    if jg.get("has") and jg.get("uniform"):
-        parts.append(lib_label(uniform_label(jg["uniform"]), "jngen"))
-    if tg.get("has") and tg.get("uniform"):
-        parts.append(lib_label(uniform_label(tg["uniform"]), "tgen"))
+    jg_u = effective_uniform(jg, category, op_id)
+    tg_u = effective_uniform(tg, category, op_id)
+    if jg_u:
+        parts.append(lib_label(uniform_label(jg_u), "jngen"))
+    if tg_u:
+        parts.append(lib_label(uniform_label(tg_u), "tgen"))
     return parts
 
 
@@ -114,6 +142,68 @@ def highlight_lib_labels_md(text):
     return text.replace("tgen:", "**tgen:**").replace("jngen:", "**jngen:**")
 
 
+def highlight_lib_names_md(text):
+    if not text:
+        return text
+    text = highlight_lib_labels_md(text)
+
+    def repl(match):
+        return f"**{match.group(1)}**"
+
+    return LIB_MENTION_RE.sub(repl, text)
+
+
+def highlight_lib_names_html(text):
+    if not text:
+        return text
+    out = []
+    last = 0
+    for match in LIB_MENTION_RE.finditer(text):
+        out.append(html.escape(text[last : match.start()]))
+        lib = match.group(1)
+        out.append(f'<strong class="lib-label lib-{lib}">{lib}</strong>')
+        last = match.end()
+    out.append(html.escape(text[last:]))
+    return "".join(out)
+
+
+def format_notes_text_md(text):
+    return bold_complexities_md(highlight_lib_names_md(text))
+
+
+def format_notes_text_html(text):
+    if not text:
+        return text
+    out = []
+    last = 0
+    for match in O_COMPLEXITY_RE.finditer(text):
+        out.append(highlight_lib_names_html(text[last : match.start()]))
+        out.append(
+            f'<strong class="complexity">{html.escape(match.group(0))}</strong>'
+        )
+        last = match.end()
+    out.append(highlight_lib_names_html(text[last:]))
+    return "".join(out)
+
+
+def format_exclusive_md(lib):
+    return f"**{lib}-only**"
+
+
+def format_exclusive_html(lib):
+    return f'<strong class="lib-label lib-{html.escape(lib)}">{html.escape(lib)}-only</strong>'
+
+
+def show_exclusive_badge(tg, jg, exclusive):
+    if exclusive not in ("jngen", "tgen"):
+        return False
+    if exclusive == "tgen" and not jg.get("has") and tg.get("has"):
+        return False
+    if exclusive == "jngen" and not tg.get("has") and jg.get("has"):
+        return False
+    return True
+
+
 def format_lib_parts_md(parts):
     if not parts:
         return ""
@@ -126,37 +216,41 @@ def format_lib_parts_html(parts):
     return "<br>".join(format_lib_part_html(part) for part in parts)
 
 
-def format_uniformity_md(tg, jg):
-    parts = lib_uniformity_parts(tg, jg)
+def format_uniformity_md(tg, jg, category, op_id):
+    parts = lib_uniformity_parts(tg, jg, category, op_id)
     return format_lib_parts_md(parts) if parts else "—"
 
 
-def format_uniformity_html(tg, jg):
-    parts = lib_uniformity_parts(tg, jg)
+def format_uniformity_html(tg, jg, category, op_id):
+    parts = lib_uniformity_parts(tg, jg, category, op_id)
     return format_lib_parts_html(parts) if parts else "—"
 
 
-def format_notes_md(tg, jg, extra_notes):
+def format_notes_md(tg, jg, extra_notes, exclusive=None):
     blocks = []
     complexity_parts = lib_complexity_parts(tg, jg)
     if complexity_parts:
         blocks.append(format_lib_parts_md(complexity_parts))
     if extra_notes:
-        blocks.append(bold_complexities_md(extra_notes))
+        blocks.append(format_notes_text_md(extra_notes))
+    if show_exclusive_badge(tg, jg, exclusive):
+        blocks.append(format_exclusive_md(exclusive))
     return "<br>".join(blocks) if blocks else "—"
 
 
-def format_notes_html(tg, jg, extra_notes):
+def format_notes_html(tg, jg, extra_notes, exclusive=None):
     blocks = []
     complexity_parts = lib_complexity_parts(tg, jg)
     if complexity_parts:
         blocks.append(format_lib_parts_html(complexity_parts))
     if extra_notes:
-        blocks.append(bold_complexities_html(extra_notes))
+        blocks.append(format_notes_text_html(extra_notes))
+    if show_exclusive_badge(tg, jg, exclusive):
+        blocks.append(format_exclusive_html(exclusive))
     return "<br>".join(blocks) if blocks else "—"
 
 
-API_WRAP_MAX_LEN = 38
+API_WRAP_MAX_LEN = 52
 
 
 def wrap_api_line(line, max_len):
@@ -180,30 +274,27 @@ def wrap_api_line(line, max_len):
 
 
 def wrap_api(api, max_len=API_WRAP_MAX_LEN):
-    """Break API strings at :: and before chained calls; keep identifiers intact."""
+    """Break long API strings at chained calls or semicolon-separated items."""
     if len(api) <= max_len:
         return api
 
-    if "::" in api:
-        parts = api.split("::")
-        merged = []
-        current = parts[0]
-        for segment in parts[1:]:
-            candidate = current + "::" + segment
-            if len(candidate) <= max_len:
-                current = candidate
-            else:
-                merged.append(current)
-                current = segment
-        merged.append(current)
-        if len(merged) > 1:
-            return "<br>".join(wrap_api_line(line, max_len) for line in merged)
+    if "; " in api:
+        parts = api.split("; ")
+        if len(api) > max_len or any(len(part) > max_len for part in parts):
+            lines = [parts[0]] + ["; " + part for part in parts[1:]]
+            return "<br>".join(wrap_api_line(line, max_len) for line in lines)
 
     return wrap_api_line(api, max_len)
 
 
 def wrap_api_html(api):
     return wrap_api(html.escape(api))
+
+
+def normalize_tgen_api(api):
+    if not api:
+        return api
+    return api.replace("tgen::", "")
 
 
 def format_api_md(api):
@@ -214,21 +305,27 @@ def format_api_html(api):
     return f"<code>{wrap_api_html(api)}</code>"
 
 
-def format_lib_api_cell_md(lib_info):
+def format_lib_api_cell_md(lib_info, lib=None):
     if not lib_info.get("has"):
         return "**No**"
     cell = "Yes"
     if lib_info.get("api"):
-        cell += f"<br>{format_api_md(lib_info['api'])}"
+        api = lib_info["api"]
+        if lib == "tgen":
+            api = normalize_tgen_api(api)
+        cell += f"<br>{format_api_md(api)}"
     return cell
 
 
-def format_lib_api_cell_html(lib_info):
+def format_lib_api_cell_html(lib_info, lib=None):
     if not lib_info.get("has"):
         return "<strong>No</strong>"
     cell = "Yes"
     if lib_info.get("api"):
-        cell += f"<br>{format_api_html(lib_info['api'])}"
+        api = lib_info["api"]
+        if lib == "tgen":
+            api = normalize_tgen_api(api)
+        cell += f"<br>{format_api_html(api)}"
     return cell
 
 
@@ -265,7 +362,7 @@ def sample_svg_exists(op_id, lib):
 
 
 def format_sample_cell_md(op_id, lib_info, lib):
-    cell = format_lib_api_cell_md(lib_info)
+    cell = format_lib_api_cell_md(lib_info, lib=lib)
     if sample_svg_exists(op_id, lib):
         path = sample_svg_path(op_id, lib)
         cell += f'<br><img src="{path}" alt="{lib} sample">'
@@ -273,7 +370,7 @@ def format_sample_cell_md(op_id, lib_info, lib):
 
 
 def format_sample_cell_html(op_id, lib_info, lib):
-    cell = format_lib_api_cell_html(lib_info)
+    cell = format_lib_api_cell_html(lib_info, lib=lib)
     if sample_svg_exists(op_id, lib):
         path = sample_svg_path(op_id, lib)
         cell += (
@@ -283,12 +380,35 @@ def format_sample_cell_html(op_id, lib_info, lib):
     return cell
 
 
+def api_cell_td_class(lib_info):
+    if not lib_info.get("has"):
+        return "col-api cell-unavailable"
+    return "col-api"
+
+
 def sample_cell_td_class(op_id, lib_info, lib):
     if sample_svg_exists(op_id, lib):
         return "col-api sample-has-visual"
     if not lib_info.get("has"):
-        return "col-api sample-unavailable"
+        return "col-api cell-unavailable"
     return "col-api"
+
+
+def comparison_table_header_row():
+    return (
+        "<tr><th>Operation</th>"
+        '<th class="col-api"><strong class="lib-label lib-jngen">jngen</strong></th>'
+        '<th class="col-api"><strong class="lib-label lib-tgen">tgen</strong></th>'
+        "<th>Uniformity</th><th>Complexity / notes</th><th>Benchmark</th></tr>"
+    )
+
+
+def sample_table_header_row():
+    return (
+        '<tr><th class="col-op sample-op">Operation</th>'
+        '<th class="col-api"><strong class="lib-label lib-jngen">jngen</strong></th>'
+        '<th class="col-api"><strong class="lib-label lib-tgen">tgen</strong></th></tr>'
+    )
 
 
 def geometry_sample_operations(operations):
@@ -336,19 +456,17 @@ def render_geometry_samples_html(operations):
         '<col class="col-api">'
         '<col class="col-api">'
         "</colgroup>",
-        '<tr><th class="col-op sample-op">Operation</th>'
-        '<th class="col-api">jngen</th>'
-        '<th class="col-api">tgen</th></tr>',
+        sample_table_header_row(),
     ]
     for op in ops:
         oid = op["id"]
         parts.append(
             "<tr>"
-            f'<td class="col-op sample-op">{html.escape(op["name"])}</td>'
-            f'<td class="{sample_cell_td_class(oid, op.get("jngen", {}), "jngen")}">'
-            f'{format_sample_cell_html(oid, op.get("jngen", {}), "jngen")}</td>'
-            f'<td class="{sample_cell_td_class(oid, op.get("tgen", {}), "tgen")}">'
-            f'{format_sample_cell_html(oid, op.get("tgen", {}), "tgen")}</td>'
+                f"<td class=\"col-op sample-op\">{html.escape(op['name'])}</td>"
+                f'<td class="{sample_cell_td_class(oid, op.get("jngen", {}), "jngen")}">'
+                f'{format_sample_cell_html(oid, op.get("jngen", {}), "jngen")}</td>'
+                f'<td class="{sample_cell_td_class(oid, op.get("tgen", {}), "tgen")}">'
+                f'{format_sample_cell_html(oid, op.get("tgen", {}), "tgen")}</td>'
             "</tr>"
         )
     parts.append("</table></div>")
@@ -388,11 +506,11 @@ def render_comparison_md(meta, operations, categories, bench_index):
         for op in by_cat[cat_id]:
             tg = op.get("tgen", {})
             jg = op.get("jngen", {})
-            jngen_cell = format_lib_api_cell_md(jg)
-            tgen_cell = format_lib_api_cell_md(tg)
+            jngen_cell = format_lib_api_cell_md(jg, lib="jngen")
+            tgen_cell = format_lib_api_cell_md(tg, lib="tgen")
 
-            uni = format_uniformity_md(tg, jg)
-            notes = format_notes_md(tg, jg, op.get("notes", ""))
+            uni = format_uniformity_md(tg, jg, cat_id, op["id"])
+            notes = format_notes_md(tg, jg, op.get("notes", ""), op.get("exclusive"))
             bench = format_benchmark_cell_md(op, bench_index)
 
             lines.append(
@@ -407,15 +525,91 @@ def render_comparison_md(meta, operations, categories, bench_index):
 
 
 def fmt_ms(ms):
-    if ms >= 1000:
-        return f"{ms/1000:.2f}s"
-    return f"{ms:.0f}ms"
+    return f"{round(ms)} ms"
 
 
 def build_benchmark_index(bench):
     if not bench:
         return {}
     return {row["id"]: row for row in bench.get("results", []) if row.get("id")}
+
+
+def lib_median_ms_raw(lib_result):
+    if lib_result.get("status") == "ok" and lib_result.get("median_ms") is not None:
+        return float(lib_result["median_ms"])
+    return None
+
+
+def render_bench_bar_row(label, label_class, ms, max_ms, show_time=True):
+    if ms is None or max_ms is None or max_ms <= 0:
+        return ""
+    pct = min(100.0, 100.0 * ms / max_ms)
+    time_html = (
+        f'<span class="bench-bar-time">{html.escape(fmt_ms(ms))}</span>'
+        if show_time
+        else ""
+    )
+    return (
+        f'<div class="bench-bar-row">'
+        f'<span class="bench-bar-label {label_class}">{html.escape(label)}</span>'
+        f'<div class="bench-bar-body">'
+        f'<div class="bench-bar-track">'
+        f'<div class="bench-bar-fill {label_class}" style="width:{pct:.1f}%"></div>'
+        f"</div>"
+        f"{time_html}"
+        f"</div>"
+        f"</div>"
+    )
+
+
+def render_bench_bars_html(jg_ms, tg_ms, show_times=True):
+    if jg_ms is None or tg_ms is None:
+        return "—"
+    max_ms = max(jg_ms, tg_ms)
+    parts = ['<div class="bench-bars">']
+    parts.append(render_bench_bar_row("jngen", "lib-jngen", jg_ms, max_ms, show_times))
+    parts.append(render_bench_bar_row("tgen", "lib-tgen", tg_ms, max_ms, show_times))
+    parts.append("</div>")
+    return "".join(parts)
+
+
+def bench_ratio(row):
+    jg_ms = lib_median_ms_raw(row.get("jngen", {}))
+    tg_ms = lib_median_ms_raw(row.get("tgen", {}))
+    if jg_ms is None or tg_ms is None or jg_ms <= 0:
+        return None
+    return tg_ms / jg_ms
+
+
+def format_ratio_md(row):
+    ratio = bench_ratio(row)
+    if ratio is None:
+        return "—"
+    return f"{ratio:.2f}x"
+
+
+def format_ratio_html(row):
+    ratio = bench_ratio(row)
+    if ratio is None:
+        return "—"
+    text = f"{ratio:.2f}x"
+    if ratio > 1:
+        css = "bench-ratio bench-ratio-jngen"
+    elif ratio < 1:
+        css = "bench-ratio bench-ratio-tgen"
+    else:
+        css = "bench-ratio"
+    return f'<strong class="{css}">{html.escape(text)}</strong>'
+
+
+def benchmark_is_comparable(row):
+    if not row.get("compare_both"):
+        return False
+    params = row.get("params", "")
+    # Different n per library (e.g. jngen convex polygon capped at n=1e3).
+    if "(tgen)" in params and "(jngen)" in params:
+        return False
+    return True
 
 
 def lib_timing_ms(lib_result):
@@ -437,11 +631,12 @@ def format_benchmark_cell_md(op, bench_index):
     if row.get("compare_both"):
         lines.append(f"**jngen:** {lib_timing_ms(row.get('jngen', {}))}")
         lines.append(f"**tgen:** {lib_timing_ms(row.get('tgen', {}))}")
-        if row.get("ratio"):
-            lines.append(f"**{row['ratio']:.2f}x**")
+        if benchmark_is_comparable(row) and bench_ratio(row) is not None:
+            lines.append(format_ratio_md(row))
+        elif not benchmark_is_comparable(row):
+            lines.append("*different n — not comparable*")
     else:
         lines.append(f"**tgen:** {lib_timing_ms(row.get('tgen', {}))}")
-        lines.append("*tgen only*")
 
     params = row.get("params", "")
     if params:
@@ -461,6 +656,8 @@ def format_benchmark_cell_html(op, bench_index):
 
     lines = []
     if row.get("compare_both"):
+        jg_ms = lib_median_ms_raw(row.get("jngen", {}))
+        tg_ms = lib_median_ms_raw(row.get("tgen", {}))
         lines.append(
             '<strong class="lib-label lib-jngen">jngen:</strong> '
             + html.escape(lib_timing_ms(row.get("jngen", {})))
@@ -469,16 +666,20 @@ def format_benchmark_cell_html(op, bench_index):
             '<strong class="lib-label lib-tgen">tgen:</strong> '
             + html.escape(lib_timing_ms(row.get("tgen", {})))
         )
-        if row.get("ratio"):
+        bars = render_bench_bars_html(jg_ms, tg_ms, show_times=False)
+        if benchmark_is_comparable(row) and bars != "—":
+            lines.append(bars)
+        if benchmark_is_comparable(row) and bench_ratio(row) is not None:
+            lines.append(format_ratio_html(row))
+        elif not benchmark_is_comparable(row):
             lines.append(
-                f'<strong class="bench-ratio">{row["ratio"]:.2f}x</strong>'
+                '<em class="bench-params">different n — not comparable</em>'
             )
     else:
         lines.append(
             '<strong class="lib-label lib-tgen">tgen:</strong> '
             + html.escape(lib_timing_ms(row.get("tgen", {})))
         )
-        lines.append('<em>tgen only</em>')
 
     params = row.get("params", "")
     if params:
@@ -505,13 +706,15 @@ def render_benchmarks_md(bench):
         f"- **Flags:** {bench.get('flags', '—')}",
         f"- **Host:** {bench.get('hostname', '—')}",
         "",
-        "## Head-to-head (shared operations)",
+        "## Timing comparison",
         "",
-        "| Operation | Parameters | jngen (median) | tgen (median) | Ratio (jngen/tgen) |",
-        "|-----------|------------|----------------|---------------|---------------------|",
+        "| Operation | Parameters | Comparison | Ratio (tgen/jngen) |",
+        "|-----------|------------|------------|---------------------|",
     ])
 
-    shared = [r for r in bench.get("results", []) if r.get("compare_both")]
+    shared = [
+        r for r in bench.get("results", []) if benchmark_is_comparable(r)
+    ]
     for row in shared:
         name = row.get("name", "") + row.get("name_suffix", "")
         params = row.get("params", "")
@@ -519,28 +722,10 @@ def render_benchmarks_md(bench):
         jg = row.get("jngen", {})
         tg_ms = fmt_ms(float(tg["median_ms"])) if tg.get("status") == "ok" else tg.get("status", "—")
         jg_ms = fmt_ms(float(jg["median_ms"])) if jg.get("status") == "ok" else jg.get("status", "—")
-        ratio = f"{row['ratio']:.2f}x" if row.get("ratio") else "—"
+        ratio = format_ratio_md(row)
         lines.append(
             f"| {format_benchmark_name_md(name)} | {format_params_md(params)} | "
-            f"{jg_ms} | {tg_ms} | {ratio} |"
-        )
-
-    lines.extend([
-        "",
-        "## tgen-only timings",
-        "",
-        "| Operation | Parameters | tgen (median) |",
-        "|-----------|------------|---------------|",
-    ])
-
-    tgen_only = [r for r in bench.get("results", []) if not r.get("compare_both")]
-    for row in tgen_only:
-        name = row.get("name", "") + row.get("name_suffix", "")
-        params = row.get("params", "")
-        tg = row.get("tgen", {})
-        tg_ms = fmt_ms(float(tg["median_ms"])) if tg.get("status") == "ok" else tg.get("status", "—")
-        lines.append(
-            f"| {format_benchmark_name_md(name)} | {format_params_md(params)} | {tg_ms} |"
+            f"{jg_ms} / {tg_ms} | {ratio} |"
         )
 
     lines.append("")
@@ -575,28 +760,25 @@ def render_comparison_html(operations, categories, bench_index):
             '<col class="col-bench">'
             "</colgroup>"
         )
-        parts.append(
-            "<tr><th>Operation</th><th class=\"col-api\">jngen</th><th class=\"col-api\">tgen</th>"
-            "<th>Uniformity</th><th>Complexity / notes</th><th>Benchmark</th></tr>"
-        )
+        parts.append(comparison_table_header_row())
         for op in by_cat[cat_id]:
             tg = op.get("tgen", {})
             jg = op.get("jngen", {})
-            jngen_cell = format_lib_api_cell_html(jg)
-            tgen_cell = format_lib_api_cell_html(tg)
+            jngen_cell = format_lib_api_cell_html(jg, lib="jngen")
+            tgen_cell = format_lib_api_cell_html(tg, lib="tgen")
 
-            uni = format_uniformity_html(tg, jg)
-            notes = format_notes_html(tg, jg, op.get("notes", ""))
+            uni = format_uniformity_html(tg, jg, cat_id, op["id"])
+            notes = format_notes_html(tg, jg, op.get("notes", ""), op.get("exclusive"))
             bench = format_benchmark_cell_html(op, bench_index)
 
             parts.append(
                 "<tr>"
                 f"<td>{html.escape(op['name'])}</td>"
-                f"<td class=\"col-api\">{jngen_cell}</td>"
-                f"<td class=\"col-api\">{tgen_cell}</td>"
-                f"<td>{uni}</td>"
-                f"<td>{notes}</td>"
-                f"<td>{bench}</td>"
+                f'<td class="{api_cell_td_class(jg)}">{jngen_cell}</td>'
+                f'<td class="{api_cell_td_class(tg)}">{tgen_cell}</td>'
+                f'<td class="{"col-uni cell-unavailable" if uni == "—" else "col-uni"}">{uni}</td>'
+                f'<td class="col-notes">{notes}</td>'
+                f'<td class="{"col-bench cell-unavailable" if bench == "—" else "col-bench"}">{bench}</td>'
                 "</tr>"
             )
         parts.append("</table></div>")
@@ -624,47 +806,32 @@ def render_benchmarks_html(bench):
         f"<li><strong>Flags:</strong> {html.escape(bench.get('flags', '—'))}</li>",
         f"<li><strong>Host:</strong> {html.escape(bench.get('hostname', '—'))}</li>",
         "</ul>",
-        "<h2>Head-to-head (shared operations)</h2>",
-        '<div class="table-scroll"><table>',
-        "<tr><th>Operation</th><th>Parameters</th><th>jngen (median)</th>"
-        "<th>tgen (median)</th><th>Ratio (jngen/tgen)</th></tr>",
+        "<h2>Timing comparison</h2>",
+        '<p class="bench-table-legend">'
+        "Bar length is relative to the slower library per operation "
+        "(<span class=\"lib-label lib-jngen\">jngen</span> vs "
+        "<span class=\"lib-label lib-tgen\">tgen</span>). "
+        "Ratio is colored by the faster library.</p>",
+        '<div class="table-scroll"><table class="bench-table">',
+        "<tr><th>Operation</th><th>Parameters</th><th>Comparison</th>"
+        "<th>Ratio (tgen/jngen)</th></tr>",
     ])
 
-    for row in [r for r in bench.get("results", []) if r.get("compare_both")]:
+    shared = [
+        r for r in bench.get("results", []) if benchmark_is_comparable(r)
+    ]
+    for row in shared:
         name = row.get("name", "") + row.get("name_suffix", "")
         params = row.get("params", "")
-        tg = row.get("tgen", {})
-        jg = row.get("jngen", {})
-        tg_ms = fmt_ms(float(tg["median_ms"])) if tg.get("status") == "ok" else tg.get("status", "—")
-        jg_ms = fmt_ms(float(jg["median_ms"])) if jg.get("status") == "ok" else jg.get("status", "—")
-        ratio = f"{row['ratio']:.2f}x" if row.get("ratio") else "—"
+        jg_ms = lib_median_ms_raw(row.get("jngen", {}))
+        tg_ms = lib_median_ms_raw(row.get("tgen", {}))
+        bars = render_bench_bars_html(jg_ms, tg_ms, show_times=True)
         parts.append(
             "<tr>"
             f"<td>{format_benchmark_name_html(name)}</td>"
             f"<td>{format_params_html(params)}</td>"
-            f"<td>{html.escape(str(jg_ms))}</td>"
-            f"<td>{html.escape(str(tg_ms))}</td>"
-            f"<td>{html.escape(ratio)}</td>"
-            "</tr>"
-        )
-
-    parts.extend([
-        "</table></div>",
-        "<h2>tgen-only timings</h2>",
-        '<div class="table-scroll"><table>',
-        "<tr><th>Operation</th><th>Parameters</th><th>tgen (median)</th></tr>",
-    ])
-
-    for row in [r for r in bench.get("results", []) if not r.get("compare_both")]:
-        name = row.get("name", "") + row.get("name_suffix", "")
-        params = row.get("params", "")
-        tg = row.get("tgen", {})
-        tg_ms = fmt_ms(float(tg["median_ms"])) if tg.get("status") == "ok" else tg.get("status", "—")
-        parts.append(
-            "<tr>"
-            f"<td>{format_benchmark_name_html(name)}</td>"
-            f"<td>{format_params_html(params)}</td>"
-            f"<td>{html.escape(str(tg_ms))}</td>"
+            f"<td>{bars}</td>"
+            f"<td>{format_ratio_html(row)}</td>"
             "</tr>"
         )
 
@@ -764,11 +931,69 @@ def render_html(comparison_body, benchmarks_body):
     }}
     strong {{ color: #ff7b72; }}
     .lib-label {{ font-weight: 700; }}
-    .lib-tgen {{ color: #58a6ff; }}
-    .lib-jngen {{ color: #3fb950; }}
+    strong.lib-label.lib-jngen {{ color: #3fb950; }}
+    strong.lib-label.lib-tgen {{ color: #58a6ff; }}
     strong.complexity {{ font-weight: 700; color: #f0c674; }}
-    strong.bench-ratio {{ color: #d2a8ff; }}
+    strong.bench-ratio {{ font-weight: 700; }}
+    strong.bench-ratio-jngen {{ color: #3fb950; }}
+    strong.bench-ratio-tgen {{ color: #58a6ff; }}
     .bench-params {{ font-size: 0.85rem; color: var(--muted); }}
+    .bench-table-legend {{ color: var(--muted); font-size: 0.9rem; margin-bottom: 0.75rem; }}
+    .bench-bars {{
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      width: 100%;
+      min-width: 0;
+    }}
+    .bench-bar-row {{
+      display: grid;
+      grid-template-columns: 3.25rem minmax(0, 1fr);
+      gap: 0.35rem 0.45rem;
+      align-items: start;
+    }}
+    .bench-bar-body {{
+      display: flex;
+      flex-direction: column;
+      gap: 0.12rem;
+      min-width: 0;
+    }}
+    .bench-bar-label {{
+      font-size: 0.74rem;
+      font-weight: 700;
+      line-height: 1.2;
+      padding-top: 0.1rem;
+    }}
+    .bench-bar-label.lib-jngen {{ color: #3fb950; }}
+    .bench-bar-label.lib-tgen {{ color: #58a6ff; }}
+    .bench-bar-track {{
+      height: 0.85rem;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 3px;
+      overflow: hidden;
+    }}
+    .bench-bar-fill {{
+      height: 100%;
+      border-radius: 3px;
+      min-width: 2px;
+      transition: width 0.15s ease;
+    }}
+    .bench-bar-fill.lib-jngen {{ background: #3fb950; }}
+    .bench-bar-fill.lib-tgen {{ background: #58a6ff; }}
+    .bench-bar-time {{
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }}
+    td.col-bench .bench-bars {{
+      margin-top: 0.25rem;
+    }}
+    table.bench-table td:nth-child(3) {{
+      min-width: 140px;
+    }}
     em {{ color: var(--muted); }}
     ul {{ color: var(--muted); }}
     ul strong {{ color: var(--text); }}
@@ -782,12 +1007,6 @@ def render_html(comparison_body, benchmarks_body):
       text-align: left;
       margin: 0 auto;
     }}
-    table.samples-table td.sample-unavailable {{
-      color: var(--muted);
-    }}
-    table.samples-table td.sample-unavailable strong {{
-      font-size: 1.05rem;
-    }}
     table.samples-table td.col-api img.sample-img {{
       display: block;
       width: 100%;
@@ -796,6 +1015,14 @@ def render_html(comparison_body, benchmarks_body):
       border-radius: 4px;
       background: #fff;
       border: 1px solid var(--border);
+    }}
+    td.cell-unavailable {{
+      vertical-align: middle;
+      text-align: center;
+      color: var(--muted);
+    }}
+    td.cell-unavailable strong {{
+      font-size: 1.05rem;
     }}
     nav {{
       margin-bottom: 1.5rem;
@@ -839,7 +1066,7 @@ def build_site(out_dir, site_dir):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--yaml", default="docs/operations.yaml")
-    parser.add_argument("--json", default="results/benchmark_results.json")
+    parser.add_argument("--json", default="docs/benchmark_results.json")
     parser.add_argument("--out-dir", default="docs")
     parser.add_argument(
         "--site-dir",

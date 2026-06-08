@@ -66,13 +66,16 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	};
 	out["geometry_convex_polygon"] = [] {
 		consume_polygon(
-			rndg.convexPolygon(BENCH_CONVEX_N, 0, BENCH_COORD_MAX));
+			rndg.convexPolygon(BENCH_CONVEX_N, 0, BENCH_CONVEX_COORD_MAX));
 	};
 }
 
 } // namespace
 
-void jngen_init() { rnd.seed(42); }
+void jngen_init() {
+	rnd.seed(42);
+	config.generateLargeObjects = true;
+}
 
 std::unordered_map<std::string, benchmark::CaseFn> jngen_cases() {
 	std::unordered_map<std::string, benchmark::CaseFn> out;

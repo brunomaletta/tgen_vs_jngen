@@ -53,6 +53,9 @@ struct CaseSpec {
 
 using CaseFn = std::function<void()>;
 
+constexpr double kMaxRunMs = 5000.0;
+constexpr int kTimedRuns = 3;
+
 inline double elapsed_ms(clock::time_point start) {
 	return std::chrono::duration<double, std::milli>(clock::now() - start)
 		.count();
@@ -68,11 +71,16 @@ inline double median(std::vector<double> values) {
 inline LibraryResult run_library_case(const CaseFn &fn) {
 	LibraryResult result;
 	try {
-		fn(); // warmup
-		for (int i = 0; i < 3; ++i) {
+		for (int i = 0; i < kTimedRuns; ++i) {
 			auto start = clock::now();
 			fn();
-			result.runs_ms.push_back(elapsed_ms(start));
+			const double ms = elapsed_ms(start);
+			if (ms > kMaxRunMs) {
+				result.status = "timeout";
+				result.error = "single run exceeded 5000 ms limit";
+				return result;
+			}
+			result.runs_ms.push_back(ms);
 		}
 		result.median_ms = median(result.runs_ms);
 	} catch (const std::exception &e) {
@@ -182,9 +190,8 @@ inline void write_json(const Report &report, const std::string &path) {
 		write_library_json(out, r.jngen);
 		out << "\n      }";
 		if (r.compare_both && r.tgen.status == "ok" && r.jngen.status == "ok" &&
-			r.tgen.median_ms > 0)
-			out << ",\n      \"ratio\": "
-				<< (r.jngen.median_ms / r.tgen.median_ms);
+			r.jngen.median_ms > 0)
+			out << ",\n      \"ratio\": " << r.ratio;
 		out << "\n    }";
 		if (i + 1 < report.results.size())
 			out << ",";

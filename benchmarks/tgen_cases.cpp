@@ -70,21 +70,21 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	};
 	out["geometry_convex_polygon"] = [] {
 		consume_polygon(tgen::geometry::random_convex_polygon(
-			BENCH_CONVEX_N, 0, BENCH_COORD_MAX));
+			BENCH_CONVEX_N, 0, BENCH_CONVEX_COORD_MAX));
 	};
 	out["geometry_points_general_position"] = [] {
 		consume_polygon(tgen::geometry::random_points_general_position(
-			BENCH_N, 0, BENCH_COORD_MAX));
+			BENCH_GEOM_N, 0, BENCH_COORD_MAX));
 	};
 	out["geometry_random_simple_polygon"] = [] {
 		consume_polygon(tgen::geometry::random_simple_polygon(
-			BENCH_N, 0, BENCH_COORD_MAX));
+			BENCH_GEOM_N, 0, BENCH_COORD_MAX));
 	};
 	out["geometry_simple_polygon_through_points"] = [] {
 		if (polygon_through_points.empty())
 			polygon_through_points =
 				tgen::geometry::random_points_general_position(
-					BENCH_N, 0, BENCH_COORD_MAX);
+					BENCH_GEOM_N, 0, BENCH_COORD_MAX);
 		consume_polygon(tgen::geometry::random_simple_polygon_through_points(
 			polygon_through_points));
 	};
@@ -96,7 +96,7 @@ void tgen_init() { tgen::register_gen(42); }
 
 void tgen_prepare_through_points() {
 	polygon_through_points = tgen::geometry::random_points_general_position(
-		BENCH_N, 0, BENCH_COORD_MAX);
+		BENCH_GEOM_N, 0, BENCH_COORD_MAX);
 }
 
 std::unordered_map<std::string, benchmark::CaseFn> tgen_cases() {

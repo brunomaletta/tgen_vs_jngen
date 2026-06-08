@@ -14,13 +14,13 @@ namespace {
 
 void usage(const char *prog) {
 	std::cerr << "Usage: " << prog << " [--json PATH]\n"
-			  << "  Default: results/benchmark_results.json\n";
+			  << "  Default: docs/benchmark_results.json\n";
 }
 
 } // namespace
 
 int main(int argc, char **argv) {
-	std::string json_path = "results/benchmark_results.json";
+	std::string json_path = "docs/benchmark_results.json";
 
 	for (int i = 1; i < argc; ++i) {
 		std::string arg = argv[i];
@@ -91,8 +91,8 @@ int main(int argc, char **argv) {
 		}
 
 		if (row.compare_both && row.tgen.status == "ok" &&
-			row.jngen.status == "ok" && row.tgen.median_ms > 0)
-			row.ratio = row.jngen.median_ms / row.tgen.median_ms;
+			row.jngen.status == "ok" && row.jngen.median_ms > 0)
+			row.ratio = row.tgen.median_ms / row.jngen.median_ms;
 
 		report.results.push_back(std::move(row));
 	}

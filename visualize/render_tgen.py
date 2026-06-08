@@ -9,6 +9,9 @@ import sys
 CANVAS_SIZE = 2000
 MARGIN = 80
 PADDING_RATIO = 0.08
+NORMALIZE_PADDING_RATIO = 0.06  # keep in sync with normalize_gallery.py
+# jngen Drawer default point radius (width=1 -> r=8*1.5=12 in SVG units)
+JNGEN_POINT_R = 12
 
 
 def svg_header(title):
@@ -81,16 +84,35 @@ def render_polygon_svg(points, title="", stroke="#2563eb", fill="#93c5fd55"):
     )
 
 
+def content_viewbox_side(points, extra_pad=0.0):
+    """Square viewBox side after normalize_gallery cropping."""
+    x0, y0, x1, y1 = bbox_of_points(points, extra_pad=extra_pad)
+    width = x1 - x0
+    height = y1 - y0
+    pad_x = width * NORMALIZE_PADDING_RATIO
+    pad_y = height * NORMALIZE_PADDING_RATIO
+    return max(width + 2 * pad_x, height + 2 * pad_y)
+
+
 def render_scatter_svg(points, title="", stroke="#2563eb", fill="#2563eb"):
     if not points:
         return ""
-    radius = max(5, CANVAS_SIZE // 160)
-    stroke_width = max(1, CANVAS_SIZE // 1000)
-    x0, y0, x1, y1 = bbox_of_points(points, extra_pad=radius * 2)
+    x0, y0, x1, y1 = bbox_of_points(points)
     tx, ty = fit_transform(x0, y0, x1, y1)
+    canvas_pts = [(tx(x), ty(y)) for x, y in points]
+    side = content_viewbox_side(canvas_pts)
+    radius = max(3, JNGEN_POINT_R * side / CANVAS_SIZE)
+
+    data_w = x1 - x0
+    data_h = y1 - y0
+    avail = CANVAS_SIZE - 2 * MARGIN
+    scale = min(avail / data_w, avail / data_h)
+    x0, y0, x1, y1 = bbox_of_points(points, extra_pad=(radius * 2) / scale)
+    tx, ty = fit_transform(x0, y0, x1, y1)
+
     dots = "\n".join(
-        f'  <circle cx="{tx(x):.1f}" cy="{ty(y):.1f}" r="{radius}" '
-        f'fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
+        f'  <circle cx="{tx(x):.1f}" cy="{ty(y):.1f}" r="{radius:.2f}" '
+        f'fill="{fill}"/>'
         for x, y in points
     )
 

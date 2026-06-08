@@ -1,0 +1,236 @@
+{
+  "generated_at": "2026-06-08T00:54:45Z",
+  "compiler": "15.2.0",
+  "flags": "-std=c++17 -O2",
+  "hostname": "bruno-inspiron14",
+  "results": [
+    {
+      "id": "graph_connected_m_eq_n",
+      "name": "graph::get_connected",
+      "name_suffix": " (m=n)",
+      "params": "n=1e6, m=1e6",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 1061,
+      "runs_ms": [1061, 1067, 1053]
+      },
+      "jngen": {
+      "status": "ok",
+      "median_ms": 1114,
+      "runs_ms": [1121, 1114, 1093]
+      },
+      "ratio": 0.952498
+    },
+    {
+      "id": "graph_connected_m_eq_2n",
+      "name": "graph::get_connected",
+      "name_suffix": " (m=2n)",
+      "params": "n=1e6, m=2e6",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 2051,
+      "runs_ms": [2051, 2028, 2563]
+      },
+      "jngen": {
+      "status": "ok",
+      "median_ms": 2054,
+      "runs_ms": [2054, 2057, 1840]
+      },
+      "ratio": 0.998535
+    },
+    {
+      "id": "graph_gen",
+      "name": "graph::gen",
+      "name_suffix": "",
+      "params": "n=1e6, m=1e6",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 833,
+      "runs_ms": [819, 833, 892]
+      },
+      "jngen": {
+      "status": "ok",
+      "median_ms": 624,
+      "runs_ms": [609, 634, 624]
+      },
+      "ratio": 1.33642
+    },
+    {
+      "id": "graph_gen_skewed_m_eq_n",
+      "name": "graph::gen_skewed",
+      "name_suffix": " (m=n)",
+      "params": "n=1e6, m=1e6, elongation=1e2, spread=2",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 219,
+      "runs_ms": [200, 219, 220]
+      },
+      "jngen": {
+      "status": "ok",
+      "median_ms": 827,
+      "runs_ms": [827, 810, 831]
+      },
+      "ratio": 0.265173
+    },
+    {
+      "id": "graph_gen_skewed_m_eq_2n",
+      "name": "graph::gen_skewed",
+      "name_suffix": " (m=2n)",
+      "params": "n=1e6, m=2e6, elongation=1e2, spread=6",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 729,
+      "runs_ms": [729, 791, 725]
+      },
+      "jngen": {
+      "status": "ok",
+      "median_ms": 1354,
+      "runs_ms": [1444, 1354, 1336]
+      },
+      "ratio": 0.538547
+    },
+    {
+      "id": "graph_gen_skewed_distinct_worst",
+      "name": "graph::gen_skewed",
+      "name_suffix": " (distinct worst)",
+      "params": "n=1e6, m=2n-3, elongation=1e2, spread=2",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 462,
+      "runs_ms": [453, 462, 467]
+      },
+      "jngen": {
+      "status": "ok",
+      "median_ms": 1526,
+      "runs_ms": [1527, 1526, 1493]
+      },
+      "ratio": 0.302545
+    },
+    {
+      "id": "tree_gen",
+      "name": "tree::gen",
+      "name_suffix": "",
+      "params": "n=1e6",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 573,
+      "runs_ms": [562, 573, 591]
+      },
+      "jngen": {
+      "status": "ok",
+      "median_ms": 695,
+      "runs_ms": [713, 695, 691]
+      },
+      "ratio": 0.823964
+    },
+    {
+      "id": "tree_gen_skewed",
+      "name": "tree::gen_skewed",
+      "name_suffix": "",
+      "params": "n=1e6, elongation=1e2",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 236,
+      "runs_ms": [172, 236, 296]
+      },
+      "jngen": {
+      "status": "ok",
+      "median_ms": 342,
+      "runs_ms": [380, 342, 319]
+      },
+      "ratio": 0.691728
+    },
+    {
+      "id": "list_all_different",
+      "name": "list<int>::gen",
+      "name_suffix": " (all_different)",
+      "params": "n=1e6, value_left=1, value_right=2e6",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 1869,
+      "runs_ms": [2131, 1869, 1847]
+      },
+      "jngen": {
+      "status": "ok",
+      "median_ms": 247,
+      "runs_ms": [241, 247, 249]
+      },
+      "ratio": 7.55495
+    },
+    {
+      "id": "geometry_convex_polygon",
+      "name": "geometry::random_convex_polygon",
+      "name_suffix": "",
+      "params": "n=3.6e5, min=0, max=3e9",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 536,
+      "runs_ms": [536, 528, 537]
+      },
+      "jngen": {
+      "status": "ok",
+      "median_ms": 1039,
+      "runs_ms": [1036, 1039, 1052]
+      },
+      "ratio": 0.515833
+    },
+    {
+      "id": "geometry_points_general_position",
+      "name": "geometry::random_points_general_position",
+      "name_suffix": "",
+      "params": "n=1e6, min=0, max=3e6",
+      "compare_both": false,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 167,
+      "runs_ms": [171, 167, 157]
+      },
+      "jngen": {
+      "status": "skipped",
+      "error": "comparison not applicable"
+      }
+    },
+    {
+      "id": "geometry_random_simple_polygon",
+      "name": "geometry::random_simple_polygon",
+      "name_suffix": "",
+      "params": "n=1e6, min=0, max=3e6",
+      "compare_both": false,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 1263,
+      "runs_ms": [1243, 1263, 1440]
+      },
+      "jngen": {
+      "status": "skipped",
+      "error": "comparison not applicable"
+      }
+    },
+    {
+      "id": "geometry_simple_polygon_through_points",
+      "name": "geometry::random_simple_polygon_through_points",
+      "name_suffix": "",
+      "params": "n=1e6",
+      "compare_both": false,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 1131,
+      "runs_ms": [1334, 1131, 1098]
+      },
+      "jngen": {
+      "status": "skipped",
+      "error": "comparison not applicable"
+      }
+    }
+  ]
+}
