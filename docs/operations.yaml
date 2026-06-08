@@ -1,0 +1,330 @@
+# Source of truth for the feature comparison table.
+# Regenerate docs with: python3 docs/render_docs.py
+
+categories:
+  graphs: Graphs
+  trees: Trees
+  lists: Lists and sequences
+  geometry: Geometry
+  strings: Strings and hashing
+  adversarial: Adversarial / hack generators
+  other: Other
+
+operations:
+  - id: graph_connected
+    name: Connected random graph
+    category: graphs
+    tgen:
+      has: true
+      api: "tgen::graph(n, m).get_connected()"
+      uniform: non-uniform
+      complexity: "O(n + m log n); spanning forest + uniform edge completion"
+    jngen:
+      has: true
+      api: "Graph::random(n, m).connected()"
+      uniform: non-uniform
+      complexity: "Tree::random(n) + rejection edge add"
+    notes: "Both produce connected graphs but not uniformly over all connected labeled graphs."
+    benchmark: true
+    benchmark_id: graph_connected_m_eq_n
+
+  - id: graph_gen
+    name: Random graph with fixed n, m
+    category: graphs
+    tgen:
+      has: true
+      api: "tgen::graph(n, m).gen()"
+      uniform: uniform
+      complexity: "O(n + m log n); rejection with constraint machinery"
+    jngen:
+      has: true
+      api: "Graph::random(n, m)"
+      uniform: undocumented
+      complexity: "Rejection on random vertex pairs; no documented bound"
+    notes: "tgen documents uniform sampling among valid graphs; jngen uses undocumented rejection."
+    benchmark: true
+    benchmark_id: graph_gen
+
+  - id: graph_gen_skewed
+    name: Skewed / stretched connected graph
+    category: graphs
+    tgen:
+      has: true
+      api: "tgen::graph::gen_skewed(n, m, elongation, spread)"
+      uniform: non-uniform
+      complexity: "O(n + m log n); wnext backbone + ancestor-biased edges"
+    jngen:
+      has: true
+      api: "Graph::randomStretched(n, m, elongation, spread)"
+      uniform: non-uniform
+      complexity: "Tree::randomPrim + parent-hop biased edges; may throw after 1000 failures"
+    notes: "Both intentionally biased toward high diameter. Parent-hop semantics differ slightly (k in [2, spread] vs up to spread hops)."
+    benchmark: true
+    benchmark_id: graph_gen_skewed_m_eq_n
+
+  - id: graph_modifiers
+    name: Graph modifiers (directed, multi, acyclic, loops)
+    category: graphs
+    tgen:
+      has: true
+      api: "tgen::graph(...).directed().multi().acyclic()..."
+      uniform: varies
+      complexity: "Declarative constraint composition"
+    jngen:
+      has: true
+      api: "Graph::random(...).directed().allowMulti().acyclic()..."
+      uniform: undocumented
+      complexity: "Chaining modifiers on BuilderProxy"
+    notes: "Both support modifier chains; tgen uses declarative generators with documented uniformity where promised."
+    benchmark: false
+
+  - id: tree_gen
+    name: Random labeled tree
+    category: trees
+    tgen:
+      has: true
+      api: "tgen::tree(n).gen()"
+      uniform: uniform
+      complexity: "O(n); Prüfer sequence"
+    jngen:
+      has: true
+      api: "Tree::random(n)"
+      uniform: uniform
+      complexity: "O(n); Prüfer sequence"
+    notes: "Both uniform over labeled trees. jngen returns sorted edges rooted at 0 by default."
+    benchmark: true
+    benchmark_id: tree_gen
+
+  - id: tree_gen_skewed
+    name: Skewed tree (wnext / Prim-like)
+    category: trees
+    tgen:
+      has: true
+      api: "tgen::tree::gen_skewed(n, elongation)"
+      uniform: non-uniform
+      complexity: "O(n); parent(i) = wnext(i, elongation)"
+    jngen:
+      has: true
+      api: "Tree::randomPrim(n, elongation)"
+      uniform: non-uniform
+      complexity: "O(n); same wnext process"
+    notes: "Equivalent algorithms. Large positive elongation → path; large negative → star."
+    benchmark: true
+    benchmark_id: tree_gen_skewed
+
+  - id: tree_kruskal
+    name: Random tree (Kruskal-like)
+    category: trees
+    tgen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    jngen:
+      has: true
+      api: "Tree::randomKruskal(n)"
+      uniform: non-uniform
+      complexity: "Rejection on random edges"
+    notes: "jngen-only generator."
+    benchmark: false
+
+  - id: list_all_different
+    name: Distinct values in range
+    category: lists
+    tgen:
+      has: true
+      api: "tgen::list<int>(k, lo, hi).all_different().gen()"
+      uniform: uniform
+      complexity: "O(k log k); Fisher–Yates + forbidden-value map"
+    jngen:
+      has: true
+      api: "Array::randomUnique(k, lo, hi)"
+      uniform: uniform
+      complexity: "O(k log k) rejection"
+    notes: "Both produce uniform distinct samples. tgen supports richer declarative constraints (.different(), sorted, etc.)."
+    benchmark: true
+    benchmark_id: list_all_different
+
+  - id: list_constraints
+    name: Declarative list constraints (sorted, palindrome, cycles)
+    category: lists
+    tgen:
+      has: true
+      api: "tgen::list/str/permutation/pair builders with .sorted(), .palindrome(), .cycles()..."
+      uniform: varies
+      complexity: "Constraint-based uniform sampling where documented"
+    jngen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    notes: "tgen-only declarative generator framework."
+    benchmark: false
+
+  - id: geometry_convex_polygon
+    name: Random convex polygon
+    category: geometry
+    tgen:
+      has: true
+      api: "tgen::geometry::random_convex_polygon(n, min, max)"
+      uniform: non-uniform
+      complexity: "O(n log n); Valtr construction filling bounding box"
+    jngen:
+      has: true
+      api: "rndg.convexPolygon(n, min, max)"
+      uniform: non-uniform
+      complexity: "Convex hull of 10n ellipse points, subsample n"
+    notes: "Different shape distributions. jngen may throw if hull has fewer than n vertices; practical only at moderate n (benchmark uses n=1000)."
+    benchmark: true
+    benchmark_id: geometry_convex_polygon
+    visualize: true
+
+  - id: geometry_points_general_position
+    name: Points in general position (no three collinear)
+    category: geometry
+    tgen:
+      has: true
+      api: "tgen::geometry::random_points_general_position(n, min, max)"
+      uniform: non-uniform
+      complexity: "O(n); algebraic construction over F_p"
+    jngen:
+      has: true
+      api: "rndg.pointsInGeneralPosition(n, min, max)"
+      uniform: undocumented
+      complexity: "O(n² log n); rejection until no collinearity"
+    notes: "Not benchmarked head-to-head: jngen is asymptotically slower. tgen uses a deterministic algebraic method."
+    benchmark: false
+    benchmark_id: geometry_points_general_position
+    visualize: true
+
+  - id: geometry_simple_polygon
+    name: Random simple polygon
+    category: geometry
+    tgen:
+      has: true
+      api: "tgen::geometry::random_simple_polygon(n, min, max)"
+      uniform: non-uniform
+      complexity: "O(n log n) expected; points + polygonization"
+    jngen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    notes: "tgen-only. jngen has no simple polygon generator."
+    benchmark: false
+    benchmark_id: geometry_random_simple_polygon
+    visualize: true
+
+  - id: geometry_simple_polygon_through_points
+    name: Simple polygon through given points
+    category: geometry
+    tgen:
+      has: true
+      api: "tgen::geometry::random_simple_polygon_through_points(pts)"
+      uniform: non-uniform
+      complexity: "O(n log n) expected; randomized divide-and-conquer Hamiltonian path"
+    jngen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    notes: "tgen-only."
+    benchmark: false
+    benchmark_id: geometry_simple_polygon_through_points
+    visualize: true
+
+  - id: geometry_svg_drawer
+    name: Built-in SVG visualization
+    category: geometry
+    tgen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    jngen:
+      has: true
+      api: "Drawer d; d.polygon(...); d.dumpSvg(\"out.svg\")"
+      uniform: ""
+      complexity: ""
+    notes: "jngen-only Drawer for points, segments, circles, polygons."
+    benchmark: false
+
+  - id: anti_hash_strings
+    name: Polynomial hash collision strings
+    category: strings
+    tgen:
+      has: true
+      api: "tgen::hack::polynomial_hash_hack(...)"
+      uniform: ""
+      complexity: "Birthday / Thue–Morse constructions"
+    jngen:
+      has: true
+      api: "rnds.antiHash({{mod, base}, ...}, alphabet, len)"
+      uniform: ""
+      complexity: "Brute force for small mod/base sets"
+    notes: "Both generate colliding strings for rolling hash. jngen limits to ≤2 mod/base pairs."
+    benchmark: false
+
+  - id: anti_unordered_set
+    name: std::unordered_set collision inputs
+    category: adversarial
+    tgen:
+      has: true
+      api: "tgen::hack::std_unordered(size)"
+      uniform: ""
+      complexity: "GCC multiplier-based collision keys"
+    jngen:
+      has: true
+      api: "rnda.antiUnorderedSet(n, maxLoadFactor, reserve)"
+      uniform: ""
+      complexity: "GCC 4.x only; tuned load factor/reserve"
+    notes: "Overlap in purpose; different APIs and compiler support."
+    benchmark: false
+
+  - id: flow_worst_case
+    name: Max-flow worst case (Dinitz / Edmonds-Karp)
+    category: adversarial
+    tgen:
+      has: true
+      api: "tgen::hack::dinitz_worst_case(k, l)"
+      uniform: ""
+      complexity: "Zadeh network construction"
+    jngen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    notes: "tgen-only adversarial flow network."
+    benchmark: false
+
+  - id: shortest_path_hacks
+    name: Shortest-path implementation traps (SPFA, Dijkstra)
+    category: adversarial
+    tgen:
+      has: true
+      api: "tgen::hack::spfa_hack, stale_heap_dijkstra_bug, ..."
+      uniform: ""
+      complexity: ""
+    jngen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    notes: "tgen-only."
+    benchmark: false
+
+  - id: mo_worst_case
+    name: Mo's algorithm worst-case queries
+    category: adversarial
+    tgen:
+      has: true
+      api: "tgen::hack::mo(n, q)"
+      uniform: ""
+      complexity: ""
+    jngen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    notes: "tgen-only."
+    benchmark: false

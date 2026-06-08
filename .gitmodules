@@ -1,0 +1,6 @@
+[submodule "vendor/tgen"]
+	path = vendor/tgen
+	url = https://github.com/brunomaletta/tgen.git
+[submodule "vendor/jngen"]
+	path = vendor/jngen
+	url = https://github.com/ifsmirnov/jngen.git
