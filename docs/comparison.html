@@ -141,8 +141,8 @@
     }
     strong { color: #ff7b72; }
     .lib-label { font-weight: 700; }
-    strong.lib-label.lib-jngen { color: #3fb950; }
-    strong.lib-label.lib-tgen { color: #58a6ff; }
+    .lib-label.lib-jngen { color: #3fb950; }
+    .lib-label.lib-tgen { color: #58a6ff; }
     strong.complexity { font-weight: 700; color: #f0c674; }
     strong.bench-ratio { font-weight: 700; }
     strong.bench-ratio-jngen { color: #3fb950; }
@@ -223,6 +223,8 @@
       line-height: 1;
       text-transform: uppercase;
       user-select: none;
+      position: relative;
+      top: 1px;
     }
     .bench-fail-badge-inline {
       display: inline-block;
@@ -355,7 +357,7 @@
   </nav>
   <section id="comparison">
 <h1>tgen vs jngen — Feature Comparison</h1>
-<p><em>Generated 2026-06-08 19:58 UTC</em></p>
+<p><em>Generated 2026-06-08 20:10 UTC</em></p>
 <p>Comparison of non-trivial generation operations. See <a href="#benchmarks">benchmarks</a> below.</p>
 <h2>Graphs</h2>
 <div class="table-scroll"><table class="comparison-table">
@@ -461,7 +463,7 @@
 <li><strong>Vendor commits:</strong> <strong class="lib-label lib-tgen">tgen</strong> <a href="https://github.com/brunomaletta/tgen/tree/6870854"><code>6870854</code></a>, <strong class="lib-label lib-jngen">jngen</strong> <a href="https://github.com/ifsmirnov/jngen/tree/8d1e33b"><code>8d1e33b</code></a></li>
 </ul>
 <h2>Timing comparison</h2>
-<p class="bench-table-legend">Bar length is relative to the slower library per operation (<span class="lib-label lib-jngen">jngen</span> vs <span class="lib-label lib-tgen">tgen</span>). Ratio is colored by the faster library. Cases where <span class="lib-label lib-jngen">jngen</span> cannot complete are marked <span class="bench-fail-badge bench-fail-badge-inline">FAILS</span> in red.</p>
+<p class="bench-table-legend">Bar length is relative to the slower library per operation (<strong class="lib-label lib-jngen">jngen</strong> vs <strong class="lib-label lib-tgen">tgen</strong>). Ratio is colored by the faster library. Cases where <strong class="lib-label lib-jngen">jngen</strong> cannot complete are marked with <span class="bench-fail-badge bench-fail-badge-inline">FAILS</span>.</p>
 <div class="table-scroll"><table class="bench-table">
 <tr><th>Operation</th><th>Parameters</th><th>Comparison</th><th>Ratio (tgen/jngen)</th></tr>
 <tr><td><a class="api-source-link" href="vendor/tgen/single_include/tgen.h.html#L5393" target="_blank" rel="noopener"><code>graph::get_connected (m=n)</code></a><span class="api-doc-line"><a class="api-doc-link" href="vendor/tgen/docs/structtgen_1_1wgraph.html#a378f2357294d1be975f4b2c57600dbb0" target="_blank" rel="noopener">Docs</a></span></td><td>n=10<sup>6</sup>, m=10<sup>6</sup></td><td><div class="bench-bars"><div class="bench-bar-row"><span class="bench-bar-label lib-jngen">jngen</span><div class="bench-bar-body"><div class="bench-bar-track"><div class="bench-bar-fill lib-jngen" style="width:96.0%"></div></div><span class="bench-bar-time">1302 ms</span></div></div><div class="bench-bar-row"><span class="bench-bar-label lib-tgen">tgen</span><div class="bench-bar-body"><div class="bench-bar-track"><div class="bench-bar-fill lib-tgen" style="width:100.0%"></div></div><span class="bench-bar-time">1357 ms</span></div></div></div></td><td><strong class="bench-ratio bench-ratio-jngen">1.04x</strong></td></tr>

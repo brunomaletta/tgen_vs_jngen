@@ -1310,12 +1310,12 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
         "<h2>Timing comparison</h2>",
         '<p class="bench-table-legend">'
         "Bar length is relative to the slower library per operation "
-        "(<span class=\"lib-label lib-jngen\">jngen</span> vs "
-        "<span class=\"lib-label lib-tgen\">tgen</span>). "
+        "(<strong class=\"lib-label lib-jngen\">jngen</strong> vs "
+        "<strong class=\"lib-label lib-tgen\">tgen</strong>). "
         "Ratio is colored by the faster library. "
-        "Cases where <span class=\"lib-label lib-jngen\">jngen</span> cannot "
-        'complete are marked <span class="bench-fail-badge bench-fail-badge-inline">'
-        "FAILS</span> in red.</p>",
+        "Cases where <strong class=\"lib-label lib-jngen\">jngen</strong> cannot "
+        'complete are marked with <span class="bench-fail-badge bench-fail-badge-inline">'
+        "FAILS</span>.</p>",
         '<div class="table-scroll"><table class="bench-table">',
         "<tr><th>Operation</th><th>Parameters</th><th>Comparison</th>"
         "<th>Ratio (tgen/jngen)</th></tr>",
@@ -1545,8 +1545,8 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     }}
     strong {{ color: #ff7b72; }}
     .lib-label {{ font-weight: 700; }}
-    strong.lib-label.lib-jngen {{ color: #3fb950; }}
-    strong.lib-label.lib-tgen {{ color: #58a6ff; }}
+    .lib-label.lib-jngen {{ color: #3fb950; }}
+    .lib-label.lib-tgen {{ color: #58a6ff; }}
     strong.complexity {{ font-weight: 700; color: #f0c674; }}
     strong.bench-ratio {{ font-weight: 700; }}
     strong.bench-ratio-jngen {{ color: #3fb950; }}
@@ -1627,6 +1627,8 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       line-height: 1;
       text-transform: uppercase;
       user-select: none;
+      position: relative;
+      top: 1px;
     }}
     .bench-fail-badge-inline {{
       display: inline-block;
