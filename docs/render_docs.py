@@ -1763,6 +1763,14 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     const PREFETCH_AHEAD = 5;
     const prefetched = new Set();
 
+    function runWhenIdle(fn) {{
+      if (typeof requestIdleCallback === "function") {{
+        requestIdleCallback(fn, {{ timeout: 4000 }});
+      }} else {{
+        setTimeout(fn, 250);
+      }}
+    }}
+
     function sampleUrl(prefix, seed) {{
       return prefix + "_s" + seed + ".svg";
     }}
@@ -1778,10 +1786,30 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       img.src = url;
     }}
 
-    function prefetchAhead(widget, fromIndex) {{
-      for (let off = 1; off <= PREFETCH_AHEAD; off++) {{
-        prefetchVariant(widget, fromIndex + off);
+    function prefetchAhead(widget, fromIndex, stagger) {{
+      if (!stagger) {{
+        for (let off = 1; off <= PREFETCH_AHEAD; off++) {{
+          prefetchVariant(widget, fromIndex + off);
+        }}
+        return;
       }}
+      let off = 1;
+      function next() {{
+        if (off > PREFETCH_AHEAD) return;
+        prefetchVariant(widget, fromIndex + off);
+        off += 1;
+        runWhenIdle(next);
+      }}
+      runWhenIdle(next);
+    }}
+
+    function scheduleBackgroundPrefetch(widget) {{
+      if (widget.dataset.prefetchScheduled === "1") return;
+      widget.dataset.prefetchScheduled = "1";
+      runWhenIdle(function () {{
+        const start = parseInt(widget.dataset.index || "0", 10);
+        prefetchAhead(widget, start, true);
+      }});
     }}
 
     function setVariant(widget, index) {{
@@ -1791,12 +1819,28 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       const i = ((index % seeds.length) + seeds.length) % seeds.length;
       widget.dataset.index = String(i);
       img.src = sampleUrl(prefix, seeds[i]);
-      prefetchAhead(widget, i);
+      prefetchAhead(widget, i, false);
     }}
 
-    document.querySelectorAll(".sample-widget").forEach(function (widget) {{
-      const start = parseInt(widget.dataset.index || "0", 10);
-      prefetchAhead(widget, start);
+    const widgets = document.querySelectorAll(".sample-widget");
+    if (typeof IntersectionObserver === "function") {{
+      const observer = new IntersectionObserver(function (entries) {{
+        entries.forEach(function (entry) {{
+          if (!entry.isIntersecting) return;
+          scheduleBackgroundPrefetch(entry.target);
+          observer.unobserve(entry.target);
+        }});
+      }}, {{ rootMargin: "120px" }});
+      widgets.forEach(function (widget) {{
+        observer.observe(widget);
+      }});
+    }} else {{
+      window.addEventListener("load", function () {{
+        widgets.forEach(scheduleBackgroundPrefetch);
+      }});
+    }}
+
+    widgets.forEach(function (widget) {{
       const btn = widget.querySelector(".sample-regen");
       if (!btn) return;
       btn.addEventListener("click", function (event) {{
