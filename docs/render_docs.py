@@ -416,30 +416,81 @@ def sample_svg_exists(op_id, lib):
     return os.path.isfile(os.path.join("docs", sample_svg_path(op_id, lib)))
 
 
+def _sample_stack_ids(op):
+    return op.get("gallery_stack") or []
+
+
+def _append_sample_images_md(cell, op, lib):
+    stack = _sample_stack_ids(op)
+    if stack:
+        top_params = op.get("gallery_stack_top_params", "")
+        mid_params = op.get("gallery_stack_params", "")
+        for i, sid in enumerate(stack):
+            if i == 0 and top_params:
+                cell += f"<br><sub>{html.escape(top_params)}</sub>"
+            if sample_svg_exists(sid, lib):
+                path = sample_svg_path(sid, lib)
+                cell += f'<br><img src="{path}" alt="{lib} sample">'
+            if i == 0 and len(stack) > 1 and mid_params:
+                cell += f"<br><sub>{html.escape(mid_params)}</sub>"
+        return cell
+    if sample_svg_exists(op["id"], lib):
+        path = sample_svg_path(op["id"], lib)
+        cell += f'<br><img src="{path}" alt="{lib} sample">'
+    return cell
+
+
+def _append_sample_images_html(cell, op, lib):
+    stack = _sample_stack_ids(op)
+    if stack:
+        top_params = op.get("gallery_stack_top_params", "")
+        mid_params = op.get("gallery_stack_params", "")
+        for i, sid in enumerate(stack):
+            if i == 0 and top_params:
+                cell += (
+                    f'<span class="gallery-params gallery-params-stack">'
+                    f"{html.escape(top_params)}</span>"
+                )
+            if sample_svg_exists(sid, lib):
+                path = sample_svg_path(sid, lib)
+                cell += (
+                    f'<img class="sample-img" src="{html.escape(path)}" '
+                    f'alt="{html.escape(lib)} sample">'
+                )
+            if i == 0 and len(stack) > 1 and mid_params:
+                cell += (
+                    f'<span class="gallery-params gallery-params-stack">'
+                    f"{html.escape(mid_params)}</span>"
+                )
+        return cell
+    if sample_svg_exists(op["id"], lib):
+        path = sample_svg_path(op["id"], lib)
+        cell += (
+            f'<img class="sample-img" src="{html.escape(path)}" '
+            f'alt="{html.escape(lib)} sample">'
+        )
+    return cell
+
+
 def format_sample_cell_md(op_id, op, lib_info, lib):
     cell = format_lib_api_cell_md(lib_info, lib=lib)
     params = op.get("gallery_params", "")
-    if params and lib_info.get("has"):
+    if params and lib_info.get("has") and not _sample_stack_ids(op):
         cell += f"<br><sub>{html.escape(params)}</sub>"
-    if sample_svg_exists(op_id, lib):
-        path = sample_svg_path(op_id, lib)
-        cell += f'<br><img src="{path}" alt="{lib} sample">'
+    if lib_info.get("has"):
+        cell = _append_sample_images_md(cell, op, lib)
     return cell
 
 
 def format_sample_cell_html(op_id, op, lib_info, lib):
     cell = format_lib_api_cell_html(lib_info, lib=lib)
     params = op.get("gallery_params", "")
-    if params and lib_info.get("has"):
+    if params and lib_info.get("has") and not _sample_stack_ids(op):
         cell += (
             f'<br><span class="gallery-params">{html.escape(params)}</span>'
         )
-    if sample_svg_exists(op_id, lib):
-        path = sample_svg_path(op_id, lib)
-        cell += (
-            f'<img class="sample-img" src="{html.escape(path)}" '
-            f'alt="{html.escape(lib)} sample">'
-        )
+    if lib_info.get("has"):
+        cell = _append_sample_images_html(cell, op, lib)
     return cell
 
 
@@ -449,8 +500,12 @@ def api_cell_td_class(lib_info):
     return "col-api"
 
 
-def sample_cell_td_class(op_id, lib_info, lib):
-    if sample_svg_exists(op_id, lib):
+def sample_cell_td_class(op, lib_info, lib):
+    stack = _sample_stack_ids(op)
+    if stack:
+        if any(sample_svg_exists(sid, lib) for sid in stack):
+            return "col-api sample-has-visual"
+    elif sample_svg_exists(op["id"], lib):
         return "col-api sample-has-visual"
     if not lib_info.get("has"):
         return "col-api cell-unavailable"
@@ -475,7 +530,11 @@ def sample_table_header_row():
 
 
 def geometry_sample_operations(operations):
-    return [op for op in operations if op.get("visualize")]
+    return [
+        op
+        for op in operations
+        if op.get("visualize") and not op.get("gallery_only")
+    ]
 
 
 def render_geometry_samples_md(operations):
@@ -518,9 +577,9 @@ def render_geometry_samples_html(operations):
         parts.append(
             "<tr>"
                 f"<td class=\"col-op sample-op\">{html.escape(op['name'])}</td>"
-                f'<td class="{sample_cell_td_class(oid, op.get("jngen", {}), "jngen")}">'
+                f'<td class="{sample_cell_td_class(op, op.get("jngen", {}), "jngen")}">'
                 f'{format_sample_cell_html(oid, op, op.get("jngen", {}), "jngen")}</td>'
-                f'<td class="{sample_cell_td_class(oid, op.get("tgen", {}), "tgen")}">'
+                f'<td class="{sample_cell_td_class(op, op.get("tgen", {}), "tgen")}">'
                 f'{format_sample_cell_html(oid, op, op.get("tgen", {}), "tgen")}</td>'
             "</tr>"
         )
@@ -559,6 +618,8 @@ def render_comparison_md(operations, categories, bench_index):
             "|-----------|-------|------|------------|-------------------|-----------|"
         )
         for op in by_cat[cat_id]:
+            if op.get("gallery_only"):
+                continue
             tg = op.get("tgen", {})
             jg = op.get("jngen", {})
             jngen_cell = format_lib_api_cell_md(jg, lib="jngen")
@@ -852,6 +913,8 @@ def render_comparison_html(operations, categories, bench_index):
         )
         parts.append(comparison_table_header_row())
         for op in by_cat[cat_id]:
+            if op.get("gallery_only"):
+                continue
             tg = op.get("tgen", {})
             jg = op.get("jngen", {})
             jngen_cell = format_lib_api_cell_html(jg, lib="jngen")
@@ -1158,6 +1221,9 @@ def render_html(comparison_body, benchmarks_body):
       width: 100%;
       max-width: 420px;
       margin: 0.65rem auto 0;
+    }}
+    table.samples-table td.col-api .gallery-params-stack {{
+      margin: 0.35rem auto 0.15rem;
     }}
     td.cell-unavailable {{
       vertical-align: middle;

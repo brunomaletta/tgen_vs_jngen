@@ -45,6 +45,10 @@ void run_jngen_samples(const string &out_dir) {
 	draw_polygon_svg(
 		out_dir + "/geometry_convex_polygon_jngen.svg",
 		rndg.convexPolygon(GALLERY_CONVEX_N, 0, GALLERY_CONVEX_COORD));
+	draw_polygon_svg(
+		out_dir + "/geometry_convex_polygon_large_jngen.svg",
+		rndg.convexPolygon(GALLERY_CONVEX_LARGE_N, 0,
+						   GALLERY_CONVEX_LARGE_COORD));
 
 	draw_points_svg(
 		out_dir + "/geometry_points_general_position_jngen.svg",

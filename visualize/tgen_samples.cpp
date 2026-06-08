@@ -49,6 +49,11 @@ void run_tgen_samples(const std::string &out_dir) {
 		tgen::geometry::random_convex_polygon(
 			GALLERY_CONVEX_N, 0, GALLERY_CONVEX_COORD),
 		"polygon", GALLERY_CONVEX_COORD);
+	write_points_json(
+		out_dir + "/geometry_convex_polygon_large.points.json",
+		tgen::geometry::random_convex_polygon(
+			GALLERY_CONVEX_LARGE_N, 0, GALLERY_CONVEX_LARGE_COORD),
+		"polygon", GALLERY_CONVEX_LARGE_COORD);
 
 	write_points_json(
 		out_dir + "/geometry_simple_polygon.points.json",

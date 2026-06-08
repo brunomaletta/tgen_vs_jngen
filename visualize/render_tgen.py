@@ -78,7 +78,7 @@ def render_polygon_svg(
     points,
     title="",
     stroke="#2563eb",
-    fill="#93c5fd55",
+    fill="#3b82f666",
     point_r=GALLERY_POINT_R,
     stroke_w=GALLERY_STROKE_W,
 ):

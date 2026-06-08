@@ -192,6 +192,9 @@
       max-width: 420px;
       margin: 0.65rem auto 0;
     }
+    table.samples-table td.col-api .gallery-params-stack {
+      margin: 0.35rem auto 0.15rem;
+    }
     td.cell-unavailable {
       vertical-align: middle;
       text-align: center;
@@ -218,7 +221,7 @@
   </nav>
   <section id="comparison">
 <h1>tgen vs jngen — Feature Comparison</h1>
-<p><em>Generated 2026-06-08 02:38 UTC</em></p>
+<p><em>Generated 2026-06-08 02:50 UTC</em></p>
 <p>Comparison of non-trivial generation operations. See <a href="#benchmarks">benchmarks</a> below.</p>
 <h2>Graphs</h2>
 <div class="table-scroll"><table class="comparison-table">
@@ -276,7 +279,7 @@
 <div class="table-scroll"><table class="comparison-table samples-table">
 <colgroup><col class="col-op"><col class="col-api"><col class="col-api"></colgroup>
 <tr><th class="col-op sample-op">Operation</th><th class="col-api"><strong class="lib-label lib-jngen">jngen</strong></th><th class="col-api"><strong class="lib-label lib-tgen">tgen</strong></th></tr>
-<tr><td class="col-op sample-op">Random convex polygon</td><td class="col-api sample-has-visual">Yes<br><code>rndg.convexPolygon(n, min, max)</code><br><span class="gallery-params">n=80, min=0, max=1000</span><img class="sample-img" src="gallery/geometry_convex_polygon_jngen.svg" alt="jngen sample"></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_convex_polygon(n, min, max)</code><br><span class="gallery-params">n=80, min=0, max=1000</span><img class="sample-img" src="gallery/geometry_convex_polygon_tgen.svg" alt="tgen sample"></td></tr>
+<tr><td class="col-op sample-op">Random convex polygon</td><td class="col-api sample-has-visual">Yes<br><code>rndg.convexPolygon(n, min, max)</code><span class="gallery-params gallery-params-stack">n=80, min=0, max=1000</span><img class="sample-img" src="gallery/geometry_convex_polygon_jngen.svg" alt="jngen sample"><span class="gallery-params gallery-params-stack">n=15000, min=0, max=3e9</span><img class="sample-img" src="gallery/geometry_convex_polygon_large_jngen.svg" alt="jngen sample"></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_convex_polygon(n, min, max)</code><span class="gallery-params gallery-params-stack">n=80, min=0, max=1000</span><img class="sample-img" src="gallery/geometry_convex_polygon_tgen.svg" alt="tgen sample"><span class="gallery-params gallery-params-stack">n=15000, min=0, max=3e9</span><img class="sample-img" src="gallery/geometry_convex_polygon_large_tgen.svg" alt="tgen sample"></td></tr>
 <tr><td class="col-op sample-op">Points in general position (no three collinear)</td><td class="col-api sample-has-visual">Yes<br><code>rndg.pointsInGeneralPosition(n, min, max)</code><br><span class="gallery-params">n=2000, min=0, max=3e6</span><img class="sample-img" src="gallery/geometry_points_general_position_jngen.svg" alt="jngen sample"></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_points_general_position(n, min, max)</code><br><span class="gallery-params">n=2000, min=0, max=3e6</span><img class="sample-img" src="gallery/geometry_points_general_position_tgen.svg" alt="tgen sample"></td></tr>
 <tr><td class="col-op sample-op">Random simple polygon</td><td class="col-api cell-unavailable"><strong>No</strong></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_simple_polygon(n, min, max)</code><br><span class="gallery-params">n=80, min=0, max=1000</span><img class="sample-img" src="gallery/geometry_simple_polygon_tgen.svg" alt="tgen sample"></td></tr>
 <tr><td class="col-op sample-op">Simple polygon through given points</td><td class="col-api cell-unavailable"><strong>No</strong></td><td class="col-api sample-has-visual">Yes<br><code>geometry::random_simple_polygon_through_points(pts)</code><br><span class="gallery-params">10×10 input grid, min=0, max=1000</span><img class="sample-img" src="gallery/geometry_simple_polygon_through_points_tgen.svg" alt="tgen sample"></td></tr>

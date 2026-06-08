@@ -375,7 +375,28 @@ operations:
     benchmark: true
     benchmark_id: geometry_convex_polygon
     visualize: true
-    gallery_params: "n=80, min=0, max=1000"
+    gallery_stack:
+      - geometry_convex_polygon
+      - geometry_convex_polygon_large
+    gallery_stack_top_params: "n=80, min=0, max=1000"
+    gallery_stack_params: "n=15000, min=0, max=3e9"
+
+  - id: geometry_convex_polygon_large
+    name: Random convex polygon (large)
+    category: geometry
+    gallery_only: true
+    tgen:
+      has: true
+      api: "geometry::random_convex_polygon(n, min, max)"
+      uniform: ""
+      complexity: ""
+    jngen:
+      has: true
+      api: "rndg.convexPolygon(n, min, max)"
+      uniform: ""
+      complexity: ""
+    visualize: true
+    gallery_params: "n=15000, min=0, max=3e9"
 
   - id: geometry_points_general_position
     name: Points in general position (no three collinear)

@@ -1,6 +1,6 @@
 # tgen vs jngen — Feature Comparison
 
-*Generated 2026-06-08 02:38 UTC*
+*Generated 2026-06-08 02:50 UTC*
 
 > **Styled tables and geometry samples:** [view on GitHub Pages](https://brunomaletta.github.io/tgen_vs_jngen/). GitHub's Markdown renderer cannot reproduce the HTML layout.
 
@@ -62,7 +62,7 @@ Comparison of non-trivial generation operations. See [benchmarks.md](benchmarks.
 
 | Operation | jngen | tgen |
 |-----------|-------|------|
-| Random convex polygon | Yes<br><code>rndg.convexPolygon(n, min, max)</code><br><sub>n=80, min=0, max=1000</sub><br><img src="gallery/geometry_convex_polygon_jngen.svg" alt="jngen sample"> | Yes<br><code>geometry::random_convex_polygon(n, min, max)</code><br><sub>n=80, min=0, max=1000</sub><br><img src="gallery/geometry_convex_polygon_tgen.svg" alt="tgen sample"> |
+| Random convex polygon | Yes<br><code>rndg.convexPolygon(n, min, max)</code><br><sub>n=80, min=0, max=1000</sub><br><img src="gallery/geometry_convex_polygon_jngen.svg" alt="jngen sample"><br><sub>n=15000, min=0, max=3e9</sub><br><img src="gallery/geometry_convex_polygon_large_jngen.svg" alt="jngen sample"> | Yes<br><code>geometry::random_convex_polygon(n, min, max)</code><br><sub>n=80, min=0, max=1000</sub><br><img src="gallery/geometry_convex_polygon_tgen.svg" alt="tgen sample"><br><sub>n=15000, min=0, max=3e9</sub><br><img src="gallery/geometry_convex_polygon_large_tgen.svg" alt="tgen sample"> |
 | Points in general position (no three collinear) | Yes<br><code>rndg.pointsInGeneralPosition(n, min, max)</code><br><sub>n=2000, min=0, max=3e6</sub><br><img src="gallery/geometry_points_general_position_jngen.svg" alt="jngen sample"> | Yes<br><code>geometry::random_points_general_position(n, min, max)</code><br><sub>n=2000, min=0, max=3e6</sub><br><img src="gallery/geometry_points_general_position_tgen.svg" alt="tgen sample"> |
 | Random simple polygon | **No** | Yes<br><code>geometry::random_simple_polygon(n, min, max)</code><br><sub>n=80, min=0, max=1000</sub><br><img src="gallery/geometry_simple_polygon_tgen.svg" alt="tgen sample"> |
 | Simple polygon through given points | **No** | Yes<br><code>geometry::random_simple_polygon_through_points(pts)</code><br><sub>10×10 input grid, min=0, max=1000</sub><br><img src="gallery/geometry_simple_polygon_through_points_tgen.svg" alt="tgen sample"> |
