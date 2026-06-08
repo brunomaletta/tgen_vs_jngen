@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate comparison.md, benchmarks.md, and comparison.html from YAML + JSON."""
+"""Generate comparison.html from YAML + JSON."""
 
 import argparse
 import html
@@ -8,6 +8,17 @@ import os
 import re
 import sys
 from datetime import datetime, timezone
+
+DOCS_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(DOCS_DIR)
+sys.path.insert(0, DOCS_DIR)
+
+from tgen_source_index import (  # noqa: E402
+    TgenSourceIndex,
+    default_xml_dir,
+    github_blob_url,
+    read_git_sha,
+)
 
 try:
     import yaml
@@ -67,6 +78,144 @@ def load_json(path):
         return None
     with open(path, encoding="utf-8") as f:
         return json.load(f)
+
+
+JNGEN_CATEGORY_DOC = {
+    "graphs": "doc/graph.md",
+    "trees": "doc/tree.md",
+    "lists": "doc/array.md",
+    "math": "doc/math.md",
+    "geometry": "doc/geometry.md",
+    "strings": "doc/strings.md",
+}
+
+JNGEN_OP_DOC = {
+    "graph_weighted": "doc/generic_graph.md",
+    "tree_rooted_output": "doc/printers.md",
+    "structured_output": "doc/printers.md",
+    "testlib_integration": "doc/random.md",
+    "geometry_svg_drawer": "doc/drawer.md",
+    "anti_hash_strings": "doc/strings.md",
+}
+
+
+class ApiSourceResolver:
+    def __init__(
+        self,
+        sources_meta,
+        tgen_index,
+        vendor_shas,
+        root=ROOT_DIR,
+        benchmark_to_op=None,
+        op_categories=None,
+    ):
+        self.entries = (sources_meta or {}).get("entries", {})
+        self.repos = (sources_meta or {}).get("repos", {})
+        self.tgen_index = tgen_index
+        self.vendor_shas = vendor_shas or {}
+        self.root = root
+        self.benchmark_to_op = benchmark_to_op or {}
+        self.op_categories = op_categories or {}
+
+    def url(self, op_id, lib):
+        entry = self.entries.get(op_id, {}).get(lib)
+        if not entry:
+            return None
+        if lib == "tgen":
+            symbol = entry if isinstance(entry, str) else entry.get("symbol")
+            sha = self._sha("tgen")
+            if not symbol or not sha or self.tgen_index is None:
+                return None
+            return self.tgen_index.github_url(symbol, sha)
+        if lib == "jngen":
+            if isinstance(entry, str):
+                return None
+            file_path = entry.get("file")
+            line = entry.get("line")
+            sha = self._sha("jngen")
+            if not file_path or line is None or not sha:
+                return None
+            repo = self.repos.get("jngen", "ifsmirnov/jngen")
+            return github_blob_url(sha, file_path, int(line), repo=repo)
+        return None
+
+    def _sha(self, lib):
+        sha = self.vendor_shas.get(lib)
+        if sha:
+            return sha
+        return read_git_sha(os.path.join(self.root, "vendor", lib))
+
+    def op_id_for_benchmark(self, bench_id):
+        return self.benchmark_to_op.get(bench_id)
+
+    def url_for_benchmark(self, bench_id, lib="tgen"):
+        op_id = self.op_id_for_benchmark(bench_id)
+        if not op_id:
+            return None
+        return self.url(op_id, lib)
+
+    def doc_url(self, op_id, lib):
+        entry = self.entries.get(op_id, {}).get(lib)
+        if lib == "tgen":
+            symbol = entry if isinstance(entry, str) else (
+                entry.get("symbol") if entry else None
+            )
+            if not symbol or self.tgen_index is None:
+                return None
+            return self.tgen_index.docs_url(symbol)
+        if lib == "jngen":
+            if not entry or isinstance(entry, str):
+                return None
+            doc_path = entry.get("doc") or JNGEN_OP_DOC.get(op_id)
+            if not doc_path:
+                doc_path = JNGEN_CATEGORY_DOC.get(self.op_categories.get(op_id))
+            if not doc_path:
+                return None
+            sha = self._sha("jngen")
+            if not sha:
+                return None
+            repo = self.repos.get("jngen", "ifsmirnov/jngen")
+            return github_blob_url(sha, doc_path, line=None, repo=repo)
+        return None
+
+    def doc_url_for_benchmark(self, bench_id, lib="tgen"):
+        op_id = self.op_id_for_benchmark(bench_id)
+        if not op_id:
+            return None
+        return self.doc_url(op_id, lib)
+
+
+def build_benchmark_to_op_map(operations, sources_meta):
+    mapping = {}
+    for op in operations or []:
+        bench_id = op.get("benchmark_id")
+        if bench_id:
+            mapping[bench_id] = op["id"]
+    for bench_id, target in (sources_meta or {}).get("benchmarks", {}).items():
+        if isinstance(target, str):
+            mapping[bench_id] = target
+        elif isinstance(target, dict) and target.get("op"):
+            mapping[bench_id] = target["op"]
+    return mapping
+
+
+def load_api_sources(path=None):
+    path = path or os.path.join(DOCS_DIR, "api_sources.yaml")
+    if not os.path.isfile(path):
+        return {}
+    return load_yaml(path)
+
+
+def build_tgen_source_index(xml_dir=None):
+    xml_dir = xml_dir or default_xml_dir(ROOT_DIR)
+    index = TgenSourceIndex(xml_dir)
+    if len(index) == 0:
+        sys.stderr.write(
+            "render_docs: tgen Doxygen XML missing or empty — run "
+            "'cd vendor/tgen && make doc-prepare' (API links for tgen will be omitted)\n"
+        )
+        return None
+    return index
 
 
 def yes_no(val):
@@ -356,8 +505,25 @@ def format_api_md(api):
     return f"<code>{wrap_api(api)}</code>"
 
 
-def format_api_html(api):
-    return f"<code>{wrap_api_html(api)}</code>"
+def format_api_html(api, source_url=None, doc_url=None):
+    code = f"<code>{wrap_api_html(api)}</code>"
+    if source_url:
+        code = (
+            f'<a class="api-source-link" href="{html.escape(source_url)}" '
+            f'target="_blank" rel="noopener">{code}</a>'
+        )
+    return code + format_doc_line_html(doc_url)
+
+
+def format_doc_line_html(doc_url):
+    if doc_url:
+        return (
+            f'<br><span class="api-doc-line">'
+            f'<a class="api-doc-link" href="{html.escape(doc_url)}" '
+            f'target="_blank" rel="noopener">Docs</a>'
+            f"</span>"
+        )
+    return f'<br><span class="api-doc-line"><em>Undocumented</em></span>'
 
 
 def format_lib_api_cell_md(lib_info, lib=None):
@@ -372,7 +538,7 @@ def format_lib_api_cell_md(lib_info, lib=None):
     return cell
 
 
-def format_lib_api_cell_html(lib_info, lib=None):
+def format_lib_api_cell_html(lib_info, lib=None, op_id=None, source_resolver=None):
     if not lib_info.get("has"):
         return "<strong>No</strong>"
     cell = "Yes"
@@ -380,7 +546,12 @@ def format_lib_api_cell_html(lib_info, lib=None):
         api = lib_info["api"]
         if lib == "tgen":
             api = normalize_tgen_api(api)
-        cell += f"<br>{format_api_html(api)}"
+        source_url = None
+        doc_url = None
+        if source_resolver and op_id and lib:
+            source_url = source_resolver.url(op_id, lib)
+            doc_url = source_resolver.doc_url(op_id, lib)
+        cell += f"<br>{format_api_html(api, source_url, doc_url)}"
     return cell
 
 
@@ -396,8 +567,14 @@ def format_benchmark_name_md(name):
     return f"<code>{wrap_benchmark_name(name)}</code>"
 
 
-def format_benchmark_name_html(name):
-    return f"<code>{wrap_api_html(name)}</code>"
+def format_benchmark_name_html(name, source_url=None, doc_url=None):
+    code = f"<code>{wrap_api_html(name)}</code>"
+    if source_url:
+        code = (
+            f'<a class="api-source-link" href="{html.escape(source_url)}" '
+            f'target="_blank" rel="noopener">{code}</a>'
+        )
+    return code + format_doc_line_html(doc_url)
 
 
 def format_params_md(params):
@@ -418,26 +595,6 @@ def sample_svg_exists(op_id, lib):
 
 def _sample_stack_ids(op):
     return op.get("gallery_stack") or []
-
-
-def _append_sample_images_md(cell, op, lib):
-    stack = _sample_stack_ids(op)
-    if stack:
-        top_params = op.get("gallery_stack_top_params", "")
-        mid_params = op.get("gallery_stack_params", "")
-        for i, sid in enumerate(stack):
-            if i == 0 and top_params:
-                cell += f"<br><sub>{html.escape(top_params)}</sub>"
-            if sample_svg_exists(sid, lib):
-                path = sample_svg_path(sid, lib)
-                cell += f'<br><img src="{path}" alt="{lib} sample">'
-            if i == 0 and len(stack) > 1 and mid_params:
-                cell += f"<br><sub>{html.escape(mid_params)}</sub>"
-        return cell
-    if sample_svg_exists(op["id"], lib):
-        path = sample_svg_path(op["id"], lib)
-        cell += f'<br><img src="{path}" alt="{lib} sample">'
-    return cell
 
 
 def _append_sample_images_html(cell, op, lib):
@@ -472,18 +629,10 @@ def _append_sample_images_html(cell, op, lib):
     return cell
 
 
-def format_sample_cell_md(op_id, op, lib_info, lib):
-    cell = format_lib_api_cell_md(lib_info, lib=lib)
-    params = op.get("gallery_params", "")
-    if params and lib_info.get("has") and not _sample_stack_ids(op):
-        cell += f"<br><sub>{html.escape(params)}</sub>"
-    if lib_info.get("has"):
-        cell = _append_sample_images_md(cell, op, lib)
-    return cell
-
-
-def format_sample_cell_html(op_id, op, lib_info, lib):
-    cell = format_lib_api_cell_html(lib_info, lib=lib)
+def format_sample_cell_html(op_id, op, lib_info, lib, source_resolver=None):
+    cell = format_lib_api_cell_html(
+        lib_info, lib=lib, op_id=op_id, source_resolver=source_resolver
+    )
     params = op.get("gallery_params", "")
     if params and lib_info.get("has") and not _sample_stack_ids(op):
         cell += (
@@ -537,28 +686,7 @@ def geometry_sample_operations(operations):
     ]
 
 
-def render_geometry_samples_md(operations):
-    ops = geometry_sample_operations(operations)
-    if not ops:
-        return []
-    lines = [
-        "### Samples",
-        "",
-        "| Operation | jngen | tgen |",
-        "|-----------|-------|------|",
-    ]
-    for op in ops:
-        oid = op["id"]
-        lines.append(
-            f"| {op['name']} | "
-            f"{format_sample_cell_md(oid, op, op.get('jngen', {}), 'jngen')} | "
-            f"{format_sample_cell_md(oid, op, op.get('tgen', {}), 'tgen')} |"
-        )
-    lines.append("")
-    return lines
-
-
-def render_geometry_samples_html(operations):
+def render_geometry_samples_html(operations, source_resolver=None):
     ops = geometry_sample_operations(operations)
     if not ops:
         return []
@@ -578,66 +706,13 @@ def render_geometry_samples_html(operations):
             "<tr>"
                 f"<td class=\"col-op sample-op\">{html.escape(op['name'])}</td>"
                 f'<td class="{sample_cell_td_class(op, op.get("jngen", {}), "jngen")}">'
-                f'{format_sample_cell_html(oid, op, op.get("jngen", {}), "jngen")}</td>'
+                f'{format_sample_cell_html(oid, op, op.get("jngen", {}), "jngen", source_resolver)}</td>'
                 f'<td class="{sample_cell_td_class(op, op.get("tgen", {}), "tgen")}">'
-                f'{format_sample_cell_html(oid, op, op.get("tgen", {}), "tgen")}</td>'
+                f'{format_sample_cell_html(oid, op, op.get("tgen", {}), "tgen", source_resolver)}</td>'
             "</tr>"
         )
     parts.append("</table></div>")
     return parts
-
-
-def render_comparison_md(operations, categories, bench_index):
-    lines = [
-        "# tgen vs jngen — Feature Comparison",
-        "",
-        f"*Generated {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}*",
-        "",
-        "> **Styled tables and geometry samples:** "
-        "[view on GitHub Pages](https://brunomaletta.github.io/tgen_vs_jngen/). "
-        "GitHub's Markdown renderer cannot reproduce the HTML layout.",
-        "",
-        "Comparison of non-trivial generation operations. See "
-        "[benchmarks.md](benchmarks.md) for timing results.",
-        "",
-    ]
-
-    by_cat = {}
-    for op in operations:
-        by_cat.setdefault(op["category"], []).append(op)
-
-    for cat_id, cat_label in categories.items():
-        if cat_id not in by_cat:
-            continue
-        lines.append(f"## {cat_label}")
-        lines.append("")
-        lines.append(
-            "| Operation | jngen | tgen | Uniformity | Complexity / notes | Benchmark |"
-        )
-        lines.append(
-            "|-----------|-------|------|------------|-------------------|-----------|"
-        )
-        for op in by_cat[cat_id]:
-            if op.get("gallery_only"):
-                continue
-            tg = op.get("tgen", {})
-            jg = op.get("jngen", {})
-            jngen_cell = format_lib_api_cell_md(jg, lib="jngen")
-            tgen_cell = format_lib_api_cell_md(tg, lib="tgen")
-
-            uni = format_uniformity_md(tg, jg, cat_id, op["id"])
-            notes = format_notes_md(tg, jg, op.get("notes", ""), op.get("exclusive"))
-            bench = format_benchmark_cell_md(op, bench_index)
-
-            lines.append(
-                f"| {op['name']} | {jngen_cell} | {tgen_cell} | "
-                f"{uni} | {notes} | {bench} |"
-            )
-        lines.append("")
-        if cat_id == "geometry":
-            lines.extend(render_geometry_samples_md(operations))
-
-    return "\n".join(lines) + "\n"
 
 
 def fmt_ms(ms):
@@ -697,13 +772,6 @@ def bench_ratio(row):
     return tg_ms / jg_ms
 
 
-def format_ratio_md(row):
-    ratio = bench_ratio(row)
-    if ratio is None:
-        return "—"
-    return f"{ratio:.2f}x"
-
-
 def format_ratio_html(row):
     ratio = bench_ratio(row)
     if ratio is None:
@@ -732,33 +800,6 @@ def lib_timing_ms(lib_result):
     if lib_result.get("status") == "ok":
         return fmt_ms(float(lib_result["median_ms"]))
     return str(lib_result.get("status", "—"))
-
-
-def format_benchmark_cell_md(op, bench_index):
-    bid = op.get("benchmark_id")
-    if not bid:
-        return "—"
-
-    row = bench_index.get(bid)
-    if not row:
-        return "—"
-
-    lines = []
-    if row.get("compare_both"):
-        lines.append(f"**jngen:** {lib_timing_ms(row.get('jngen', {}))}")
-        lines.append(f"**tgen:** {lib_timing_ms(row.get('tgen', {}))}")
-        if benchmark_is_comparable(row) and bench_ratio(row) is not None:
-            lines.append(format_ratio_md(row))
-        elif not benchmark_is_comparable(row):
-            lines.append("*different n — not comparable*")
-    else:
-        lines.append(f"**tgen:** {lib_timing_ms(row.get('tgen', {}))}")
-
-    params = row.get("params", "")
-    if params:
-        lines.append(f"<sub>{params}</sub>")
-
-    return "<br>".join(lines)
 
 
 def format_benchmark_cell_html(op, bench_index):
@@ -805,85 +846,7 @@ def format_benchmark_cell_html(op, bench_index):
     return "<br>".join(lines)
 
 
-def render_benchmarks_md(bench):
-    lines = [
-        "# tgen vs jngen — Benchmarks",
-        "",
-    ]
-    if not bench:
-        lines.extend([
-            "*No benchmark results yet. Run `make benchmark`.*",
-            "",
-        ])
-        return "\n".join(lines)
-
-    vendors = bench.get("vendors", {})
-    lines.extend([
-        f"- **Generated:** {bench.get('generated_at', '—')}",
-        f"- **Compiler:** {bench.get('compiler', '—')}",
-        f"- **Flags:** {bench.get('flags', '—')}",
-        f"- **Host:** {bench.get('hostname', '—')}",
-    ])
-    if vendors:
-        lines.append(
-            f"- **Vendor commits:** tgen `{vendors.get('tgen', '—')}`, "
-            f"jngen `{vendors.get('jngen', '—')}`"
-        )
-    lines.extend([
-        "",
-        "## Timing comparison",
-        "",
-        "| Operation | Parameters | Comparison | Ratio (tgen/jngen) |",
-        "|-----------|------------|------------|---------------------|",
-    ])
-
-    shared = [
-        r for r in bench.get("results", []) if benchmark_is_comparable(r)
-    ]
-    for row in shared:
-        name = row.get("name", "") + row.get("name_suffix", "")
-        params = row.get("params", "")
-        tg = row.get("tgen", {})
-        jg = row.get("jngen", {})
-        tg_ms = fmt_ms(float(tg["median_ms"])) if tg.get("status") == "ok" else tg.get("status", "—")
-        jg_ms = fmt_ms(float(jg["median_ms"])) if jg.get("status") == "ok" else jg.get("status", "—")
-        ratio = format_ratio_md(row)
-        lines.append(
-            f"| {format_benchmark_name_md(name)} | {format_params_md(params)} | "
-            f"{jg_ms} / {tg_ms} | {ratio} |"
-        )
-
-    tgen_only = [
-        r
-        for r in bench.get("results", [])
-        if not r.get("compare_both") and r.get("tgen", {}).get("status") == "ok"
-    ]
-    if tgen_only:
-        lines.extend([
-            "## tgen-only timings",
-            "",
-            "| Operation | Parameters | tgen |",
-            "|-----------|------------|------|",
-        ])
-        for row in tgen_only:
-            name = row.get("name", "") + row.get("name_suffix", "")
-            params = row.get("params", "")
-            tg = row.get("tgen", {})
-            tg_ms = (
-                fmt_ms(float(tg["median_ms"]))
-                if tg.get("status") == "ok"
-                else tg.get("status", "—")
-            )
-            lines.append(
-                f"| {format_benchmark_name_md(name)} | {format_params_md(params)} | {tg_ms} |"
-            )
-        lines.append("")
-
-    lines.append("")
-    return "\n".join(lines)
-
-
-def render_comparison_html(operations, categories, bench_index):
+def render_comparison_html(operations, categories, bench_index, source_resolver=None):
     parts = [
         "<section id=\"comparison\">",
         "<h1>tgen vs jngen — Feature Comparison</h1>",
@@ -917,8 +880,12 @@ def render_comparison_html(operations, categories, bench_index):
                 continue
             tg = op.get("tgen", {})
             jg = op.get("jngen", {})
-            jngen_cell = format_lib_api_cell_html(jg, lib="jngen")
-            tgen_cell = format_lib_api_cell_html(tg, lib="tgen")
+            jngen_cell = format_lib_api_cell_html(
+                jg, lib="jngen", op_id=op["id"], source_resolver=source_resolver
+            )
+            tgen_cell = format_lib_api_cell_html(
+                tg, lib="tgen", op_id=op["id"], source_resolver=source_resolver
+            )
 
             uni = format_uniformity_html(tg, jg, cat_id, op["id"])
             notes = format_notes_html(tg, jg, op.get("notes", ""), op.get("exclusive"))
@@ -936,13 +903,13 @@ def render_comparison_html(operations, categories, bench_index):
             )
         parts.append("</table></div>")
         if cat_id == "geometry":
-            parts.extend(render_geometry_samples_html(operations))
+            parts.extend(render_geometry_samples_html(operations, source_resolver))
 
     parts.append("</section>")
     return "\n".join(parts)
 
 
-def render_benchmarks_html(bench):
+def render_benchmarks_html(bench, source_resolver=None):
     parts = [
         "<section id=\"benchmarks\">",
         "<h1>tgen vs jngen — Benchmarks</h1>",
@@ -988,9 +955,15 @@ def render_benchmarks_html(bench):
         jg_ms = lib_median_ms_raw(row.get("jngen", {}))
         tg_ms = lib_median_ms_raw(row.get("tgen", {}))
         bars = render_bench_bars_html(jg_ms, tg_ms, show_times=True)
+        source_url = None
+        doc_url = None
+        if source_resolver:
+            bench_id = row.get("id")
+            source_url = source_resolver.url_for_benchmark(bench_id, "tgen")
+            doc_url = source_resolver.doc_url_for_benchmark(bench_id, "tgen")
         parts.append(
             "<tr>"
-            f"<td>{format_benchmark_name_html(name)}</td>"
+            f"<td>{format_benchmark_name_html(name, source_url, doc_url)}</td>"
             f"<td>{format_params_html(params)}</td>"
             f"<td>{bars}</td>"
             f"<td>{format_ratio_html(row)}</td>"
@@ -1014,9 +987,15 @@ def render_benchmarks_html(bench):
             name = row.get("name", "") + row.get("name_suffix", "")
             params = row.get("params", "")
             tg_ms = lib_timing_ms(row.get("tgen", {}))
+            source_url = None
+            doc_url = None
+            if source_resolver:
+                bench_id = row.get("id")
+                source_url = source_resolver.url_for_benchmark(bench_id, "tgen")
+                doc_url = source_resolver.doc_url_for_benchmark(bench_id, "tgen")
             parts.append(
                 "<tr>"
-                f"<td>{format_benchmark_name_html(name)}</td>"
+                f"<td>{format_benchmark_name_html(name, source_url, doc_url)}</td>"
                 f"<td>{format_params_html(params)}</td>"
                 f"<td>{html.escape(tg_ms)}</td>"
                 "</tr>"
@@ -1090,6 +1069,9 @@ def render_html(comparison_body, benchmarks_body):
     table.comparison-table.samples-table .col-op {{ width: 22%; }}
     table.comparison-table.samples-table .col-api {{ width: 39%; }}
     .gallery-params {{ display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; }}
+    .api-doc-line {{ display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.15rem; }}
+    a.api-doc-link {{ color: var(--link); text-decoration: none; }}
+    a.api-doc-link:hover, a.api-doc-link:focus-visible {{ text-decoration: underline; }}
     table.comparison-table .col-uni {{ width: 13%; }}
     table.comparison-table .col-notes {{ width: 30%; }}
     table.comparison-table .col-bench {{ width: 16%; }}
@@ -1225,6 +1207,15 @@ def render_html(comparison_body, benchmarks_body):
     table.samples-table td.col-api .gallery-params-stack {{
       margin: 0.35rem auto 0.15rem;
     }}
+    a.api-source-link {{
+      color: inherit;
+      text-decoration: none;
+    }}
+    a.api-source-link:hover code,
+    a.api-source-link:focus-visible code {{
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }}
     td.cell-unavailable {{
       vertical-align: middle;
       text-align: center;
@@ -1247,7 +1238,7 @@ def render_html(comparison_body, benchmarks_body):
   <nav>
     <a href="#comparison">Feature comparison</a>
     <a href="#benchmarks">Benchmarks</a>
-    <a href="https://github.com/brunomaletta/tgen_vs_jngen/blob/main/docs/comparison.md">comparison.md</a> (GitHub)
+    <a href="https://github.com/brunomaletta/tgen_vs_jngen">GitHub</a>
   </nav>
   {comparison_body}
   {benchmarks_body}
@@ -1290,17 +1281,26 @@ def main():
     categories = meta.get("categories", {})
     operations = meta.get("operations", [])
 
-    comparison_md = render_comparison_md(operations, categories, bench_index)
-    benchmarks_md = render_benchmarks_md(bench)
-    comparison_html = render_comparison_html(operations, categories, bench_index)
-    benchmarks_html = render_benchmarks_html(bench)
+    api_sources = load_api_sources()
+    tgen_index = build_tgen_source_index()
+    vendor_shas = (bench or {}).get("vendors", {})
+    benchmark_to_op = build_benchmark_to_op_map(operations, api_sources)
+    op_categories = {op["id"]: op.get("category") for op in operations}
+    source_resolver = ApiSourceResolver(
+        api_sources,
+        tgen_index,
+        vendor_shas,
+        benchmark_to_op=benchmark_to_op,
+        op_categories=op_categories,
+    )
+
+    comparison_html = render_comparison_html(
+        operations, categories, bench_index, source_resolver
+    )
+    benchmarks_html = render_benchmarks_html(bench, source_resolver)
 
     os.makedirs(args.out_dir, exist_ok=True)
     page_html = render_html(comparison_html, benchmarks_html)
-    with open(os.path.join(args.out_dir, "comparison.md"), "w", encoding="utf-8") as f:
-        f.write(comparison_md)
-    with open(os.path.join(args.out_dir, "benchmarks.md"), "w", encoding="utf-8") as f:
-        f.write(benchmarks_md)
     with open(os.path.join(args.out_dir, "comparison.html"), "w", encoding="utf-8") as f:
         f.write(page_html)
     site_dir = args.site_dir or os.path.join(args.out_dir, "site")
@@ -1308,8 +1308,6 @@ def main():
         build_site(args.out_dir, site_dir)
         print(f"Wrote {site_dir}/")
 
-    print(f"Wrote {args.out_dir}/comparison.md")
-    print(f"Wrote {args.out_dir}/benchmarks.md")
     print(f"Wrote {args.out_dir}/comparison.html")
 
 

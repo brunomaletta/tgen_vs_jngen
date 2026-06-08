@@ -1,0 +1,167 @@
+# Maps comparison-table operations to source locations.
+# tgen: Doxygen qualified name (resolved via vendor/tgen/docs/build/xml).
+# jngen: implementation file + line (pinned to vendor submodule SHA at render time).
+
+repos:
+  tgen: brunomaletta/tgen
+  jngen: ifsmirnov/jngen
+
+entries:
+  graph_connected:
+    tgen: tgen::wgraph::get_connected
+    jngen: { file: impl/graph_inl.h, line: 170 }
+
+  graph_gen:
+    tgen: tgen::wgraph::gen
+    jngen: { file: impl/graph_inl.h, line: 170 }
+
+  graph_gen_skewed:
+    tgen: tgen::wgraph::gen_skewed
+    jngen: { file: impl/graph_inl.h, line: 230 }
+
+  graph_modifiers:
+    tgen: tgen::wgraph::gen
+    jngen: { file: impl/graph_inl.h, line: 170 }
+
+  graph_bipartite:
+    tgen: tgen::wgraph::gen_bipartite
+    jngen: { file: impl/graph_inl.h, line: 306 }
+
+  graph_complete_named:
+    tgen: tgen::K
+    jngen: { file: impl/graph_inl.h, line: 42 }
+
+  graph_directed:
+    tgen: tgen::wgraph::get_acyclic
+    jngen: { file: impl/graph_inl.h, line: 170 }
+
+  graph_weighted:
+    tgen: tgen::wgraph::wgraph
+    jngen: { file: impl/generic_graph_inl.h, line: 8 }
+
+  tree_gen:
+    tgen: tgen::wtree::gen
+    jngen: { file: impl/tree_inl.h, line: 129 }
+
+  tree_rooted_output:
+    tgen: tgen::wtree::gen
+    jngen: { file: repr.h, line: 108 }
+
+  tree_gen_skewed:
+    tgen: tgen::wtree::gen_skewed
+    jngen: { file: impl/tree_inl.h, line: 138 }
+
+  tree_named_shapes:
+    tgen: tgen::S
+    jngen: { file: impl/tree_inl.h, line: 164 }
+
+  tree_kruskal:
+    jngen: { file: impl/tree_inl.h, line: 150 }
+
+  list_all_different:
+    tgen: tgen::list::gen
+    jngen: { file: array.h, line: 186 }
+
+  permutation_uniform:
+    tgen: tgen::permutation::gen
+    jngen: { file: array.h, line: 254 }
+
+  structured_output:
+    tgen: tgen::pair::pair
+    jngen: { file: repr.h, line: 108 }
+
+  declarative_generators:
+    tgen: tgen::list::gen
+
+  math_partition_fixed_size:
+    tgen: tgen::math::gen_partition_fixed_size
+    jngen: { file: math_jngen.h, line: 206 }
+
+  math_partition:
+    tgen: tgen::math::gen_partition
+
+  math_random_prime:
+    tgen: tgen::math::gen_prime
+    jngen: { file: math_jngen.h, line: 156 }
+
+  math_congruent:
+    tgen: tgen::math::gen_congruent
+
+  math_partition_array:
+    jngen: { file: math_jngen.h, line: 268 }
+
+  geometry_convex_polygon:
+    tgen: tgen::geometry::random_convex_polygon
+    jngen: { file: impl/geometry_inl.h, line: 46 }
+
+  geometry_convex_polygon_large:
+    tgen: tgen::geometry::random_convex_polygon
+    jngen: { file: impl/geometry_inl.h, line: 46 }
+
+  geometry_points_general_position:
+    tgen: tgen::geometry::random_points_general_position
+    jngen: { file: impl/geometry_inl.h, line: 85 }
+
+  geometry_simple_polygon:
+    tgen: tgen::geometry::random_simple_polygon
+
+  geometry_simple_polygon_through_points:
+    tgen: tgen::geometry::random_simple_polygon_through_points
+
+  geometry_convex_polygon_tgen_n1e6:
+    tgen: tgen::geometry::random_convex_polygon
+
+  testlib_integration:
+    jngen: { file: impl/random_inl.h, line: 32 }
+
+  geometry_svg_drawer:
+    jngen: { file: drawer/drawer.h, line: 412 }
+
+  str_regex:
+    tgen: tgen::str::gen
+    jngen: { file: impl/random_inl.h, line: 202 }
+
+  anti_hash_strings:
+    tgen: tgen::hack::polynomial_hash_hack
+    jngen: { file: impl/rnds_inl.h, line: 204 }
+
+  hack_unsigned_polynomial_hash:
+    tgen: tgen::hack::unsigned_polynomial_hash_hack
+
+  anti_unordered_set:
+    tgen: tgen::hack::std_unordered
+    jngen: { file: rnda.h, line: 74 }
+
+  hack_string_set:
+    tgen: tgen::hack::string_set
+
+  hack_dinitz:
+    tgen: tgen::hack::dinitz_worst_case
+
+  hack_mo:
+    tgen: tgen::hack::mo
+
+  hack_spfa:
+    tgen: tgen::hack::spfa_hack
+
+  hack_stale_heap_dijkstra:
+    tgen: tgen::hack::stale_heap_dijkstra_bug
+
+  hack_non_strict_dijkstra:
+    tgen: tgen::hack::non_strict_relaxation_dijkstra_bug
+
+  hack_mt19937_xor_hash:
+    tgen: tgen::hack::mt19937_xor_hash_hack
+
+  hack_segment_tree_beats:
+    tgen: tgen::hack::segment_tree_beats_hack
+
+  hack_rotating_calipers:
+    tgen: tgen::hack::naive_rotating_calipers_max_dist_bug
+
+# Benchmark result id -> operation id (when not listed as benchmark_id in operations.yaml).
+benchmarks:
+  graph_connected_m_eq_2n: graph_connected
+  graph_gen_skewed_m_eq_2n: graph_gen_skewed
+  graph_gen_skewed_distinct_worst: graph_gen_skewed
+  geometry_random_simple_polygon: geometry_simple_polygon

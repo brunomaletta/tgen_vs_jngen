@@ -9,6 +9,7 @@ endif
 BENCH_BIN = build/benchmarks/run
 VIZ_BIN = build/visualize/samples
 BENCH_JSON = docs/benchmark_results.json
+TGEN_XML_INDEX = vendor/tgen/docs/build/xml/index.xml
 DOC ?= docs/comparison.html
 DOC_PATH := $(abspath $(DOC))
 
@@ -23,11 +24,11 @@ help:
 	@echo "  vendor     - init submodules and build jngen.h"
 	@echo "  benchmark  - run performance comparison → docs/benchmark_results.json"
 	@echo "  visualize  - generate geometry sample SVGs"
-	@echo "  docs       - regenerate comparison.md and benchmarks.md"
+	@echo "  docs       - regenerate comparison.html (builds tgen Doxygen index first)"
 	@echo "  check      - validate operations.yaml vs benchmark_results.json"
 	@echo "  site       - visualize + docs + GitHub Pages bundle (no benchmark)"
 	@echo "  doc        - alias for docs"
-	@echo "  opendoc    - open comparison.html in Chrome (DOC=docs/benchmarks.md for raw md)"
+	@echo "  opendoc    - open comparison.html in Chrome"
 	@echo "  all        - vendor + benchmark + visualize + docs"
 	@echo "  clean      - remove build/ and results/"
 	@echo ""
@@ -62,13 +63,16 @@ visualize: vendor $(VIZ_BIN)
 	cp results/svg/*_jngen.svg docs/gallery/ 2>/dev/null || true
 	python3 visualize/normalize_gallery.py docs/gallery
 
-docs:
+$(TGEN_XML_INDEX): vendor
+	cd vendor/tgen && $(MAKE) doc-prepare
+
+docs: $(TGEN_XML_INDEX)
 	python3 docs/render_docs.py
 
 check:
 	python3 docs/check_docs.py
 
-site: vendor visualize
+site: vendor visualize $(TGEN_XML_INDEX)
 	BUILD_PAGES_SITE=1 python3 docs/render_docs.py
 
 doc: docs

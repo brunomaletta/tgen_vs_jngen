@@ -26,16 +26,14 @@ make site    # visualize + render docs + docs/site/
 
 ## Documentation
 
-Requires Python 3 with PyYAML (`pip install pyyaml`).
+Requires Python 3 with PyYAML (`pip install pyyaml`). `make docs` also runs tgen’s Doxygen XML pass (needs Doxygen) so API cells link to pinned GitHub source lines.
 
 **Live site (styled tables + geometry samples):**  
 <https://brunomaletta.github.io/tgen_vs_jngen/>
 
 | Document | Description |
 |----------|-------------|
-| [docs/comparison.md](docs/comparison.md) | Feature comparison (plain GitHub Markdown) |
-| [docs/benchmarks.md](docs/benchmarks.md) | Head-to-head timing results |
-| [docs/comparison.html](docs/comparison.html) | Styled comparison (same as the Pages site) |
+| [docs/comparison.html](docs/comparison.html) | Feature comparison, benchmarks, and geometry samples (also on [GitHub Pages](https://brunomaletta.github.io/tgen_vs_jngen/)) |
 
 Run `make site` to rebuild the Pages bundle locally (`docs/site/index.html`).
 
@@ -54,13 +52,13 @@ Geometry sample SVGs live under `docs/gallery/` and are embedded in the HTML com
 
 **Tgen-only benchmarks** (in the table, not head-to-head): general-position points, simple polygons, convex polygon at n=1e6.
 
-Validate docs against committed timings:
+Validate docs against committed timings and API source mappings:
 
 ```bash
 make check
 ```
 
-Benchmark JSON records **vendor submodule SHAs** (`vendors.tgen` / `vendors.jngen`) when produced with `make benchmark`.
+API strings in the comparison table link to GitHub source (tgen line numbers from Doxygen XML; jngen from `docs/api_sources.yaml`). Links use vendor SHAs from `benchmark_results.json`.
 
 ## Project layout
 
@@ -69,7 +67,7 @@ vendor/tgen/     git submodule
 vendor/jngen/    git submodule (run build.py to produce jngen.h)
 benchmarks/      C++ harness
 visualize/       sample generators + SVG output
-docs/            operations.yaml, benchmark_results.json (committed), generated Markdown/HTML
+docs/            operations.yaml, api_sources.yaml, benchmark_results.json, generated HTML
 results/         ephemeral build outputs (gitignored)
 ```
 
