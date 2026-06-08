@@ -777,6 +777,7 @@ def format_params_md(params):
 
 GALLERY_SEED_BASE = 42
 GALLERY_VARIANT_COUNT = 20
+GALLERY_IMG_SIZE = 2000  # normalize_gallery.py CANVAS_SIZE
 
 
 def gallery_seeds():
@@ -800,6 +801,8 @@ def render_sample_widget(op_id, lib):
         f'<div class="sample-widget" data-prefix="{html.escape(prefix)}" '
         f'data-seeds="{html.escape(seeds_json)}" data-index="0">'
         f'<img class="sample-img" src="{html.escape(initial)}" '
+        f'width="{GALLERY_IMG_SIZE}" height="{GALLERY_IMG_SIZE}" '
+        f'loading="lazy" decoding="async" '
         f'alt="{html.escape(lib)} sample">'
         f'<button type="button" class="sample-regen" '
         f'title="Next sample (Shift-click: random)">↻</button>'
@@ -1591,7 +1594,6 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       height: 100%;
       border-radius: 3px;
       min-width: 2px;
-      transition: width 0.15s ease;
     }}
     .bench-bar-fill.lib-jngen {{ background: #3fb950; }}
     .bench-bar-fill.lib-tgen {{ background: #58a6ff; }}
@@ -1679,6 +1681,7 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       display: block;
       flex: 1;
       width: auto;
+      height: auto;
       min-width: 0;
       max-width: none;
       margin: 0;
