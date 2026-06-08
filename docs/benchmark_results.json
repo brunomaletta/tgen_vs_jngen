@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-08T02:01:52Z",
+  "generated_at": "2026-06-08T16:03:18Z",
   "compiler": "15.2.0",
   "flags": "-std=c++17 -O2",
   "hostname": "bruno-inspiron14",
@@ -16,15 +16,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 1214,
-      "runs_ms": [1237, 1214, 1187]
+      "median_ms": 1259,
+      "runs_ms": [1300, 1259, 1257]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1263,
-      "runs_ms": [1263, 1263, 1260]
+      "median_ms": 1380,
+      "runs_ms": [1369, 1431, 1380]
       },
-      "ratio": 0.961203
+      "ratio": 0.912319
     },
     {
       "id": "graph_connected_m_eq_2n",
@@ -34,15 +34,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 2373,
-      "runs_ms": [2373, 2397, 2343]
+      "median_ms": 2451,
+      "runs_ms": [2484, 2451, 2430]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 2031,
-      "runs_ms": [2031, 2014, 2031]
+      "median_ms": 2229,
+      "runs_ms": [2134, 2229, 2334]
       },
-      "ratio": 1.16839
+      "ratio": 1.0996
     },
     {
       "id": "graph_gen",
@@ -52,15 +52,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 892,
-      "runs_ms": [887, 892, 896]
+      "median_ms": 918,
+      "runs_ms": [942, 918, 918]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 578,
-      "runs_ms": [588, 578, 575]
+      "median_ms": 652,
+      "runs_ms": [660, 650, 652]
       },
-      "ratio": 1.54325
+      "ratio": 1.40798
     },
     {
       "id": "graph_gen_skewed_m_eq_n",
@@ -70,15 +70,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 190,
-      "runs_ms": [189, 190, 190]
+      "median_ms": 217,
+      "runs_ms": [213, 217, 220]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 755,
-      "runs_ms": [738, 766, 755]
+      "median_ms": 848,
+      "runs_ms": [832, 848, 863]
       },
-      "ratio": 0.251656
+      "ratio": 0.255896
     },
     {
       "id": "graph_gen_skewed_m_eq_2n",
@@ -88,15 +88,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 515,
-      "runs_ms": [522, 508, 515]
+      "median_ms": 642,
+      "runs_ms": [633, 642, 648]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1289,
-      "runs_ms": [1289, 1296, 1285]
+      "median_ms": 1920,
+      "runs_ms": [1967, 1886, 1920]
       },
-      "ratio": 0.399535
+      "ratio": 0.334375
     },
     {
       "id": "graph_gen_skewed_distinct_worst",
@@ -106,15 +106,13 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 409,
-      "runs_ms": [414, 408, 409]
+      "median_ms": 486,
+      "runs_ms": [475, 486, 488]
       },
       "jngen": {
-      "status": "ok",
-      "median_ms": 1491,
-      "runs_ms": [1479, 1491, 1576]
-      },
-      "ratio": 0.274313
+      "status": "error",
+      "error": "Cannot generate random stretched graph with parameters 1000000, 1999997, 100, 2 (assertion `false' failed)."
+      }
     },
     {
       "id": "tree_gen",
@@ -124,15 +122,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 579,
-      "runs_ms": [579, 573, 584]
+      "median_ms": 586,
+      "runs_ms": [583, 586, 590]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 690,
-      "runs_ms": [694, 685, 690]
+      "median_ms": 757,
+      "runs_ms": [757, 778, 755]
       },
-      "ratio": 0.83913
+      "ratio": 0.774108
     },
     {
       "id": "tree_gen_skewed",
@@ -142,15 +140,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 161,
-      "runs_ms": [161, 161, 160]
+      "median_ms": 179,
+      "runs_ms": [177, 179, 180]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 250,
-      "runs_ms": [248, 251, 250]
+      "median_ms": 317,
+      "runs_ms": [317, 317, 315]
       },
-      "ratio": 0.644
+      "ratio": 0.564669
     },
     {
       "id": "list_all_different",
@@ -160,49 +158,51 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 1884,
-      "runs_ms": [1884, 1908, 1832]
+      "median_ms": 1948,
+      "runs_ms": [2045, 1948, 1706]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 254,
-      "runs_ms": [250, 259, 254]
+      "median_ms": 206,
+      "runs_ms": [203, 206, 211]
       },
-      "ratio": 7.41732
+      "ratio": 9.45631
     },
     {
       "id": "geometry_convex_polygon",
       "name": "geometry::random_convex_polygon",
       "name_suffix": "",
-      "params": "n=3.6e5, min=0, max=3e9",
+      "params": "n=1e6, min=0, max=3e10",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 498,
-      "runs_ms": [510, 497, 498]
+      "median_ms": 1640,
+      "runs_ms": [1645, 1627, 1640]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 968,
-      "runs_ms": [974, 968, 952]
+      "median_ms": 2692,
+      "runs_ms": [2669, 2693, 2692]
       },
-      "ratio": 0.514463
+      "ratio": 0.609212
     },
     {
       "id": "geometry_points_general_position",
       "name": "geometry::random_points_general_position",
       "name_suffix": "",
-      "params": "n=1e6, min=0, max=3e6",
-      "compare_both": false,
+      "params": "n=1800, min=0, max=3e6",
+      "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 150,
-      "runs_ms": [156, 150, 140]
+      "median_ms": 0,
+      "runs_ms": [0, 0, 0]
       },
       "jngen": {
-      "status": "skipped",
-      "error": "comparison not applicable"
-      }
+      "status": "ok",
+      "median_ms": 1767,
+      "runs_ms": [1767, 1768, 1764]
+      },
+      "ratio": 0
     },
     {
       "id": "geometry_random_simple_polygon",
@@ -212,8 +212,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 1234,
-      "runs_ms": [1218, 1234, 1240]
+      "median_ms": 1078,
+      "runs_ms": [1064, 1084, 1078]
       },
       "jngen": {
       "status": "skipped",
@@ -228,8 +228,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 1097,
-      "runs_ms": [1082, 1228, 1097]
+      "median_ms": 923,
+      "runs_ms": [918, 923, 925]
       },
       "jngen": {
       "status": "skipped",
@@ -244,15 +244,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 12,
-      "runs_ms": [12, 11, 12]
+      "median_ms": 11,
+      "runs_ms": [12, 11, 11]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 17,
-      "runs_ms": [17, 17, 17]
+      "median_ms": 16,
+      "runs_ms": [16, 16, 16]
       },
-      "ratio": 0.705882
+      "ratio": 0.6875
     },
     {
       "id": "graph_bipartite",
@@ -262,15 +262,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 874,
-      "runs_ms": [902, 872, 874]
+      "median_ms": 739,
+      "runs_ms": [749, 739, 738]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 206,
-      "runs_ms": [206, 206, 218]
+      "median_ms": 185,
+      "runs_ms": [184, 185, 185]
       },
-      "ratio": 4.24272
+      "ratio": 3.99459
     },
     {
       "id": "graph_directed",
@@ -280,31 +280,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 416,
-      "runs_ms": [415, 416, 425]
+      "median_ms": 359,
+      "runs_ms": [335, 378, 359]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 623,
-      "runs_ms": [620, 633, 623]
+      "median_ms": 545,
+      "runs_ms": [548, 545, 539]
       },
-      "ratio": 0.667737
-    },
-    {
-      "id": "geometry_convex_polygon_tgen_n1e6",
-      "name": "geometry::random_convex_polygon",
-      "name_suffix": " (tgen scale)",
-      "params": "n=1e6, min=0, max=3e9",
-      "compare_both": false,
-      "tgen": {
-      "status": "ok",
-      "median_ms": 2070,
-      "runs_ms": [2070, 2083, 2034]
-      },
-      "jngen": {
-      "status": "skipped",
-      "error": "comparison not applicable"
-      }
+      "ratio": 0.658716
     }
   ]
 }

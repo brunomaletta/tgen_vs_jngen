@@ -79,7 +79,7 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	};
 	out["geometry_points_general_position"] = [] {
 		consume_polygon(tgen::geometry::random_points_general_position(
-			BENCH_GEOM_N, 0, BENCH_COORD_MAX));
+			BENCH_GENERAL_POSITION_N, 0, BENCH_GENERAL_POSITION_COORD_MAX));
 	};
 	out["geometry_random_simple_polygon"] = [] {
 		consume_polygon(tgen::geometry::random_simple_polygon(
@@ -102,10 +102,6 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	};
 	out["graph_directed"] = [] {
 		consume_graph(tgen::graph(BENCH_N, BENCH_M, true).gen());
-	};
-	out["geometry_convex_polygon_tgen_n1e6"] = [] {
-		consume_polygon(tgen::geometry::random_convex_polygon(
-			BENCH_N, 0, BENCH_CONVEX_TGEN_COORD_MAX));
 	};
 }
 

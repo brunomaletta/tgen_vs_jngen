@@ -164,7 +164,9 @@ h2 { font-size: 1.25rem; margin-top: 2rem; }
 h3, h4 { font-size: 1rem; margin-top: 1.25rem; border-bottom: none; }
 p, ul { margin: 0.75rem 0; }
 ul { padding-left: 1.5rem; }
+ul ul { margin: 0.25rem 0 0.35rem; }
 li { margin: 0.35rem 0; }
+li > ul { margin-top: 0.25rem; }
 code {
   background: var(--code-bg);
   padding: 0.1rem 0.35rem;
@@ -253,9 +255,59 @@ def render_source_html(rel_path: str, content: str, back_href: str) -> str:
 """
 
 
+_HTML_ENTITY_RE = re.compile(r"&(?:lt|gt|amp|ge|emsp|nbsp);")
+_SUP_RE = re.compile(r"<sup>.*?</sup>", re.IGNORECASE)
+_BR_RE = re.compile(r"<br\s*/?>", re.IGNORECASE)
+_LIST_ITEM_RE = re.compile(r"^(\s*)[*-] (.*)$")
+
+
+def _protect_html_literals(text: str) -> tuple[str, list[str]]:
+    saved: list[str] = []
+
+    def keep(match: re.Match[str]) -> str:
+        saved.append(match.group(0))
+        return f"\x00S{len(saved) - 1}\x00"
+
+    text = _SUP_RE.sub(keep, text)
+    text = _HTML_ENTITY_RE.sub(keep, text)
+    text = _BR_RE.sub(keep, text)
+    return text, saved
+
+
+def _restore_html_literals(text: str, saved: list[str]) -> str:
+    for i, literal in enumerate(saved):
+        text = text.replace(f"\x00S{i}\x00", literal)
+    return text
+
+
+def _apply_emphasis(text: str) -> str:
+    out: list[str] = []
+    i = 0
+    while i < len(text):
+        if text[i] == "*":
+            j = text.find("*", i + 1)
+            if j == -1:
+                out.append(text[i])
+                i += 1
+                continue
+            out.append(f"<em>{text[i + 1 : j]}</em>")
+            i = j + 1
+            continue
+        j = text.find("*", i)
+        if j == -1:
+            out.append(text[i:])
+            break
+        out.append(text[i:j])
+        i = j
+    return "".join(out)
+
+
 def _inline_markdown(text: str) -> str:
+    text = text.replace("\\_", "_")
+    text = text.replace("\\*", "×")
+    text, saved_literals = _protect_html_literals(text)
     text = html.escape(text, quote=False)
-    text = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", text)
+    text = _restore_html_literals(text, saved_literals)
     text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
     text = re.sub(
         r"\[([^\]]+)\]\(([^)]+)\)",
@@ -264,7 +316,37 @@ def _inline_markdown(text: str) -> str:
         ),
         text,
     )
-    return text
+    return _apply_emphasis(text)
+
+
+class _ListBuilder:
+    def __init__(self):
+        self.level = -1
+        self.parts: list[str] = []
+
+    def close(self):
+        while self.level >= 0:
+            self.parts.append("</li></ul>")
+            self.level -= 1
+
+    def add_item(self, indent: int, content: str):
+        target = indent // 4
+        while self.level > target:
+            self.parts.append("</li></ul>")
+            self.level -= 1
+        if self.level == target and self.parts:
+            self.parts.append("</li>")
+        while self.level < target:
+            self.parts.append("<ul>")
+            self.level += 1
+        if self.level < 0:
+            self.parts.append("<ul>")
+            self.level = 0
+        self.parts.append(f"<li>{content}")
+
+    def html(self) -> str:
+        self.close()
+        return "".join(self.parts)
 
 
 def markdown_to_html(text: str) -> str:
@@ -273,13 +355,13 @@ def markdown_to_html(text: str) -> str:
     i = 0
     in_code = False
     code_lines: list[str] = []
-    list_open = False
+    list_builder: _ListBuilder | None = None
 
     def close_list():
-        nonlocal list_open
-        if list_open:
-            out.append("</ul>")
-            list_open = False
+        nonlocal list_builder
+        if list_builder is not None:
+            out.append(list_builder.html())
+            list_builder = None
 
     while i < len(lines):
         line = lines[i]
@@ -307,25 +389,26 @@ def markdown_to_html(text: str) -> str:
             i += 1
             continue
 
+        list_match = _LIST_ITEM_RE.match(line)
+        if list_match:
+            if list_builder is None:
+                list_builder = _ListBuilder()
+            indent = len(list_match.group(1).expandtabs(4))
+            list_builder.add_item(indent, _inline_markdown(list_match.group(2)))
+            i += 1
+            continue
+
+        close_list()
+
         if line.startswith("#### "):
-            close_list()
             out.append(f"<h4>{_inline_markdown(line[5:])}</h4>")
         elif line.startswith("### "):
-            close_list()
             out.append(f"<h3>{_inline_markdown(line[4:])}</h3>")
         elif line.startswith("## "):
-            close_list()
             out.append(f"<h2>{_inline_markdown(line[3:])}</h2>")
         elif line.startswith("# "):
-            close_list()
             out.append(f"<h1>{_inline_markdown(line[2:])}</h1>")
-        elif line.startswith("* ") or line.startswith("- "):
-            if not list_open:
-                out.append("<ul>")
-                list_open = True
-            out.append(f"<li>{_inline_markdown(line[2:])}</li>")
         else:
-            close_list()
             out.append(f"<p>{_inline_markdown(line)}</p>")
         i += 1
 

@@ -21,15 +21,25 @@ constexpr int BENCH_COORD_MAX = 3 * BENCH_GEOM_N;
 constexpr int BENCH_ELONGATION = 100;
 constexpr int BENCH_SPREAD_SMALL = 2;
 constexpr int BENCH_SPREAD_LARGE = 6;
+// jngen pointsInGeneralPosition is O(n^2) rejection; tune n for ~2s jngen runtime.
+#ifdef QUICK
+constexpr int BENCH_GENERAL_POSITION_N = 1'000;
+constexpr long long BENCH_GENERAL_POSITION_COORD_MAX = 3'000'000LL;
+constexpr const char *BENCH_PARAMS_GENERAL_POSITION = "n=1e3, min=0, max=3e6";
+#else
+constexpr int BENCH_GENERAL_POSITION_N = 1'800;
+constexpr long long BENCH_GENERAL_POSITION_COORD_MAX = 3'000'000LL;
+constexpr const char *BENCH_PARAMS_GENERAL_POSITION = "n=1800, min=0, max=3e6";
+#endif
 // jngen convexPolygon needs hull(10n) >= n vertices; max n grows with coordinate range.
 #ifdef QUICK
 constexpr int BENCH_CONVEX_N = 10'000;
 constexpr int BENCH_CONVEX_COORD_MAX = 3 * BENCH_N;
 constexpr const char *BENCH_PARAMS_CONVEX = "n=1e4, min=0, max=3e5";
 #else
-constexpr int BENCH_CONVEX_N = 360'000;
-constexpr long long BENCH_CONVEX_COORD_MAX = 3'000'000'000LL;
-constexpr const char *BENCH_PARAMS_CONVEX = "n=3.6e5, min=0, max=3e9";
+constexpr int BENCH_CONVEX_N = 1'000'000;
+constexpr long long BENCH_CONVEX_COORD_MAX = 30'000'000'000LL;
+constexpr const char *BENCH_PARAMS_CONVEX = "n=1e6, min=0, max=3e10";
 #endif
 
 #ifdef QUICK
@@ -51,8 +61,6 @@ constexpr int BENCH_BIP_N1 = 100;
 constexpr int BENCH_BIP_N2 = 100;
 constexpr int BENCH_BIP_M = 5'000;
 constexpr const char *BENCH_PARAMS_BIPARTITE = "n1=1e2, n2=1e2, m=5e3";
-constexpr long long BENCH_CONVEX_TGEN_COORD_MAX = 3 * BENCH_N;
-constexpr const char *BENCH_PARAMS_CONVEX_TGEN = "n=1e5, min=0, max=3e5";
 #else
 constexpr const char *BENCH_PARAMS_N = "n=1e6";
 constexpr const char *BENCH_PARAMS_N_M = "n=1e6, m=1e6";
@@ -72,8 +80,6 @@ constexpr int BENCH_BIP_N1 = 1'000;
 constexpr int BENCH_BIP_N2 = 1'000;
 constexpr int BENCH_BIP_M = 500'000;
 constexpr const char *BENCH_PARAMS_BIPARTITE = "n1=1e3, n2=1e3, m=5e5";
-constexpr long long BENCH_CONVEX_TGEN_COORD_MAX = 3'000'000'000LL;
-constexpr const char *BENCH_PARAMS_CONVEX_TGEN = "n=1e6, min=0, max=3e9";
 #endif
 
 inline std::vector<benchmark::CaseSpec> all_case_specs() {
@@ -98,7 +104,7 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		 BENCH_PARAMS_CONVEX, true},
 		{"geometry_points_general_position",
 		 "geometry::random_points_general_position", "",
-		 BENCH_PARAMS_GEOM, false},
+		 BENCH_PARAMS_GENERAL_POSITION, true},
 		{"geometry_random_simple_polygon", "geometry::random_simple_polygon",
 		 "", BENCH_PARAMS_GEOM, false},
 		{"geometry_simple_polygon_through_points",
@@ -109,8 +115,5 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		 true},
 		{"graph_directed", "graph::gen", " (directed)", BENCH_PARAMS_N_M,
 		 true},
-		{"geometry_convex_polygon_tgen_n1e6",
-		 "geometry::random_convex_polygon", " (tgen scale)",
-		 BENCH_PARAMS_CONVEX_TGEN, false},
 	};
 }

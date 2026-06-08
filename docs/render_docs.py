@@ -15,6 +15,7 @@ sys.path.insert(0, DOCS_DIR)
 
 from tgen_source_index import (  # noqa: E402
     TgenSourceIndex,
+    TGEN_SITE_DOCS_PREFIX,
     default_xml_dir,
     local_source_url,
     save_index_cache,
@@ -27,7 +28,7 @@ except ImportError:
     sys.exit(1)
 
 
-O_COMPLEXITY_RE = re.compile(r"O\([^)]+\)")
+COMPLEXITY_RE = re.compile(r"(?:O|Omega)\((?:[^()]*|\([^()]*\))+\)")
 LIB_MENTION_RE = re.compile(r"\b(jngen|tgen)(?=\s)")
 
 
@@ -56,9 +57,9 @@ def render_vendor_commits_html(vendors, repos=None):
             continue
         repo = repos.get(lib)
         if repo:
-            commit_url = f"https://github.com/{repo}/commit/{sha}"
+            repo_url = f"https://github.com/{repo}/tree/{sha}"
             sha_part = (
-                f'<a href="{html.escape(commit_url)}">'
+                f'<a href="{html.escape(repo_url)}">'
                 f"<code>{html.escape(sha)}</code></a>"
             )
         else:
@@ -94,7 +95,7 @@ def strip_inferred(text):
 def bold_complexities_md(text):
     if not text:
         return text
-    return O_COMPLEXITY_RE.sub(r"**\g<0>**", text)
+    return COMPLEXITY_RE.sub(r"**\g<0>**", text)
 
 
 def bold_complexities_html(text):
@@ -102,7 +103,7 @@ def bold_complexities_html(text):
         return text
     out = []
     last = 0
-    for match in O_COMPLEXITY_RE.finditer(text):
+    for match in COMPLEXITY_RE.finditer(text):
         out.append(html.escape(text[last : match.start()]))
         out.append(
             f'<strong class="complexity">{html.escape(match.group(0))}</strong>'
@@ -112,9 +113,19 @@ def bold_complexities_html(text):
     return "".join(out)
 
 
+def format_undocumented_md():
+    return "*Undocumented*"
+
+
+def format_undocumented_html():
+    return format_uniform_value_html("Undocumented")
+
+
 def format_inferred_text_md(text):
     if not text:
         return text
+    if text.strip().lower() == "undocumented":
+        return format_undocumented_md()
     if INFERRED_SUFFIX not in text:
         return bold_complexities_md(highlight_lib_labels_md(text))
     idx = text.index(INFERRED_SUFFIX)
@@ -130,6 +141,8 @@ def format_inferred_text_md(text):
 def format_inferred_text_html(text):
     if not text:
         return text
+    if text.strip().lower() == "undocumented":
+        return format_undocumented_html()
     if INFERRED_SUFFIX not in text:
         return bold_complexities_html(text)
     idx = text.index(INFERRED_SUFFIX)
@@ -188,10 +201,8 @@ JNGEN_CATEGORY_DOC = {
 }
 
 JNGEN_OP_DOC = {
-    "graph_weighted": "doc/generic_graph.md",
-    "tree_rooted_output": "doc/printers.md",
-    "structured_output": "doc/printers.md",
     "testlib_integration": "doc/random.md",
+    "str_regex": "doc/random.md",
     "geometry_svg_drawer": "doc/drawer.md",
     "anti_hash_strings": "doc/strings.md",
 }
@@ -247,6 +258,8 @@ class ApiSourceResolver:
     def doc_url(self, op_id, lib):
         entry = self.entries.get(op_id, {}).get(lib)
         if lib == "tgen":
+            if isinstance(entry, dict) and entry.get("doc"):
+                return f"{TGEN_SITE_DOCS_PREFIX}/{entry['doc']}"
             symbol = entry if isinstance(entry, str) else (
                 entry.get("symbol") if entry else None
             )
@@ -327,7 +340,6 @@ def lib_label(text, lib):
 
 # Ops where uniformity is N/A (deterministic construction or not random sampling).
 NO_DEFAULT_UNIFORM_OPS = frozenset({
-    "tree_named_shapes",
     "hack_unsigned_polynomial_hash",
     "hack_mt19937_xor_hash",
     "hack_rotating_calipers",
@@ -419,7 +431,7 @@ def format_notes_text_html(text):
     if INFERRED_SUFFIX not in text:
         out = []
         last = 0
-        for match in O_COMPLEXITY_RE.finditer(text):
+        for match in COMPLEXITY_RE.finditer(text):
             out.append(highlight_lib_names_html(text[last : match.start()]))
             out.append(
                 f'<strong class="complexity">{html.escape(match.group(0))}</strong>'

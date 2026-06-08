@@ -19,41 +19,21 @@ entries:
     tgen: tgen::wgraph::gen_skewed
     jngen: { file: impl/graph_inl.h, line: 230 }
 
-  graph_modifiers:
-    tgen: tgen::wgraph::gen
-    jngen: { file: impl/graph_inl.h, line: 170 }
-
   graph_bipartite:
     tgen: tgen::wgraph::gen_bipartite
     jngen: { file: impl/graph_inl.h, line: 306 }
-
-  graph_complete_named:
-    tgen: tgen::K
-    jngen: { file: impl/graph_inl.h, line: 42 }
 
   graph_directed:
     tgen: tgen::wgraph::get_acyclic
     jngen: { file: impl/graph_inl.h, line: 170 }
 
-  graph_weighted:
-    tgen: tgen::wgraph::wgraph
-    jngen: { file: impl/generic_graph_inl.h, line: 8 }
-
   tree_gen:
     tgen: tgen::wtree::gen
     jngen: { file: impl/tree_inl.h, line: 129 }
 
-  tree_rooted_output:
-    tgen: tgen::wtree::gen
-    jngen: { file: repr.h, line: 108 }
-
   tree_gen_skewed:
     tgen: tgen::wtree::gen_skewed
     jngen: { file: impl/tree_inl.h, line: 138 }
-
-  tree_named_shapes:
-    tgen: tgen::S
-    jngen: { file: impl/tree_inl.h, line: 164 }
 
   tree_kruskal:
     jngen: { file: impl/tree_inl.h, line: 150 }
@@ -65,10 +45,6 @@ entries:
   permutation_uniform:
     tgen: tgen::permutation::gen
     jngen: { file: array.h, line: 254 }
-
-  structured_output:
-    tgen: tgen::pair::pair
-    jngen: { file: repr.h, line: 108 }
 
   declarative_generators:
     tgen: tgen::list::gen
@@ -108,8 +84,10 @@ entries:
   geometry_simple_polygon_through_points:
     tgen: tgen::geometry::random_simple_polygon_through_points
 
-  geometry_convex_polygon_tgen_n1e6:
-    tgen: tgen::geometry::random_convex_polygon
+  distinct_generation:
+    tgen:
+      symbol: tgen::distinct
+      doc: structtgen_1_1distinct.html
 
   testlib_integration:
     jngen: { file: impl/random_inl.h, line: 32 }
