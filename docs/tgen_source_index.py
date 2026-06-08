@@ -8,15 +8,31 @@ import sys
 import xml.etree.ElementTree as ET
 
 TGEN_REPO = "brunomaletta/tgen"
-TGEN_DOCS_BASE = "https://brunomaletta.github.io/tgen"
 TGEN_DEFAULT_PATH = "single_include/tgen.h"
+TGEN_SITE_DOCS_PREFIX = "vendor/tgen/docs"
+TGEN_SITE_SOURCE_PREFIX = "vendor/tgen"
 
 
-def doxygen_docs_url(member_id: str) -> str:
-    if "_1" in member_id:
-        page, anchor = member_id.split("_1", 1)
-        return f"{TGEN_DOCS_BASE}/{page}.html#{anchor}"
-    return f"{TGEN_DOCS_BASE}/{member_id}.html"
+def doxygen_docs_page_anchor(member_id: str) -> tuple[str, str]:
+    if "_1" not in member_id:
+        return f"{member_id}.html", ""
+    page, anchor = member_id.rsplit("_1", 1)
+    return f"{page}.html", anchor
+
+
+def local_docs_url(member_id: str, prefix: str = TGEN_SITE_DOCS_PREFIX) -> str:
+    page, anchor = doxygen_docs_page_anchor(member_id)
+    url = f"{prefix}/{page}"
+    if anchor:
+        url += f"#{anchor}"
+    return url
+
+
+def local_source_url(path: str, line: int | None, prefix: str = TGEN_SITE_SOURCE_PREFIX) -> str:
+    url = f"{prefix}/{path}.html"
+    if line is not None:
+        url += f"#L{line}"
+    return url
 
 
 def _repo_relative_path(abs_path: str) -> str:
@@ -94,7 +110,13 @@ class TgenSourceIndex:
         member_id = loc.get("member_id")
         if not member_id:
             return None
-        return doxygen_docs_url(str(member_id))
+        return local_docs_url(str(member_id))
+
+    def source_url(self, symbol: str) -> str | None:
+        loc = self.lookup(symbol)
+        if not loc:
+            return None
+        return local_source_url(str(loc["path"]), int(loc["line"]))
 
     def __len__(self) -> int:
         return len(self._index)

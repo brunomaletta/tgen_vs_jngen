@@ -1,6 +1,7 @@
 build/
 results/
 docs/site/
+docs/vendor/
 docs/__pycache__/
 __pycache__/
 vendor/jngen/jngen.h

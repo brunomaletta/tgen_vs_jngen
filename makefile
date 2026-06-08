@@ -24,7 +24,7 @@ help:
 	@echo "  vendor     - init submodules and build jngen.h"
 	@echo "  benchmark  - run performance comparison → docs/benchmark_results.json"
 	@echo "  visualize  - generate geometry sample SVGs"
-	@echo "  docs       - regenerate comparison.html (builds tgen Doxygen index first)"
+	@echo "  docs       - regenerate comparison.html + bundled vendor docs"
 	@echo "  check      - validate operations.yaml vs benchmark_results.json"
 	@echo "  site       - visualize + docs + GitHub Pages bundle (no benchmark)"
 	@echo "  doc        - alias for docs"
@@ -68,12 +68,14 @@ $(TGEN_XML_INDEX): vendor
 
 docs: $(TGEN_XML_INDEX)
 	python3 docs/render_docs.py
+	cd vendor/tgen && $(MAKE) doc
+	python3 docs/build_site.py --bundle-only
 
 check:
 	python3 docs/check_docs.py
 
-site: vendor visualize $(TGEN_XML_INDEX)
-	BUILD_PAGES_SITE=1 python3 docs/render_docs.py
+site: vendor visualize docs
+	python3 docs/build_site.py --site-dir docs/site
 
 doc: docs
 

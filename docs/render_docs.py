@@ -16,8 +16,7 @@ sys.path.insert(0, DOCS_DIR)
 from tgen_source_index import (  # noqa: E402
     TgenSourceIndex,
     default_xml_dir,
-    github_blob_url,
-    read_git_sha,
+    local_source_url,
 )
 
 try:
@@ -99,21 +98,20 @@ JNGEN_OP_DOC = {
 }
 
 
+JNGEN_VENDOR_DOC_PREFIX = "vendor/jngen"
+JNGEN_VENDOR_SOURCE_PREFIX = "vendor/jngen"
+
+
 class ApiSourceResolver:
     def __init__(
         self,
         sources_meta,
         tgen_index,
-        vendor_shas,
-        root=ROOT_DIR,
         benchmark_to_op=None,
         op_categories=None,
     ):
         self.entries = (sources_meta or {}).get("entries", {})
-        self.repos = (sources_meta or {}).get("repos", {})
         self.tgen_index = tgen_index
-        self.vendor_shas = vendor_shas or {}
-        self.root = root
         self.benchmark_to_op = benchmark_to_op or {}
         self.op_categories = op_categories or {}
 
@@ -123,27 +121,20 @@ class ApiSourceResolver:
             return None
         if lib == "tgen":
             symbol = entry if isinstance(entry, str) else entry.get("symbol")
-            sha = self._sha("tgen")
-            if not symbol or not sha or self.tgen_index is None:
+            if not symbol or self.tgen_index is None:
                 return None
-            return self.tgen_index.github_url(symbol, sha)
+            return self.tgen_index.source_url(symbol)
         if lib == "jngen":
             if isinstance(entry, str):
                 return None
             file_path = entry.get("file")
             line = entry.get("line")
-            sha = self._sha("jngen")
-            if not file_path or line is None or not sha:
+            if not file_path or line is None:
                 return None
-            repo = self.repos.get("jngen", "ifsmirnov/jngen")
-            return github_blob_url(sha, file_path, int(line), repo=repo)
+            return local_source_url(
+                file_path, int(line), prefix=JNGEN_VENDOR_SOURCE_PREFIX
+            )
         return None
-
-    def _sha(self, lib):
-        sha = self.vendor_shas.get(lib)
-        if sha:
-            return sha
-        return read_git_sha(os.path.join(self.root, "vendor", lib))
 
     def op_id_for_benchmark(self, bench_id):
         return self.benchmark_to_op.get(bench_id)
@@ -171,11 +162,8 @@ class ApiSourceResolver:
                 doc_path = JNGEN_CATEGORY_DOC.get(self.op_categories.get(op_id))
             if not doc_path:
                 return None
-            sha = self._sha("jngen")
-            if not sha:
-                return None
-            repo = self.repos.get("jngen", "ifsmirnov/jngen")
-            return github_blob_url(sha, doc_path, line=None, repo=repo)
+            html_path = doc_path.replace(".md", ".html")
+            return f"{JNGEN_VENDOR_DOC_PREFIX}/{html_path}"
         return None
 
     def doc_url_for_benchmark(self, bench_id, lib="tgen"):
@@ -1006,7 +994,25 @@ def render_benchmarks_html(bench, source_resolver=None):
     return "\n".join(parts)
 
 
-def render_html(comparison_body, benchmarks_body):
+def render_page_meta(bench):
+    if not bench:
+        return ""
+    vendors = bench.get("vendors", {})
+    parts = [
+        '<div class="page-meta">',
+        f"<div><strong>Generated:</strong> {html.escape(bench.get('generated_at', '—'))}</div>",
+    ]
+    if vendors:
+        parts.append(
+            "<div><strong>Vendor commits:</strong> "
+            f"tgen <code>{html.escape(vendors.get('tgen', '—'))}</code>, "
+            f"jngen <code>{html.escape(vendors.get('jngen', '—'))}</code></div>"
+        )
+    parts.append("</div>")
+    return "\n".join(parts)
+
+
+def render_html(comparison_body, benchmarks_body, page_meta=""):
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1232,9 +1238,27 @@ def render_html(comparison_body, benchmarks_body):
       border-radius: 6px;
     }}
     nav a {{ margin-right: 1rem; }}
+    .page-meta {{
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }}
+    .page-meta strong {{ color: var(--text); }}
+    .page-meta code {{
+      background: var(--code-bg);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.88em;
+    }}
+    .page-meta div + div {{ margin-top: 0.35rem; }}
   </style>
 </head>
 <body>
+  {page_meta}
   <nav>
     <a href="#comparison">Feature comparison</a>
     <a href="#benchmarks">Benchmarks</a>
@@ -1247,32 +1271,11 @@ def render_html(comparison_body, benchmarks_body):
 """
 
 
-def build_site(out_dir, site_dir):
-    import shutil
-
-    html_path = os.path.join(out_dir, "comparison.html")
-    if not os.path.isfile(html_path):
-        raise FileNotFoundError(f"build_site: missing {html_path}")
-
-    gallery_src = os.path.join(out_dir, "gallery")
-    if os.path.isdir(site_dir):
-        shutil.rmtree(site_dir)
-    os.makedirs(site_dir, exist_ok=True)
-    shutil.copy2(html_path, os.path.join(site_dir, "index.html"))
-    if os.path.isdir(gallery_src):
-        shutil.copytree(gallery_src, os.path.join(site_dir, "gallery"))
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--yaml", default="docs/operations.yaml")
     parser.add_argument("--json", default="docs/benchmark_results.json")
     parser.add_argument("--out-dir", default="docs")
-    parser.add_argument(
-        "--site-dir",
-        default="",
-        help="if set, also build a GitHub Pages site (index.html + gallery/)",
-    )
     args = parser.parse_args()
 
     meta = load_yaml(args.yaml)
@@ -1283,13 +1286,11 @@ def main():
 
     api_sources = load_api_sources()
     tgen_index = build_tgen_source_index()
-    vendor_shas = (bench or {}).get("vendors", {})
     benchmark_to_op = build_benchmark_to_op_map(operations, api_sources)
     op_categories = {op["id"]: op.get("category") for op in operations}
     source_resolver = ApiSourceResolver(
         api_sources,
         tgen_index,
-        vendor_shas,
         benchmark_to_op=benchmark_to_op,
         op_categories=op_categories,
     )
@@ -1300,13 +1301,10 @@ def main():
     benchmarks_html = render_benchmarks_html(bench, source_resolver)
 
     os.makedirs(args.out_dir, exist_ok=True)
-    page_html = render_html(comparison_html, benchmarks_html)
+    page_meta = render_page_meta(bench)
+    page_html = render_html(comparison_html, benchmarks_html, page_meta)
     with open(os.path.join(args.out_dir, "comparison.html"), "w", encoding="utf-8") as f:
         f.write(page_html)
-    site_dir = args.site_dir or os.path.join(args.out_dir, "site")
-    if args.site_dir or os.environ.get("BUILD_PAGES_SITE") == "1":
-        build_site(args.out_dir, site_dir)
-        print(f"Wrote {site_dir}/")
 
     print(f"Wrote {args.out_dir}/comparison.html")
 
