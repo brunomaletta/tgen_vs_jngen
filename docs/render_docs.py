@@ -963,7 +963,7 @@ def lib_benchmark_ok(lib_result):
     return lib_result.get("status") == "ok"
 
 
-def render_bench_fail_row(label, label_class, lib_result):
+def render_bench_fail_row(label, label_class, lib_result, *, show_detail=True):
     status = lib_result.get("status", "failed")
     if status == "error":
         badge = "FAILS"
@@ -974,7 +974,7 @@ def render_bench_fail_row(label, label_class, lib_result):
 
     error = lib_result.get("error", "").strip()
     detail = ""
-    if error and status in ("error", "timeout"):
+    if show_detail and error and status in ("error", "timeout"):
         if len(error) > 140:
             error = error[:137] + "..."
         detail = f'<div class="bench-fail-detail">{html.escape(error)}</div>'
@@ -994,7 +994,9 @@ def render_bench_fail_row(label, label_class, lib_result):
     )
 
 
-def render_bench_comparison_html(jg_result, tg_result, show_times=True):
+def render_bench_comparison_html(
+    jg_result, tg_result, show_times=True, *, show_fail_detail=True
+):
     jg_ok = lib_benchmark_ok(jg_result)
     tg_ok = lib_benchmark_ok(tg_result)
     jg_ms = lib_median_ms_raw(jg_result) if jg_ok else None
@@ -1012,13 +1014,21 @@ def render_bench_comparison_html(jg_result, tg_result, show_times=True):
             render_bench_bar_row("jngen", "lib-jngen", jg_ms, max_ms, show_times)
         )
     else:
-        parts.append(render_bench_fail_row("jngen", "lib-jngen", jg_result))
+        parts.append(
+            render_bench_fail_row(
+                "jngen", "lib-jngen", jg_result, show_detail=show_fail_detail
+            )
+        )
     if tg_ok and tg_ms is not None:
         parts.append(
             render_bench_bar_row("tgen", "lib-tgen", tg_ms, max_ms, show_times)
         )
     else:
-        parts.append(render_bench_fail_row("tgen", "lib-tgen", tg_result))
+        parts.append(
+            render_bench_fail_row(
+                "tgen", "lib-tgen", tg_result, show_detail=show_fail_detail
+            )
+        )
     parts.append("</div>")
     return "".join(parts)
 
@@ -1064,12 +1074,17 @@ def lib_timing_ms(lib_result):
     return str(lib_result.get("status", "—"))
 
 
-def render_benchmark_row_lines(row, *, include_ratio=False, include_params=True):
+def render_benchmark_row_lines(
+    row, *, include_ratio=False, include_params=True, show_fail_detail=True
+):
     lines = []
     if row.get("compare_both"):
         lines.append(
             render_bench_comparison_html(
-                row.get("jngen", {}), row.get("tgen", {}), show_times=True
+                row.get("jngen", {}),
+                row.get("tgen", {}),
+                show_times=True,
+                show_fail_detail=show_fail_detail,
             )
         )
         if include_ratio:
@@ -1108,7 +1123,9 @@ def format_benchmark_cell_html(op, bench_index):
         row = bench_index.get(bid)
         if not row:
             continue
-        lines = render_benchmark_row_lines(row, include_ratio=True)
+        lines = render_benchmark_row_lines(
+            row, include_ratio=True, show_fail_detail=False
+        )
         suffix = row.get("name_suffix", "").strip()
         if suffix and len(bids) > 1:
             lines.insert(
@@ -1232,7 +1249,9 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
         name = row.get("name", "") + row.get("name_suffix", "")
         params = row.get("params", "")
         comparison = "<br>".join(
-            render_benchmark_row_lines(row, include_params=False)
+            render_benchmark_row_lines(
+                row, include_params=False, show_fail_detail=True
+            )
         )
         source_url = None
         doc_url = None
