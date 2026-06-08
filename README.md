@@ -21,7 +21,7 @@ git add docs/benchmark_results.json && git commit -m "Update benchmark results"
 For docs/Pages without re-running benchmarks:
 
 ```bash
-make site    # visualize + render docs + docs/site/
+make site    # render docs + docs/site/ (uses committed gallery SVGs)
 ```
 
 ## Documentation
@@ -37,7 +37,7 @@ Requires Python 3 with PyYAML (`pip install pyyaml`). `make docs` also runs tgen
 
 Run `make site` to rebuild the Pages bundle locally (`docs/site/index.html`).
 
-Geometry sample SVGs live under `docs/gallery/` (50 variants per sample, seeds 42–91; built by `make visualize`, not committed). Each sample has a ↻ button in the comparison page — click to cycle, Shift-click for a random variant.
+Geometry sample SVGs live under `docs/gallery/` (50 variants per sample, seeds 42–91; **committed** so CI skips regeneration). Regenerate locally with `make visualize`, then commit `docs/gallery/*.svg`. Each sample has a ↻ button — click to cycle, Shift-click for a random variant.
 
 ## What is compared
 

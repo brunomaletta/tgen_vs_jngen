@@ -54,6 +54,20 @@ def main():
 
     errors = []
 
+    gallery_dir = os.path.join(root, "docs", "gallery")
+    # 5 tgen + 3 jngen sample types × 50 seeds (see visualize/samples.h).
+    expected_gallery_svgs = 400
+    gallery_svgs = [
+        name
+        for name in os.listdir(gallery_dir)
+        if name.endswith(".svg")
+    ] if os.path.isdir(gallery_dir) else []
+    if len(gallery_svgs) != expected_gallery_svgs:
+        errors.append(
+            f"gallery: expected {expected_gallery_svgs} SVGs in docs/gallery/, "
+            f"found {len(gallery_svgs)} (run make visualize and commit)"
+        )
+
     for op in meta.get("operations", []):
         if not op.get("benchmark"):
             continue

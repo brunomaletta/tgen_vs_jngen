@@ -26,14 +26,15 @@ help:
 	@echo "  visualize  - generate geometry sample SVGs"
 	@echo "  docs       - regenerate comparison.html + bundled vendor docs"
 	@echo "  check      - validate operations.yaml vs benchmark_results.json"
-	@echo "  site       - visualize + docs + GitHub Pages bundle (no benchmark)"
+	@echo "  site       - docs + GitHub Pages bundle (gallery SVGs committed; no benchmark)"
 	@echo "  doc        - alias for docs"
 	@echo "  opendoc    - open comparison.html in Chrome"
 	@echo "  all        - vendor + benchmark + visualize + docs"
 	@echo "  clean      - remove build/ and results/"
 	@echo ""
 	@echo "Benchmarks run locally; commit docs/benchmark_results.json."
-	@echo "CI/Pages consume that file (make site does not re-run benchmarks)."
+	@echo "CI/Pages consume benchmark_results.json and committed gallery SVGs."
+	@echo "Regenerate gallery with 'make visualize', then commit docs/gallery/*.svg."
 	@echo "Use QUICK=1 for n=1e5 instead of n=1e6 benchmarks."
 
 vendor:
@@ -74,7 +75,7 @@ docs: $(TGEN_XML_INDEX)
 check:
 	python3 docs/check_docs.py
 
-site: vendor visualize docs
+site: vendor docs
 	python3 docs/build_site.py --site-dir docs/site
 
 doc: docs

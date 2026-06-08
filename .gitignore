@@ -1,6 +1,5 @@
 build/
 results/
-docs/gallery/*.svg
 docs/site/
 docs/vendor/
 docs/tgen_symbol_index.json
