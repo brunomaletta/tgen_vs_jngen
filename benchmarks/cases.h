@@ -47,6 +47,12 @@ constexpr const char *BENCH_PARAMS_SKEWED_2N =
 constexpr const char *BENCH_PARAMS_SKEWED_WORST =
 	"n=1e5, m=2n-3, elongation=1e2, spread=2";
 constexpr const char *BENCH_PARAMS_TREE_SKEWED = "n=1e5, elongation=1e2";
+constexpr int BENCH_BIP_N1 = 100;
+constexpr int BENCH_BIP_N2 = 100;
+constexpr int BENCH_BIP_M = 5'000;
+constexpr const char *BENCH_PARAMS_BIPARTITE = "n1=1e2, n2=1e2, m=5e3";
+constexpr long long BENCH_CONVEX_TGEN_COORD_MAX = 3 * BENCH_N;
+constexpr const char *BENCH_PARAMS_CONVEX_TGEN = "n=1e5, min=0, max=3e5";
 #else
 constexpr const char *BENCH_PARAMS_N = "n=1e6";
 constexpr const char *BENCH_PARAMS_N_M = "n=1e6, m=1e6";
@@ -62,6 +68,12 @@ constexpr const char *BENCH_PARAMS_SKEWED_2N =
 constexpr const char *BENCH_PARAMS_SKEWED_WORST =
 	"n=1e6, m=2n-3, elongation=1e2, spread=2";
 constexpr const char *BENCH_PARAMS_TREE_SKEWED = "n=1e6, elongation=1e2";
+constexpr int BENCH_BIP_N1 = 1'000;
+constexpr int BENCH_BIP_N2 = 1'000;
+constexpr int BENCH_BIP_M = 500'000;
+constexpr const char *BENCH_PARAMS_BIPARTITE = "n1=1e3, n2=1e3, m=5e5";
+constexpr long long BENCH_CONVEX_TGEN_COORD_MAX = 3'000'000'000LL;
+constexpr const char *BENCH_PARAMS_CONVEX_TGEN = "n=1e6, min=0, max=3e9";
 #endif
 
 inline std::vector<benchmark::CaseSpec> all_case_specs() {
@@ -92,5 +104,13 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		{"geometry_simple_polygon_through_points",
 		 "geometry::random_simple_polygon_through_points", "",
 		 BENCH_PARAMS_THROUGH, false},
+		{"permutation_uniform", "permutation::gen", "", BENCH_PARAMS_N, true},
+		{"graph_bipartite", "graph::gen_bipartite", "", BENCH_PARAMS_BIPARTITE,
+		 true},
+		{"graph_directed", "graph::gen", " (directed)", BENCH_PARAMS_N_M,
+		 true},
+		{"geometry_convex_polygon_tgen_n1e6",
+		 "geometry::random_convex_polygon", " (tgen scale)",
+		 BENCH_PARAMS_CONVEX_TGEN, false},
 	};
 }

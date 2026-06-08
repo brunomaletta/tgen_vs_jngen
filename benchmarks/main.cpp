@@ -1,6 +1,8 @@
 #include "benchmark.h"
 #include "cases.h"
 
+#include <cmath>
+#include <cstdio>
 #include <iostream>
 #include <unordered_map>
 
@@ -15,6 +17,25 @@ namespace {
 void usage(const char *prog) {
 	std::cerr << "Usage: " << prog << " [--json PATH]\n"
 			  << "  Default: docs/benchmark_results.json\n";
+}
+
+std::string git_rev_parse(const char *repo_path) {
+	char cmd[256];
+	std::snprintf(cmd, sizeof(cmd),
+				  "git -C %s rev-parse --short HEAD 2>/dev/null", repo_path);
+	FILE *pipe = popen(cmd, "r");
+	if (!pipe)
+		return "unknown";
+	char buf[64] = {};
+	if (!fgets(buf, sizeof(buf), pipe)) {
+		pclose(pipe);
+		return "unknown";
+	}
+	pclose(pipe);
+	std::string out = buf;
+	while (!out.empty() && (out.back() == '\n' || out.back() == '\r'))
+		out.pop_back();
+	return out.empty() ? "unknown" : out;
 }
 
 } // namespace
@@ -54,6 +75,8 @@ int main(int argc, char **argv) {
 	report.flags = "-std=c++17 -O2";
 #endif
 	report.hostname = benchmark::hostname();
+	report.vendor_tgen = git_rev_parse("vendor/tgen");
+	report.vendor_jngen = git_rev_parse("vendor/jngen");
 
 	for (const auto &spec : specs) {
 		benchmark::CaseResult row;
@@ -91,8 +114,14 @@ int main(int argc, char **argv) {
 		}
 
 		if (row.compare_both && row.tgen.status == "ok" &&
-			row.jngen.status == "ok" && row.jngen.median_ms > 0)
-			row.ratio = row.tgen.median_ms / row.jngen.median_ms;
+			row.jngen.status == "ok") {
+			const auto jg_ms =
+				static_cast<long long>(std::llround(row.jngen.median_ms));
+			const auto tg_ms =
+				static_cast<long long>(std::llround(row.tgen.median_ms));
+			if (jg_ms > 0)
+				row.ratio = static_cast<double>(tg_ms) / jg_ms;
+		}
 
 		report.results.push_back(std::move(row));
 	}

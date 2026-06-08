@@ -34,6 +34,11 @@ void consume_list(const tgen::list<int>::value &list) {
 		sink += static_cast<uint64_t>(list[i]);
 }
 
+void consume_permutation(const tgen::permutation::value &perm) {
+	for (int i = 0; i < perm.size(); ++i)
+		sink += static_cast<uint64_t>(perm[i]);
+}
+
 std::vector<tgen::geometry::point<long long>> polygon_through_points;
 
 void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
@@ -87,6 +92,20 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 					BENCH_GEOM_N, 0, BENCH_COORD_MAX);
 		consume_polygon(tgen::geometry::random_simple_polygon_through_points(
 			polygon_through_points));
+	};
+	out["permutation_uniform"] = [] {
+		consume_permutation(tgen::permutation(BENCH_N).gen());
+	};
+	out["graph_bipartite"] = [] {
+		consume_graph(tgen::graph::gen_bipartite(
+			BENCH_BIP_N1, BENCH_BIP_N2, BENCH_BIP_M));
+	};
+	out["graph_directed"] = [] {
+		consume_graph(tgen::graph(BENCH_N, BENCH_M, true).gen());
+	};
+	out["geometry_convex_polygon_tgen_n1e6"] = [] {
+		consume_polygon(tgen::geometry::random_convex_polygon(
+			BENCH_N, 0, BENCH_CONVEX_TGEN_COORD_MAX));
 	};
 }
 

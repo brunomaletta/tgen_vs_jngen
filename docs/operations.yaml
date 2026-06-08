@@ -20,13 +20,13 @@ operations:
       has: true
       api: "graph(n, m).get_connected()"
       uniform: non-uniform
-      complexity: "O(n + m log n); spanning forest + uniform edge completion"
+      complexity: "O(n + m log n); Prüfer spanning tree + rejection edge add"
     jngen:
       has: true
       api: "Graph::random(n, m).connected()"
       uniform: non-uniform
-      complexity: "Tree::random(n) + rejection edge add"
-    notes: "Both produce connected graphs but not uniformly over all connected labeled graphs."
+      complexity: "O(n + m) expected (inferred); Prüfer spanning tree + rejection edge add"
+    notes: "Same Prüfer tree + rejection edge add. Neither uniform over all connected labeled graphs."
     benchmark: true
     benchmark_id: graph_connected_m_eq_n
 
@@ -41,9 +41,9 @@ operations:
     jngen:
       has: true
       api: "Graph::random(n, m)"
-      uniform: undocumented
-      complexity: "Rejection on random vertex pairs; no documented bound"
-    notes: "tgen documents uniform sampling among valid graphs; jngen uses undocumented rejection."
+      uniform: non-uniform (inferred)
+      complexity: "O(n + m) expected (inferred); rejection on random vertex pairs"
+    notes: "tgen documents uniform sampling among valid graphs; jngen does not."
     benchmark: true
     benchmark_id: graph_gen
 
@@ -59,7 +59,7 @@ operations:
       has: true
       api: "Graph::randomStretched(n, m, elongation, spread)"
       uniform: non-uniform
-      complexity: "Tree::randomPrim + parent-hop biased edges; may throw after 1000 failures"
+      complexity: "O(n + m) expected (inferred); randomPrim backbone + parent-hop edges; may throw after 1000 failures"
     notes: "Both intentionally biased toward high diameter. Parent-hop semantics differ slightly (k in [2, spread] vs up to spread hops)."
     benchmark: true
     benchmark_id: graph_gen_skewed_m_eq_n
@@ -75,8 +75,8 @@ operations:
     jngen:
       has: true
       api: "Graph::random(...).directed().allowMulti().acyclic()..."
-      uniform: undocumented
-      complexity: "Chaining modifiers on BuilderProxy"
+      uniform: varies (inferred)
+      complexity: "O(n + m) expected (inferred); same as Graph::random with modifier traits"
     notes: "Both support modifier chains; tgen documents uniformity where promised."
 
   - id: graph_bipartite
@@ -90,9 +90,43 @@ operations:
     jngen:
       has: true
       api: "Graph::randomBipartite(n1, n2, m), completeBipartite(n1, n2)"
-      uniform: undocumented
-      complexity: "Rejection on random cross edges"
+      uniform: non-uniform (inferred)
+      complexity: "O(n1 + n2 + m) expected (inferred); rejection on random cross edges"
     notes: "Both support random and complete bipartite graphs. tgen documents uniform sampling among valid bipartite graphs with m edges."
+    benchmark: true
+    benchmark_id: graph_bipartite
+
+  - id: graph_complete_named
+    name: Complete and named graphs
+    category: graphs
+    tgen:
+      has: true
+      api: "K(n), K(n1,n2), C(n), P(n), S(n) graph helpers"
+      uniform: varies
+      complexity: "O(n²) edges for cliques; O(n) for path/star/cycle"
+    jngen:
+      has: true
+      api: "Graph::complete(n), completeBipartite(n1, n2)"
+      uniform: varies
+      complexity: "O(n²) (inferred); deterministic edge lists"
+    notes: "tgen exposes more named helpers (cycle, path, star as graphs). completeBipartite is deterministic."
+
+  - id: graph_directed
+    name: Directed / acyclic random graph
+    category: graphs
+    tgen:
+      has: true
+      api: "graph(n, m, directed=true).gen(), .get_acyclic()"
+      uniform: varies
+      complexity: "O(n + m log n); same rejection machinery with directed constraints"
+    jngen:
+      has: true
+      api: "Graph::random(n, m).directed().acyclic().g()"
+      uniform: non-uniform (inferred)
+      complexity: "O(n + m) expected (inferred); rejection + acyclic shuffle when needed"
+    notes: "Comparable directed sampling via modifier chains. tgen documents uniformity for some constrained variants."
+    benchmark: true
+    benchmark_id: graph_directed
 
   - id: graph_weighted
     name: Weighted graphs and trees
@@ -100,13 +134,13 @@ operations:
     tgen:
       has: true
       api: "wgraph / wtree (vertex- and edge-weighted variants)"
-      uniform: undocumented
+      uniform: non-uniform (inferred)
       complexity: "Same generators as unweighted, plus weight assignment"
     jngen:
       has: true
       api: "Graph::setVertexWeights / setEdgeWeight; Tree inherits graph weights"
-      uniform: undocumented
-      complexity: "Post-hoc weight assignment on generated structure"
+      uniform: non-uniform (inferred)
+      complexity: "O(n + m) (inferred); base generator + weight assignment"
 
   # --- Trees (benchmarked head-to-head) ---
   - id: tree_gen
@@ -122,9 +156,24 @@ operations:
       api: "Tree::random(n)"
       uniform: uniform
       complexity: "O(n); Prüfer sequence"
-    notes: "Both uniform over labeled trees. jngen returns sorted edges rooted at 0 by default."
+    notes: "Same Prüfer algorithm. jngen prints sorted edges rooted at 0 by default."
     benchmark: true
     benchmark_id: tree_gen
+
+  - id: tree_rooted_output
+    name: Rooted tree output / edge order
+    category: trees
+    tgen:
+      has: true
+      api: "tree(n).gen(); stream output with configurable 1-based vertices"
+      uniform: ""
+      complexity: "O(n) generation; O(n) print"
+    jngen:
+      has: true
+      api: "Tree::random(n); .println() / Repr with printEdges, shuffle"
+      uniform: ""
+      complexity: "O(n) (inferred)"
+    notes: "jngen defaults to sorted edges rooted at vertex 0. tgen uses declarative print helpers and 0-based internal indices."
 
   - id: tree_gen_skewed
     name: Skewed tree (wnext / Prim-like)
@@ -154,8 +203,8 @@ operations:
     jngen:
       has: true
       api: "Tree::star, bamboo, caterpillar, binary, kary, ..."
-      uniform: undocumented
-      complexity: "O(n)"
+      uniform: varies (inferred)
+      complexity: "O(n) (inferred)"
     notes: "tgen exposes star and path as graph helpers; jngen has a richer set of named tree generators."
 
   - id: tree_kruskal
@@ -170,7 +219,7 @@ operations:
       has: true
       api: "Tree::randomKruskal(n)"
       uniform: non-uniform
-      complexity: "Rejection on random edges"
+      complexity: "O(n²) expected (inferred); rejection until connected"
 
   # --- Lists and sequences ---
   - id: list_all_different
@@ -185,7 +234,7 @@ operations:
       has: true
       api: "Array::randomUnique(k, lo, hi)"
       uniform: uniform
-      complexity: "O(k log k) rejection"
+      complexity: "O(k log k) expected (inferred); hash-set rejection"
     notes: "Both produce uniform distinct samples."
     benchmark: true
     benchmark_id: list_all_different
@@ -203,6 +252,23 @@ operations:
       api: "Array::id(n).shuffled()"
       uniform: uniform
       complexity: "O(n)"
+    benchmark: true
+    benchmark_id: permutation_uniform
+
+  - id: structured_output
+    name: Pairs, tuples, structured printing
+    category: lists
+    tgen:
+      has: true
+      api: "pair(...), list/str/... with << and multi-line tuple layout"
+      uniform: varies
+      complexity: "O(output size)"
+    jngen:
+      has: true
+      api: "Array / Graph .println(), Repr modifiers (shuffle, reverse, edges)"
+      uniform: ""
+      complexity: "O(output size) (inferred)"
+    notes: "tgen has first-class pair/tuple generators and stream formatting. jngen focuses on testlib-style println helpers."
 
   - id: declarative_generators
     name: Declarative constraints (sorted, palindrome, cycles)
@@ -231,7 +297,7 @@ operations:
       has: true
       api: "rndm.partition(n, numParts, minSize, maxSize)"
       uniform: non-uniform
-      complexity: "Random delimiters, then sort parts descending + heuristic redistribution"
+      complexity: "O(k log k) (inferred); random delimiters, sort, heuristic redistribution"
     notes: "Different algorithms and semantics. tgen returns an ordered composition sampled uniformly. jngen sorts parts in non-increasing order (not a uniform composition); source comments that bounded redistribution 'need a smarter way'."
 
   - id: math_partition
@@ -259,8 +325,8 @@ operations:
     jngen:
       has: true
       api: "rndm.randomPrime(l, r)"
-      uniform: undocumented
-      complexity: "Rejection on rnd.next(l, r) until prime"
+      uniform: uniform (inferred)
+      complexity: "O((r−l) log r) worst case (inferred); Miller–Rabin rejection"
     notes: "tgen documents uniform sampling among primes in the interval."
 
   - id: math_congruent
@@ -289,7 +355,7 @@ operations:
       has: true
       api: "rndm.partition(elements, numParts, minSize, maxSize)"
       uniform: non-uniform
-      complexity: "Shuffle elements, split by partition sizes from rndm.partition"
+      complexity: "O(n + k log k) (inferred); shuffle + partition sizes + split"
 
   # --- Geometry ---
   - id: geometry_convex_polygon
@@ -304,7 +370,7 @@ operations:
       has: true
       api: "rndg.convexPolygon(n, min, max)"
       uniform: non-uniform
-      complexity: "Convex hull of 10n ellipse points, subsample n"
+      complexity: "O(n log n) (inferred); hull of 10n ellipse points, subsample n"
     notes: "Different shape distributions. jngen needs a large coordinate range at high n (hull subsampling); benchmark uses n=3.6e5, max=3e9 for both."
     benchmark: true
     benchmark_id: geometry_convex_polygon
@@ -321,8 +387,8 @@ operations:
     jngen:
       has: true
       api: "rndg.pointsInGeneralPosition(n, min, max)"
-      uniform: undocumented
-      complexity: "O(n² log n); rejection until no collinearity"
+      uniform: non-uniform (inferred)
+      complexity: "O(n² log n) expected (inferred); rejection until no collinearity"
     notes: "Not benchmarked head-to-head: jngen is asymptotically slower."
     benchmark: false
     benchmark_id: geometry_points_general_position
@@ -362,6 +428,40 @@ operations:
     benchmark_id: geometry_simple_polygon_through_points
     visualize: true
 
+  - id: geometry_convex_polygon_tgen_n1e6
+    name: Random convex polygon at n=1e6 (tgen scale)
+    category: geometry
+    tgen:
+      has: true
+      api: "geometry::random_convex_polygon(1e6, min, max)"
+      uniform: non-uniform
+      complexity: "O(n log n); Valtr construction"
+    jngen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    notes: "jngen convexPolygon needs hull(10n) vertices and large coordinates; practical n is much lower at the same max coordinate."
+    benchmark: true
+    benchmark_id: geometry_convex_polygon_tgen_n1e6
+    exclusive: tgen
+
+  - id: testlib_integration
+    name: testlib integration
+    category: other
+    tgen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    jngen:
+      has: true
+      api: "registerGen, global rnd/rndm/rndg, testlib-compatible patterns"
+      uniform: ""
+      complexity: ""
+    notes: "jngen is built on testlib. tgen is a standalone header with register_gen and its own constraint API."
+    exclusive: jngen
+
   - id: geometry_svg_drawer
     name: Built-in SVG visualization
     category: other
@@ -389,7 +489,7 @@ operations:
       has: true
       api: 'rnd.next("[a-z]{10}") / rnds.random(pattern)'
       uniform: non-uniform
-      complexity: "testlib-compatible pattern syntax"
+      complexity: "O(output length) (inferred); testlib-compatible pattern generation"
     notes: "Same testlib-style regex syntax. tgen samples uniformly among matches (documented); jngen explicitly does not — e.g. rnd.next(\"[1-9][0-9]{1,2}\") does not yield uniform digit strings."
 
   - id: anti_hash_strings
@@ -404,8 +504,8 @@ operations:
       has: true
       api: "rnds.antiHash({{mod, base}, ...}, alphabet, len)"
       uniform: undocumented
-      complexity: "Brute force; up to 2 mod/base pairs"
-    notes: "Both generate colliding strings for rolling hash."
+      complexity: "O(√mod) expected (inferred); brute force over short strings"
+    notes: "Deterministic collision construction, not random sampling. Both generate colliding strings for rolling hash."
 
   - id: hack_unsigned_polynomial_hash
     name: Polynomial hash collision (unsigned / power-of-two mod)

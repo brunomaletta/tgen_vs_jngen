@@ -68,6 +68,17 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 		consume_polygon(
 			rndg.convexPolygon(BENCH_CONVEX_N, 0, BENCH_CONVEX_COORD_MAX));
 	};
+	out["permutation_uniform"] = [] {
+		consume_array(Array::id(BENCH_N).shuffled());
+	};
+	out["graph_bipartite"] = [] {
+		consume_graph(Graph::randomBipartite(
+						  BENCH_BIP_N1, BENCH_BIP_N2, BENCH_BIP_M)
+						  .g());
+	};
+	out["graph_directed"] = [] {
+		consume_graph(Graph::random(BENCH_N, BENCH_M).directed().g());
+	};
 }
 
 } // namespace

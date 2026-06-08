@@ -40,6 +40,8 @@ struct Report {
 	std::string compiler;
 	std::string flags;
 	std::string hostname;
+	std::string vendor_tgen;
+	std::string vendor_jngen;
 	std::vector<CaseResult> results;
 };
 
@@ -171,6 +173,10 @@ inline void write_json(const Report &report, const std::string &path) {
 	out << "  \"compiler\": \"" << json_escape(report.compiler) << "\",\n";
 	out << "  \"flags\": \"" << json_escape(report.flags) << "\",\n";
 	out << "  \"hostname\": \"" << json_escape(report.hostname) << "\",\n";
+	out << "  \"vendors\": {\n";
+	out << "    \"tgen\": \"" << json_escape(report.vendor_tgen) << "\",\n";
+	out << "    \"jngen\": \"" << json_escape(report.vendor_jngen) << "\"\n";
+	out << "  },\n";
 	out << "  \"results\": [\n";
 
 	for (size_t i = 0; i < report.results.size(); ++i) {
