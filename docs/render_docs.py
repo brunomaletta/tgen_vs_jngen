@@ -811,7 +811,34 @@ def _sample_stack_ids(op):
     return op.get("gallery_stack") or []
 
 
-def _append_sample_images_html(cell, op, lib):
+def _sample_lib_info(sid, parent_op, operations_by_id, lib):
+    child = operations_by_id.get(sid)
+    if child:
+        info = child.get(lib, {})
+        if info.get("complexity"):
+            return info
+    return parent_op.get(lib, {})
+
+
+def sample_complexity_brief(complexity):
+    """First clause only — drop '; …' algorithm descriptions."""
+    if not complexity:
+        return ""
+    return complexity.split(";", 1)[0].strip()
+
+
+def format_sample_complexity_html(sid, parent_op, operations_by_id, lib):
+    lib_info = _sample_lib_info(sid, parent_op, operations_by_id, lib)
+    complexity = sample_complexity_brief(lib_info.get("complexity", ""))
+    if not complexity or not lib_info.get("has"):
+        return ""
+    return (
+        f'<span class="sample-complexity">'
+        f"{format_inferred_text_html(complexity)}</span>"
+    )
+
+
+def _append_sample_images_html(cell, op, lib, operations_by_id):
     stack = _sample_stack_ids(op)
     if stack:
         top_params = op.get("gallery_stack_top_params", "")
@@ -835,17 +862,35 @@ def _append_sample_images_html(cell, op, lib):
     return cell
 
 
-def format_sample_cell_html(op_id, op, lib_info, lib, source_resolver=None):
+def format_sample_cell_html(
+    op_id, op, lib_info, lib, operations_by_id, source_resolver=None
+):
     cell = format_lib_api_cell_html(
         lib_info, lib=lib, op_id=op_id, source_resolver=source_resolver
     )
+    if not lib_info.get("has"):
+        return cell
+
+    stack = _sample_stack_ids(op)
+    if stack:
+        for sid in stack:
+            if sample_svg_exists(sid, lib):
+                cell += format_sample_complexity_html(
+                    sid, op, operations_by_id, lib
+                )
+                break
+    elif sample_svg_exists(op_id, lib):
+        cell += format_sample_complexity_html(
+            op_id, op, operations_by_id, lib
+        )
+
     params = op.get("gallery_params", "")
-    if params and lib_info.get("has") and not _sample_stack_ids(op):
+    if params and not stack:
         cell += (
             f'<br><span class="gallery-params">{format_params_html(params)}</span>'
         )
-    if lib_info.get("has"):
-        cell = _append_sample_images_html(cell, op, lib)
+
+    cell = _append_sample_images_html(cell, op, lib, operations_by_id)
     return cell
 
 
@@ -892,15 +937,28 @@ def geometry_sample_operations(operations):
     ]
 
 
+def samples_have_inferred(ops, operations_by_id):
+    for op in ops:
+        stack = _sample_stack_ids(op)
+        sids = stack if stack else [op["id"]]
+        for sid in sids:
+            for lib in ("jngen", "tgen"):
+                if not sample_svg_exists(sid, lib):
+                    continue
+                lib_info = _sample_lib_info(sid, op, operations_by_id, lib)
+                complexity = lib_info.get("complexity", "")
+                if complexity and INFERRED_SUFFIX in complexity:
+                    return True
+    return False
+
+
 def render_geometry_samples_html(operations, source_resolver=None):
     ops = geometry_sample_operations(operations)
     if not ops:
         return []
+    operations_by_id = {op["id"]: op for op in operations}
     parts = [
         "<h3>Samples</h3>",
-        '<p class="gallery-legend">Each preview has 50 pre-generated variants '
-        "(seeds 42–91). Click <strong>↻</strong> to cycle; "
-        "<strong>Shift</strong>+click for a random one.</p>",
         '<div class="table-scroll"><table class="comparison-table samples-table">',
         "<colgroup>"
         '<col class="col-op">'
@@ -915,12 +973,14 @@ def render_geometry_samples_html(operations, source_resolver=None):
             "<tr>"
                 f"<td class=\"col-op sample-op\">{html.escape(op['name'])}</td>"
                 f'<td class="{sample_cell_td_class(op, op.get("jngen", {}), "jngen")}">'
-                f'{format_sample_cell_html(oid, op, op.get("jngen", {}), "jngen", source_resolver)}</td>'
+                f'{format_sample_cell_html(oid, op, op.get("jngen", {}), "jngen", operations_by_id, source_resolver)}</td>'
                 f'<td class="{sample_cell_td_class(op, op.get("tgen", {}), "tgen")}">'
-                f'{format_sample_cell_html(oid, op, op.get("tgen", {}), "tgen", source_resolver)}</td>'
+                f'{format_sample_cell_html(oid, op, op.get("tgen", {}), "tgen", operations_by_id, source_resolver)}</td>'
             "</tr>"
         )
     parts.append("</table></div>")
+    if samples_have_inferred(ops, operations_by_id):
+        parts.append(TABLE_INFERRED_FOOTNOTE_HTML)
     return parts
 
 
@@ -1404,7 +1464,13 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     table.comparison-table.samples-table .col-op {{ width: 22%; }}
     table.comparison-table.samples-table .col-api {{ width: 39%; }}
     .gallery-params {{ display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; }}
-    .gallery-legend {{ font-size: 0.9rem; color: var(--muted); margin: 0.25rem 0 0.75rem; }}
+    .sample-complexity {{
+      display: block;
+      font-size: 0.85rem;
+      margin: 0.35rem auto 0;
+      text-align: center;
+      line-height: 1.35;
+    }}
     .api-doc-line {{ display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.15rem; }}
     a.api-doc-link {{ color: var(--link); text-decoration: none; }}
     a.api-doc-link:hover, a.api-doc-link:focus-visible {{ text-decoration: underline; }}
