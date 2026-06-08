@@ -775,12 +775,36 @@ def format_params_md(params):
     return wrap_params(params)
 
 
-def sample_svg_path(op_id, lib):
-    return f"gallery/{op_id}_{lib}.svg"
+GALLERY_SEED_BASE = 42
+GALLERY_VARIANT_COUNT = 50
 
 
-def sample_svg_exists(op_id, lib):
-    return os.path.isfile(os.path.join("docs", sample_svg_path(op_id, lib)))
+def gallery_seeds():
+    return list(range(GALLERY_SEED_BASE, GALLERY_SEED_BASE + GALLERY_VARIANT_COUNT))
+
+
+def sample_svg_path(op_id, lib, seed=GALLERY_SEED_BASE):
+    return f"gallery/{op_id}_{lib}_s{seed}.svg"
+
+
+def sample_svg_exists(op_id, lib, seed=GALLERY_SEED_BASE):
+    return os.path.isfile(os.path.join("docs", sample_svg_path(op_id, lib, seed)))
+
+
+def render_sample_widget(op_id, lib):
+    seeds = gallery_seeds()
+    prefix = f"gallery/{op_id}_{lib}"
+    initial = f"{prefix}_s{seeds[0]}.svg"
+    seeds_json = json.dumps(seeds)
+    return (
+        f'<div class="sample-widget" data-prefix="{html.escape(prefix)}" '
+        f'data-seeds="{html.escape(seeds_json)}" data-index="0">'
+        f'<img class="sample-img" src="{html.escape(initial)}" '
+        f'alt="{html.escape(lib)} sample">'
+        f'<button type="button" class="sample-regen" '
+        f'title="Next sample (Shift-click: random)">↻</button>'
+        f"</div>"
+    )
 
 
 def _sample_stack_ids(op):
@@ -799,11 +823,7 @@ def _append_sample_images_html(cell, op, lib):
                     f"{format_params_html(top_params)}</span>"
                 )
             if sample_svg_exists(sid, lib):
-                path = sample_svg_path(sid, lib)
-                cell += (
-                    f'<img class="sample-img" src="{html.escape(path)}" '
-                    f'alt="{html.escape(lib)} sample">'
-                )
+                cell += render_sample_widget(sid, lib)
             if i == 0 and len(stack) > 1 and mid_params:
                 cell += (
                     f'<span class="gallery-params gallery-params-stack">'
@@ -811,11 +831,7 @@ def _append_sample_images_html(cell, op, lib):
                 )
         return cell
     if sample_svg_exists(op["id"], lib):
-        path = sample_svg_path(op["id"], lib)
-        cell += (
-            f'<img class="sample-img" src="{html.escape(path)}" '
-            f'alt="{html.escape(lib)} sample">'
-        )
+        cell += render_sample_widget(op["id"], lib)
     return cell
 
 
@@ -882,6 +898,9 @@ def render_geometry_samples_html(operations, source_resolver=None):
         return []
     parts = [
         "<h3>Samples</h3>",
+        '<p class="gallery-legend">Each preview has 50 pre-generated variants '
+        "(seeds 42–91). Click <strong>↻</strong> to cycle; "
+        "<strong>Shift</strong>+click for a random one.</p>",
         '<div class="table-scroll"><table class="comparison-table samples-table">',
         "<colgroup>"
         '<col class="col-op">'
@@ -1385,6 +1404,7 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     table.comparison-table.samples-table .col-op {{ width: 22%; }}
     table.comparison-table.samples-table .col-api {{ width: 39%; }}
     .gallery-params {{ display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; }}
+    .gallery-legend {{ font-size: 0.9rem; color: var(--muted); margin: 0.25rem 0 0.75rem; }}
     .api-doc-line {{ display: block; font-size: 0.85rem; color: var(--muted); margin-top: 0.15rem; }}
     a.api-doc-link {{ color: var(--link); text-decoration: none; }}
     a.api-doc-link:hover, a.api-doc-link:focus-visible {{ text-decoration: underline; }}
@@ -1578,11 +1598,41 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       text-align: left;
       margin: 0 auto;
     }}
-    table.samples-table td.col-api img.sample-img {{
-      display: block;
+    .sample-widget {{
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.45rem;
       width: 100%;
       max-width: 420px;
       margin: 0.65rem auto 0;
+    }}
+    table.samples-table td.col-api .sample-widget .sample-img {{
+      display: block;
+      flex: 1;
+      width: auto;
+      min-width: 0;
+      max-width: none;
+      margin: 0;
+    }}
+    .sample-regen {{
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--code-bg);
+      color: var(--text);
+      font-size: 1.15rem;
+      line-height: 1;
+      cursor: pointer;
+    }}
+    .sample-regen:hover,
+    .sample-regen:focus-visible {{
+      border-color: var(--link);
+      color: var(--link);
+      outline: none;
     }}
     table.samples-table td.col-api .gallery-params-stack {{
       margin: 0.35rem auto 0.15rem;
@@ -1640,6 +1690,36 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
   </nav>
   {comparison_body}
   {benchmarks_body}
+  <script>
+  (function () {{
+    function setVariant(widget, index) {{
+      const seeds = JSON.parse(widget.dataset.seeds);
+      const prefix = widget.dataset.prefix;
+      const img = widget.querySelector("img.sample-img");
+      const i = ((index % seeds.length) + seeds.length) % seeds.length;
+      widget.dataset.index = String(i);
+      img.src = prefix + "_s" + seeds[i] + ".svg";
+    }}
+
+    document.querySelectorAll(".sample-widget").forEach(function (widget) {{
+      const btn = widget.querySelector(".sample-regen");
+      if (!btn) return;
+      btn.addEventListener("click", function (event) {{
+        const seeds = JSON.parse(widget.dataset.seeds);
+        let index = parseInt(widget.dataset.index || "0", 10);
+        if (event.shiftKey) {{
+          if (seeds.length <= 1) return;
+          do {{
+            index = Math.floor(Math.random() * seeds.length);
+          }} while (index === parseInt(widget.dataset.index || "0", 10));
+        }} else {{
+          index = (index + 1) % seeds.length;
+        }}
+        setVariant(widget, index);
+      }});
+    }});
+  }})();
+  </script>
 </body>
 </html>
 """

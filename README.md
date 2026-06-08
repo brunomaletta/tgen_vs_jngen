@@ -37,7 +37,7 @@ Requires Python 3 with PyYAML (`pip install pyyaml`). `make docs` also runs tgen
 
 Run `make site` to rebuild the Pages bundle locally (`docs/site/index.html`).
 
-Geometry sample SVGs live under `docs/gallery/` and are embedded in the HTML comparison.
+Geometry sample SVGs live under `docs/gallery/` (50 variants per sample, seeds 42–91; built by `make visualize`, not committed). Each sample has a ↻ button in the comparison page — click to cycle, Shift-click for a random variant.
 
 ## What is compared
 

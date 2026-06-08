@@ -2,6 +2,7 @@
 #include "samples.h"
 
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -42,35 +43,42 @@ rectangular_grid(int rows, int cols, long long min_coord, long long max_coord) {
 } // namespace
 
 void run_tgen_samples(const std::string &out_dir) {
-	tgen::register_gen(42);
-
-	write_points_json(
-		out_dir + "/geometry_convex_polygon.points.json",
-		tgen::geometry::random_convex_polygon(
-			GALLERY_CONVEX_N, 0, GALLERY_CONVEX_COORD),
-		"polygon", GALLERY_CONVEX_COORD);
-	write_points_json(
-		out_dir + "/geometry_convex_polygon_large.points.json",
-		tgen::geometry::random_convex_polygon(
-			GALLERY_CONVEX_LARGE_N, 0, GALLERY_CONVEX_LARGE_COORD),
-		"polygon", GALLERY_CONVEX_LARGE_COORD);
-
-	write_points_json(
-		out_dir + "/geometry_simple_polygon.points.json",
-		tgen::geometry::random_simple_polygon(GALLERY_N, 0, GALLERY_COORD),
-		"polygon", GALLERY_COORD);
-
-	write_points_json(
-		out_dir + "/geometry_points_general_position.points.json",
-		tgen::geometry::random_points_general_position(
-			GALLERY_GENERAL_POSITION_N, 0, GALLERY_GENERAL_POSITION_COORD),
-		"scatter", GALLERY_GENERAL_POSITION_COORD);
-
 	const int grid_rows = 10;
 	const int grid_cols = 10;
 	const auto grid = rectangular_grid(grid_rows, grid_cols, 0, GALLERY_COORD);
-	write_points_json(
-		out_dir + "/geometry_simple_polygon_through_points.points.json",
-		tgen::geometry::random_simple_polygon_through_points(grid), "polygon",
-		GALLERY_COORD);
+
+	for (int vi = 0; vi < GALLERY_VARIANT_COUNT; ++vi) {
+		const int seed = GALLERY_SEED_BASE + vi;
+		const std::string tag = gallery_seed_tag(seed);
+		std::cout << "tgen samples seed " << seed << "...\n" << std::flush;
+		tgen::register_gen(seed);
+
+		write_points_json(
+			out_dir + "/geometry_convex_polygon" + tag + ".points.json",
+			tgen::geometry::random_convex_polygon(
+				GALLERY_CONVEX_N, 0, GALLERY_CONVEX_COORD),
+			"polygon", GALLERY_CONVEX_COORD);
+		write_points_json(
+			out_dir + "/geometry_convex_polygon_large" + tag + ".points.json",
+			tgen::geometry::random_convex_polygon(
+				GALLERY_CONVEX_LARGE_N, 0, GALLERY_CONVEX_LARGE_COORD),
+			"polygon", GALLERY_CONVEX_LARGE_COORD);
+
+		write_points_json(
+			out_dir + "/geometry_simple_polygon" + tag + ".points.json",
+			tgen::geometry::random_simple_polygon(GALLERY_N, 0, GALLERY_COORD),
+			"polygon", GALLERY_COORD);
+
+		write_points_json(
+			out_dir + "/geometry_points_general_position" + tag + ".points.json",
+			tgen::geometry::random_points_general_position(
+				GALLERY_GENERAL_POSITION_N, 0, GALLERY_GENERAL_POSITION_COORD),
+			"scatter", GALLERY_GENERAL_POSITION_COORD);
+
+		write_points_json(
+			out_dir + "/geometry_simple_polygon_through_points" + tag
+				+ ".points.json",
+			tgen::geometry::random_simple_polygon_through_points(grid),
+			"polygon", GALLERY_COORD);
+	}
 }

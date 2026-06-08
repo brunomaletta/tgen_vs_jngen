@@ -131,6 +131,15 @@ def render_scatter_svg(
     return svg_header(title) + dots + "\n</svg>\n"
 
 
+def tgen_svg_name(stem):
+    """geometry_convex_polygon_s42 -> geometry_convex_polygon_tgen_s42.svg"""
+    if "_s" in stem:
+        base, seed = stem.rsplit("_s", 1)
+        if seed.isdigit():
+            return f"{base}_tgen_s{seed}.svg"
+    return f"{stem}_tgen.svg"
+
+
 def process_file(src, dst):
     with open(src, encoding="utf-8") as f:
         data = json.load(f)
@@ -168,7 +177,7 @@ def main():
         stem = name.replace(".points.json", "")
         process_file(
             os.path.join(args.input_dir, name),
-            os.path.join(args.output_dir, f"{stem}_tgen.svg"),
+            os.path.join(args.output_dir, tgen_svg_name(stem)),
         )
     if not found:
         sys.stderr.write("render_tgen.py: no sample JSON files found\n")

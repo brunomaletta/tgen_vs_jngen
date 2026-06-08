@@ -60,7 +60,7 @@ visualize: vendor $(VIZ_BIN)
 	rm -f docs/gallery/*.svg results/svg/*
 	./$(VIZ_BIN)
 	python3 visualize/render_tgen.py results/svg docs/gallery
-	cp results/svg/*_jngen.svg docs/gallery/ 2>/dev/null || true
+	cp results/svg/*_jngen_s*.svg docs/gallery/ 2>/dev/null || true
 	python3 visualize/normalize_gallery.py docs/gallery
 
 $(TGEN_XML_INDEX): vendor
