@@ -1442,8 +1442,9 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
             doc_url = source_resolver.doc_url_for_benchmark(bench_id, "tgen")
         parts.append(
             "<tr>"
-            f"<td>{format_benchmark_name_html(name, source_url, doc_url)}</td>"
-            f"<td>{format_params_html(params)}</td>"
+            f'<td class="bench-col-op">'
+            f"{format_benchmark_name_html(name, source_url, doc_url)}</td>"
+            f'<td class="bench-col-params">{format_params_html(params)}</td>'
             f'<td class="bench-col-comparison-cell">{comparison}</td>'
             f'{format_empty_aware_td(format_ratio_html(row), "bench-col-ratio-cell")}'
             "</tr>"
