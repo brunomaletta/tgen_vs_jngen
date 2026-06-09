@@ -78,12 +78,14 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 		consume_tree(tgen::tree::gen_skewed(BENCH_N, BENCH_ELONGATION));
 	};
 	out["list_all_different"] = [] {
-		consume_list(tgen::list<int>(BENCH_N, 1, BENCH_LIST_HI)
+		consume_list(tgen::list<int>(BENCH_LIST_ALL_DIFF_N, 1,
+									 BENCH_LIST_ALL_DIFF_HI)
 						 .all_different()
 						 .gen());
 	};
 	out["list_random"] = [] {
-		consume_list(tgen::list<int>(BENCH_N, 1, BENCH_LIST_HI).gen());
+		consume_list(tgen::list<int>(BENCH_LIST_RANDOM_N, 1, BENCH_LIST_RANDOM_HI)
+						 .gen());
 	};
 	out["geometry_convex_polygon"] = [] {
 		consume_polygon(tgen::geometry::random_convex_polygon(

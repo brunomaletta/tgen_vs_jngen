@@ -153,4 +153,5 @@ benchmarks:
   graph_gen_skewed_distinct_worst: graph_gen_skewed
   graph_directed_acyclic: graph_directed
   geometry_random_simple_polygon: geometry_simple_polygon
+  geometry_points_general_position: geometry_points_general_position
   geometry_points_general_position_small: geometry_points_general_position

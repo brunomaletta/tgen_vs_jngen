@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-09T17:21:24Z",
+  "generated_at": "2026-06-09T19:47:18Z",
   "compiler": "15.2.0",
   "flags": "-std=c++17 -O2",
   "hostname": "bruno-inspiron14",
@@ -16,15 +16,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 233.339,
-      "runs_ms": [233.486, 232.896, 233.339]
+      "median_ms": 233.629,
+      "runs_ms": [233.629, 234.058, 233.135]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1093.889,
-      "runs_ms": [1052.38, 1093.889, 1405.681]
+      "median_ms": 985.681,
+      "runs_ms": [1004.537, 985.681, 976.308]
       },
-      "ratio": 0.213311
+      "ratio": 0.237023
     },
     {
       "id": "graph_connected_m_eq_2n",
@@ -34,15 +34,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 676.852,
-      "runs_ms": [676.846, 676.852, 676.934]
+      "median_ms": 547.66,
+      "runs_ms": [547.66, 549.159, 537.119]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1971.07,
-      "runs_ms": [1971.07, 1960.562, 2002.294]
+      "median_ms": 1553.766,
+      "runs_ms": [1580.73, 1551.418, 1553.766]
       },
-      "ratio": 0.343393
+      "ratio": 0.352473
     },
     {
       "id": "graph_gen",
@@ -52,15 +52,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 314.72,
-      "runs_ms": [315.34, 314.72, 303.917]
+      "median_ms": 263.21,
+      "runs_ms": [263.21, 253.615, 274.466]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 607.341,
-      "runs_ms": [598.911, 608.032, 607.341]
+      "median_ms": 486.978,
+      "runs_ms": [486.978, 486.521, 487.603]
       },
-      "ratio": 0.518193
+      "ratio": 0.540497
     },
     {
       "id": "graph_gen_m_eq_2n",
@@ -70,15 +70,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 667.832,
-      "runs_ms": [677.41, 667.832, 667.611]
+      "median_ms": 588.302,
+      "runs_ms": [588.302, 597.116, 586.114]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1316.091,
-      "runs_ms": [1314.708, 1316.091, 1326.687]
+      "median_ms": 1092.466,
+      "runs_ms": [1092.393, 1092.466, 1102.866]
       },
-      "ratio": 0.507436
+      "ratio": 0.538508
     },
     {
       "id": "graph_gen_skewed_m_eq_n",
@@ -88,15 +88,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 243.287,
-      "runs_ms": [243.287, 263.522, 243.239]
+      "median_ms": 203.265,
+      "runs_ms": [203.265, 203.323, 202.416]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 728.778,
-      "runs_ms": [728.778, 768.361, 712.35]
+      "median_ms": 608.273,
+      "runs_ms": [646.57, 608.273, 607.371]
       },
-      "ratio": 0.333829
+      "ratio": 0.334167
     },
     {
       "id": "graph_gen_skewed_m_eq_2n",
@@ -106,15 +106,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 580.011,
-      "runs_ms": [580.011, 569.079, 607.07]
+      "median_ms": 506.765,
+      "runs_ms": [505.805, 506.765, 516.746]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1631.107,
-      "runs_ms": [1631.107, 1632.916, 1496.765]
+      "median_ms": 1399.094,
+      "runs_ms": [1466.292, 1380.258, 1399.094]
       },
-      "ratio": 0.355593
+      "ratio": 0.362209
     },
     {
       "id": "graph_gen_skewed_distinct_worst",
@@ -124,8 +124,8 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 468.709,
-      "runs_ms": [468.709, 457.452, 477.758]
+      "median_ms": 425.502,
+      "runs_ms": [425.502, 426.001, 405.65]
       },
       "jngen": {
       "status": "error",
@@ -140,15 +140,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 556.756,
-      "runs_ms": [546.874, 556.831, 556.756]
+      "median_ms": 536.856,
+      "runs_ms": [545.479, 536.856, 526.986]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 649.036,
-      "runs_ms": [648.87, 649.222, 649.036]
+      "median_ms": 608.939,
+      "runs_ms": [619.48, 608.321, 608.939]
       },
-      "ratio": 0.85782
+      "ratio": 0.881625
     },
     {
       "id": "tree_gen_skewed",
@@ -158,51 +158,51 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 193.213,
-      "runs_ms": [182.87, 193.213, 203.438]
+      "median_ms": 172.441,
+      "runs_ms": [172.441, 171.755, 182.496]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 294.757,
-      "runs_ms": [294.757, 314.583, 284.093]
+      "median_ms": 273.546,
+      "runs_ms": [273.505, 274.007, 273.546]
       },
-      "ratio": 0.655499
+      "ratio": 0.630391
     },
     {
       "id": "list_all_different",
       "name": "list<int>::gen",
       "name_suffix": " (all_different)",
-      "params": "n=1e6, value_left=1, value_right=2e6",
+      "params": "n=5e6, value_left=1, value_right=10e6",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 121.682,
-      "runs_ms": [121.922, 111.651, 121.682]
+      "median_ms": 913.048,
+      "runs_ms": [922.838, 901.714, 913.048]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 223.209,
-      "runs_ms": [223.209, 223.951, 223.168]
+      "median_ms": 1504.145,
+      "runs_ms": [1520.863, 1503.818, 1504.145]
       },
-      "ratio": 0.545148
+      "ratio": 0.607021
     },
     {
       "id": "list_random",
       "name": "list<int>::gen",
       "name_suffix": "",
-      "params": "n=1e6, value_left=1, value_right=2e6",
+      "params": "n=5e6, value_left=1, value_right=10e6",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 142.214,
-      "runs_ms": [131.986, 142.28, 142.214]
+      "median_ms": 647.327,
+      "runs_ms": [637.271, 647.678, 647.327]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 10.314,
-      "runs_ms": [20.433, 10.206, 10.314]
+      "median_ms": 80.976,
+      "runs_ms": [80.976, 71.032, 81.149]
       },
-      "ratio": 13.7884
+      "ratio": 7.99406
     },
     {
       "id": "geometry_convex_polygon",
@@ -212,31 +212,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 820.673,
-      "runs_ms": [820.673, 822.198, 810.495]
+      "median_ms": 770.912,
+      "runs_ms": [770.912, 762.026, 771.007]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 2574.396,
-      "runs_ms": [2579.269, 2563.198, 2574.396]
+      "median_ms": 2388.758,
+      "runs_ms": [2388.758, 2412.07, 2347.902]
       },
-      "ratio": 0.318783
-    },
-    {
-      "id": "geometry_points_general_position",
-      "name": "geometry::random_points_general_position",
-      "name_suffix": "",
-      "params": "n=1e6, min=0, max=3e6",
-      "compare_both": true,
-      "tgen": {
-      "status": "ok",
-      "median_ms": 182.581,
-      "runs_ms": [181.982, 182.882, 182.581]
-      },
-      "jngen": {
-      "status": "timeout",
-      "error": "single run exceeded 5000 ms limit"
-      }
+      "ratio": 0.322725
     },
     {
       "id": "geometry_points_general_position_small",
@@ -246,15 +230,31 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 10.478,
-      "runs_ms": [10.59, 10.478, 10.39]
+      "median_ms": 10.343,
+      "runs_ms": [10.332, 10.711, 10.343]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1684.455,
-      "runs_ms": [1663.523, 1792.818, 1684.455]
+      "median_ms": 1572.571,
+      "runs_ms": [1540.36, 1582.623, 1572.571]
       },
-      "ratio": 0.00622041
+      "ratio": 0.00657713
+    },
+    {
+      "id": "geometry_points_general_position",
+      "name": "geometry::random_points_general_position",
+      "name_suffix": "",
+      "params": "n=1e6, min=0, max=3e6",
+      "compare_both": true,
+      "tgen": {
+      "status": "ok",
+      "median_ms": 162.578,
+      "runs_ms": [172.243, 162.578, 162.144]
+      },
+      "jngen": {
+      "status": "timeout",
+      "error": "single run exceeded 5000 ms limit"
+      }
     },
     {
       "id": "geometry_random_simple_polygon",
@@ -264,8 +264,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 1125.786,
-      "runs_ms": [1123.334, 1125.786, 1132.445]
+      "median_ms": 1012.358,
+      "runs_ms": [1012.358, 1004.446, 1014.975]
       },
       "jngen": {
       "status": "skipped",
@@ -280,8 +280,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 951.987,
-      "runs_ms": [952.451, 951.987, 942.584]
+      "median_ms": 850.412,
+      "runs_ms": [870.576, 842.803, 850.412]
       },
       "jngen": {
       "status": "skipped",
@@ -296,15 +296,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 121.463,
-      "runs_ms": [121.463, 111.828, 121.986]
+      "median_ms": 111.955,
+      "runs_ms": [121.731, 111.955, 111.503]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 121.857,
-      "runs_ms": [121.857, 122.133, 121.778]
+      "median_ms": 111.987,
+      "runs_ms": [121.37, 111.987, 111.683]
       },
-      "ratio": 0.996767
+      "ratio": 0.999714
     },
     {
       "id": "graph_bipartite",
@@ -314,15 +314,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 51.066,
-      "runs_ms": [51.084, 51.041, 51.066]
+      "median_ms": 50.736,
+      "runs_ms": [50.606, 50.736, 50.915]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 192.78,
-      "runs_ms": [193.463, 192.78, 192.558]
+      "median_ms": 182.161,
+      "runs_ms": [182.21, 172.16, 182.161]
       },
-      "ratio": 0.264893
+      "ratio": 0.278523
     },
     {
       "id": "graph_directed",
@@ -332,15 +332,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 273.618,
-      "runs_ms": [273.95, 273.618, 263.762]
+      "median_ms": 263.768,
+      "runs_ms": [273.878, 263.768, 243.588]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 556.738,
-      "runs_ms": [557.493, 556.738, 546.894]
+      "median_ms": 517.102,
+      "runs_ms": [527.713, 507.525, 517.102]
       },
-      "ratio": 0.491466
+      "ratio": 0.510089
     },
     {
       "id": "graph_directed_acyclic",
@@ -350,15 +350,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 1307.98,
-      "runs_ms": [1307.341, 1307.999, 1307.98]
+      "median_ms": 1226.054,
+      "runs_ms": [1234.658, 1226.054, 1225.869]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 588.113,
-      "runs_ms": [637.777, 588.113, 577.898]
+      "median_ms": 538.48,
+      "runs_ms": [548.298, 538.48, 527.885]
       },
-      "ratio": 2.22403
+      "ratio": 2.27688
     },
     {
       "id": "str_regex",
@@ -368,15 +368,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 1019.052,
-      "runs_ms": [1036.877, 1019.052, 1008.881]
+      "median_ms": 980.514,
+      "runs_ms": [990.854, 961.025, 980.514]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 854.377,
-      "runs_ms": [854.377, 863.751, 852.614]
+      "median_ms": 851.053,
+      "runs_ms": [852.536, 851.053, 819.485]
       },
-      "ratio": 1.19274
+      "ratio": 1.15212
     }
   ]
 }

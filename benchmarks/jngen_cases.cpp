@@ -71,10 +71,11 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 		consume_tree(Tree::randomPrim(BENCH_N, BENCH_ELONGATION));
 	};
 	out["list_all_different"] = [] {
-		consume_array(Array::randomUnique(BENCH_N, 1, BENCH_LIST_HI));
+		consume_array(Array::randomUnique(BENCH_LIST_ALL_DIFF_N, 1,
+										  BENCH_LIST_ALL_DIFF_HI));
 	};
 	out["list_random"] = [] {
-		consume_array(Array::random(BENCH_N, 1, BENCH_LIST_HI));
+		consume_array(Array::random(BENCH_LIST_RANDOM_N, 1, BENCH_LIST_RANDOM_HI));
 	};
 	out["geometry_convex_polygon"] = [] {
 		consume_polygon(rndg.convexPolygon(BENCH_N, 0, BENCH_CONVEX_COORD_MAX));

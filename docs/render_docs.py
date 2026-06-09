@@ -29,7 +29,7 @@ except ImportError:
 
 
 COMPLEXITY_RE = re.compile(r"(?:O|Omega)\((?:[^()]*|\([^()]*\))+\)")
-LIB_MENTION_RE = re.compile(r"\b(jngen|tgen)(?=\s)")
+LIB_MENTION_RE = re.compile(r"\b(jngen|tgen)(?::(?!:)| )")
 
 EMPTY_CELL_MARK = "—"
 
@@ -408,7 +408,10 @@ def highlight_lib_names_html(text):
     for match in LIB_MENTION_RE.finditer(text):
         out.append(html.escape(text[last : match.start()]))
         lib = match.group(1)
-        out.append(f'<strong class="lib-label lib-{lib}">{lib}</strong>')
+        if match.group(0).endswith(":"):
+            out.append(f'<strong class="lib-label lib-{lib}">{lib}:</strong>')
+        else:
+            out.append(f'<strong class="lib-label lib-{lib}">{lib}</strong> ')
         last = match.end()
     out.append(html.escape(text[last:]))
     return "".join(out)
@@ -619,11 +622,11 @@ def format_lib_complexity_html(lib_info, brief=False):
         if clause == COMPLEXITY_OR_MARKER:
             lines.append('<span class="api-complexity-or">or</span>')
             continue
-        css = "api-complexity-line"
         if not COMPLEXITY_RE.search(clause):
-            css += " api-complexity-note"
+            continue
         lines.append(
-            f'<span class="{css}">{format_inferred_text_html(clause)}</span>'
+            f'<span class="api-complexity-line">'
+            f"{format_inferred_text_html(clause)}</span>"
         )
     return '<span class="api-complexity">' + "".join(lines) + "</span>"
 
@@ -968,22 +971,26 @@ def format_sample_cell_html(
     return cell
 
 
-def api_cell_td_class(lib_info):
+def api_cell_td_class(lib_info, lib=None):
+    classes = ["col-api"]
+    if lib:
+        classes.append(f"col-api-{lib}")
     if not lib_info.get("has"):
-        return "col-api cell-unavailable"
-    return "col-api"
+        classes.append("cell-unavailable")
+    return " ".join(classes)
 
 
 def sample_cell_td_class(op, lib_info, lib):
+    classes = ["col-api", f"col-api-{lib}"]
     stack = _sample_stack_ids(op)
     if stack:
         if any(sample_svg_exists(sid, lib) for sid in stack):
-            return "col-api sample-has-visual"
+            classes.append("sample-has-visual")
     elif sample_svg_exists(op["id"], lib):
-        return "col-api sample-has-visual"
+        classes.append("sample-has-visual")
     if not lib_info.get("has"):
-        return "col-api cell-unavailable"
-    return "col-api"
+        classes.append("cell-unavailable")
+    return " ".join(classes)
 
 
 def comparison_table_header_row():
@@ -1358,8 +1365,8 @@ def render_comparison_html(operations, categories, bench_index, source_resolver=
             parts.append(
                 "<tr>"
                 f"<td>{html.escape(op['name'])}</td>"
-                f'<td class="{api_cell_td_class(jg)}">{jngen_cell}</td>'
-                f'<td class="{api_cell_td_class(tg)}">{tgen_cell}</td>'
+                f'<td class="{api_cell_td_class(jg, "jngen")}">{jngen_cell}</td>'
+                f'<td class="{api_cell_td_class(tg, "tgen")}">{tgen_cell}</td>'
                 f'<td class="{notes_td_class}">{notes}</td>'
                 f'<td class="{bench_td_class}">{bench}</td>'
                 "</tr>"
@@ -1571,9 +1578,6 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     .api-complexity-line + .api-complexity-line {{
       margin-top: 0.2rem;
     }}
-    .api-complexity-note {{
-      color: var(--muted);
-    }}
     .api-complexity-or {{
       display: block;
       margin-top: 0.25rem;
@@ -1649,6 +1653,12 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       line-height: 1.35;
       box-sizing: border-box;
       padding: 0.25rem 0.35rem;
+    }}
+    table.comparison-table td.col-api-jngen code {{
+      color: #3fb950;
+    }}
+    table.comparison-table td.col-api-tgen code {{
+      color: #58a6ff;
     }}
     code {{
       background: var(--code-bg);
@@ -1777,6 +1787,9 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     }}
     table.bench-table.bench-table-timing td.bench-col-comparison-cell {{
       min-width: 280px;
+    }}
+    table.bench-table.bench-table-timing td.bench-col-op code {{
+      color: #58a6ff;
     }}
     em {{ color: var(--muted); }}
     ul {{ color: var(--muted); }}

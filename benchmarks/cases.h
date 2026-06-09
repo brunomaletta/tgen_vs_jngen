@@ -16,7 +16,17 @@ constexpr int BENCH_GEOM_N = BENCH_N;
 constexpr int BENCH_M = BENCH_N;
 constexpr int BENCH_M_2N = 2 * BENCH_N;
 constexpr int BENCH_M_DISTINCT_WORST = 2 * BENCH_N - 3;
-constexpr int BENCH_LIST_HI = 2 * BENCH_N;
+#ifdef QUICK
+constexpr int BENCH_LIST_ALL_DIFF_N = 320'000;
+constexpr int BENCH_LIST_ALL_DIFF_HI = 2 * BENCH_LIST_ALL_DIFF_N;
+constexpr int BENCH_LIST_RANDOM_N = 700'000;
+constexpr int BENCH_LIST_RANDOM_HI = 2 * BENCH_LIST_RANDOM_N;
+#else
+constexpr int BENCH_LIST_ALL_DIFF_N = 5'000'000;
+constexpr int BENCH_LIST_ALL_DIFF_HI = 2 * BENCH_LIST_ALL_DIFF_N;
+constexpr int BENCH_LIST_RANDOM_N = 5'000'000;
+constexpr int BENCH_LIST_RANDOM_HI = 2 * BENCH_LIST_RANDOM_N;
+#endif
 #ifdef QUICK
 constexpr int BENCH_STR_LEN = 500'000;
 constexpr int BENCH_PERM_N = 500'000;
@@ -63,9 +73,10 @@ constexpr const char *BENCH_PARAMS_PERM = "n=5e5";
 constexpr const char *BENCH_PARAMS_N_M = "n=1e5, m=1e5";
 constexpr const char *BENCH_PARAMS_N_M_2N = "n=1e5, m=2e5";
 constexpr const char *BENCH_PARAMS_N_M_2N_3 = "n=1e5, m=2n-3";
-constexpr const char *BENCH_PARAMS_LIST = "n=1e5, value_left=1, value_right=2e5";
+constexpr const char *BENCH_PARAMS_LIST =
+	"n=3.2e5, value_left=1, value_right=6.4e5";
 constexpr const char *BENCH_PARAMS_LIST_RANDOM =
-	"n=1e5, value_left=1, value_right=2e5";
+	"n=7e5, value_left=1, value_right=14e5";
 constexpr const char *BENCH_PARAMS_STR_REGEX =
 	"pattern=(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){r}, len=5e5";
 constexpr const char *BENCH_PARAMS_GEOM = "n=1e5, min=0, max=3e5";
@@ -87,9 +98,10 @@ constexpr const char *BENCH_PARAMS_PERM = "n=5e6";
 constexpr const char *BENCH_PARAMS_N_M = "n=1e6, m=1e6";
 constexpr const char *BENCH_PARAMS_N_M_2N = "n=1e6, m=2e6";
 constexpr const char *BENCH_PARAMS_N_M_2N_3 = "n=1e6, m=2n-3";
-constexpr const char *BENCH_PARAMS_LIST = "n=1e6, value_left=1, value_right=2e6";
+constexpr const char *BENCH_PARAMS_LIST =
+	"n=5e6, value_left=1, value_right=10e6";
 constexpr const char *BENCH_PARAMS_LIST_RANDOM =
-	"n=1e6, value_left=1, value_right=2e6";
+	"n=5e6, value_left=1, value_right=10e6";
 constexpr const char *BENCH_PARAMS_STR_REGEX =
 	"pattern=(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){r}, len=2.32e7";
 constexpr const char *BENCH_PARAMS_GEOM = "n=1e6, min=0, max=3e6";
@@ -130,13 +142,13 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		{"list_random", "list<int>::gen", "", BENCH_PARAMS_LIST_RANDOM, true},
 		{"geometry_convex_polygon", "geometry::random_convex_polygon", "",
 		 BENCH_PARAMS_CONVEX, true},
-		{"geometry_points_general_position",
-		 "geometry::random_points_general_position", "",
-		 BENCH_PARAMS_GENERAL_POSITION, true},
 		{"geometry_points_general_position_small",
 		 "geometry::random_points_general_position",
 		 BENCH_GENERAL_POSITION_SMALL_SUFFIX,
 		 BENCH_PARAMS_GENERAL_POSITION_SMALL, true},
+		{"geometry_points_general_position",
+		 "geometry::random_points_general_position", "",
+		 BENCH_PARAMS_GENERAL_POSITION, true},
 		{"geometry_random_simple_polygon", "geometry::random_simple_polygon",
 		 "", BENCH_PARAMS_GEOM, false},
 		{"geometry_simple_polygon_through_points",

@@ -20,12 +20,12 @@ operations:
       has: true
       api: "graph(n, m).get_connected()"
       uniform: non-uniform
-      complexity: "O(n + m log n); Prüfer spanning tree + rejection edge add"
+      complexity: "O(n + m log n)"
     jngen:
       has: true
       api: "Graph::random(n, m).connected()"
       uniform: non-uniform (inferred)
-      complexity: "O(n + m log n) (inferred); Prüfer spanning tree + rejection edge add"
+      complexity: "O(n + m log n) (inferred)"
     notes: "Same Prüfer tree + rejection edge add. Neither uniform over all connected labeled graphs."
     benchmark: true
     benchmark_id: graph_connected_m_eq_n
@@ -37,12 +37,13 @@ operations:
       has: true
       api: "graph(n, m).gen()"
       uniform: uniform
-      complexity: "O(n + m log n); rejection with constraint machinery"
+      complexity: "O(n + m log n)"
     jngen:
       has: true
       api: "Graph::random(n, m)"
       uniform: non-uniform (inferred)
-      complexity: "O(n + m log n) (inferred); rejection with constraint machinery"
+      complexity: "O(n + m log n) (inferred)"
+    notes: "Rejection sampling with constraint machinery."
     benchmark: true
     benchmark_id: graph_gen
     secondary_benchmark_ids:
@@ -55,12 +56,12 @@ operations:
       has: true
       api: "graph::gen_skewed(n, m, elongation, spread)"
       uniform: non-uniform
-      complexity: "O(n + m log n) if spread is O(1); O(n log n + m log^2 n) otherwise; skewed spanning tree + ancestor-biased extra edges"
+      complexity: "O(n + m log n) if spread is O(1); O(n log n + m log^2 n) otherwise"
     jngen:
       has: true
       api: "Graph::randomStretched(n, m, elongation, spread)"
       uniform: non-uniform
-      complexity: "O(n + m log n) (inferred) if spread is O(1); Omega(n * m) (inferred) otherwise; skewed spanning tree + ancestor-biased extra edges"
+      complexity: "O(n + m log n) (inferred) if spread is O(1); Omega(n * m) (inferred) otherwise"
     notes: "Same high-level algorithm: skewed spanning tree, then ancestor-biased extra edges. Extra edges reject duplicates; jngen resets an attempt counter on success and throws after MAX_ATTEMPTS=1000 consecutive failures, while tgen uses its unique generation framework. For large spread, tgen uses binary lifting; jngen uses trivial parent-by-parent lifting."
     benchmark: true
     benchmark_id: graph_gen_skewed_m_eq_n
@@ -74,13 +75,13 @@ operations:
       has: true
       api: "graph::gen_bipartite(n1, n2, m), K(n1, n2)"
       uniform: uniform
-      complexity: "O(n1 + n2 + m log(n1 * n2)); distinct edge-index sampling"
+      complexity: "O(n1 + n2 + m log(n1 * n2))"
     jngen:
       has: true
       api: "Graph::randomBipartite(n1, n2, m), completeBipartite(n1, n2)"
       uniform: uniform (inferred)
-      complexity: "O(n1 + n2 + m log(n1 * n2)) (inferred); rejection sampling"
-    notes: "jngen randomBipartite supports connected and allowMulti modifiers; tgen has no equivalent options."
+      complexity: "O(n1 + n2 + m log(n1 * n2)) (inferred)"
+    notes: "tgen: distinct edge-index sampling. jngen: rejection sampling. jngen randomBipartite supports connected and allowMulti modifiers; tgen has no equivalent options."
     benchmark: true
     benchmark_id: graph_bipartite
 
@@ -91,12 +92,13 @@ operations:
       has: true
       api: "graph(n, m, directed=true).gen()"
       uniform: non-uniform
-      complexity: "O(n + m log n); rejection with constraint machinery"
+      complexity: "O(n + m log n)"
     jngen:
       has: true
       api: "Graph::random(n, m).directed().g()"
       uniform: non-uniform (inferred)
-      complexity: "O(n + m log n) (inferred); rejection sampling"
+      complexity: "O(n + m log n) (inferred)"
+    notes: "tgen: rejection with constraint machinery. jngen: rejection sampling."
     benchmark: true
     benchmark_id: graph_directed
     secondary_benchmark_ids:
@@ -109,12 +111,13 @@ operations:
       has: true
       api: "graph(n, m, directed=true).get_acyclic()"
       uniform: non-uniform
-      complexity: "O(n + m log n); randomized Kahn topological order, then rejection sampling"
+      complexity: "O(n + m log n)"
     jngen:
       has: true
       api: "Graph::random(n, m).directed().acyclic().g()"
       uniform: non-uniform (inferred)
-      complexity: "O(n + m log n) (inferred); rejection sampling + acyclic shuffle-orient"
+      complexity: "O(n + m log n) (inferred)"
+    notes: "tgen: randomized Kahn topological order, then rejection sampling. jngen: rejection sampling + acyclic shuffle-orient."
     benchmark: false
     benchmark_id: graph_directed_acyclic
 
@@ -126,12 +129,13 @@ operations:
       has: true
       api: "tree(n).gen()"
       uniform: uniform
-      complexity: "O(n); Prüfer sequence"
+      complexity: "O(n)"
     jngen:
       has: true
       api: "Tree::random(n)"
       uniform: uniform
-      complexity: "O(n) (inferred); Prüfer sequence"
+      complexity: "O(n) (inferred)"
+    notes: "Prüfer sequence."
     benchmark: true
     benchmark_id: tree_gen
 
@@ -142,12 +146,13 @@ operations:
       has: true
       api: "tree::gen_skewed(n, elongation)"
       uniform: non-uniform
-      complexity: "O(n); parent(i) = wnext(i, elongation)"
+      complexity: "O(n)"
     jngen:
       has: true
       api: "Tree::randomPrim(n, elongation)"
       uniform: non-uniform (inferred)
-      complexity: "O(n) (inferred); parent(i) = wnext(i, elongation)"
+      complexity: "O(n) (inferred)"
+    notes: "parent(i) = wnext(i, elongation)."
     benchmark: true
     benchmark_id: tree_gen_skewed
 
@@ -163,7 +168,8 @@ operations:
       has: true
       api: "Tree::randomKruskal(n)"
       uniform: non-uniform (inferred)
-      complexity: "O(n²) expected (inferred); Kruskal-like edge add until connected"
+      complexity: "O(n²) expected (inferred)"
+    notes: "Kruskal-like edge add until connected."
 
   # --- Lists and sequences ---
   - id: list_all_different
@@ -173,12 +179,13 @@ operations:
       has: true
       api: "list<int>(k, lo, hi).all_different().gen()"
       uniform: uniform
-      complexity: "O(k log k); Fisher–Yates + forbidden-value map"
+      complexity: "O(k log k)"
     jngen:
       has: true
       api: "Array::randomUnique(k, lo, hi)"
       uniform: uniform (inferred)
-      complexity: "O(k log k) expected (inferred); hash-set rejection"
+      complexity: "O(k log k) expected (inferred)"
+    notes: "tgen: Fisher–Yates + forbidden-value map. jngen: hash-set rejection."
     benchmark: true
     benchmark_id: list_all_different
 
@@ -189,12 +196,13 @@ operations:
       has: true
       api: "list<int>(k, lo, hi).gen()"
       uniform: uniform
-      complexity: "O(k); independent uniform draws"
+      complexity: "O(k)"
     jngen:
       has: true
       api: "Array::random(k, lo, hi)"
       uniform: uniform (inferred)
       complexity: "O(k) (inferred)"
+    notes: "Independent uniform draws."
     benchmark: true
     benchmark_id: list_random
 
@@ -221,12 +229,13 @@ operations:
       has: true
       api: "list/str/permutation/pair with .palindrome(), .cycles()..."
       uniform: ""
-      complexity: "Constraint-based uniform sampling"
+      complexity: ""
     jngen:
       has: false
       api: ""
       uniform: ""
       complexity: ""
+    notes: "Constraint-based uniform sampling."
 
   # --- Math ---
   - id: math_partition_fixed_size
@@ -236,13 +245,13 @@ operations:
       has: true
       api: "math::gen_partition_fixed_size(n, k, part_left, part_right)"
       uniform: uniform
-      complexity: "O(n); stars-and-bars (unbounded parts) or O(n·k); DP in log space"
+      complexity: "O(n) if unbounded part max (stars-and-bars) or O(n·k) for bounded parts (DP in log space)"
     jngen:
       has: true
       api: "rndm.partition(n, numParts, minSize, maxSize)"
       uniform: non-uniform (inferred)
-      complexity: "O(k log k) (inferred); random delimiters, sort, heuristic redistribution"
-    notes: "Different algorithms and semantics. tgen returns an ordered composition sampled uniformly. jngen sorts parts in non-increasing order (not a uniform composition); source comments that bounded redistribution 'need a smarter way'."
+      complexity: "O(k log k) (inferred)"
+    notes: "jngen: random delimiters, sort, heuristic redistribution. Different algorithms and semantics. tgen returns an ordered composition sampled uniformly. jngen sorts parts in non-increasing order (not a uniform composition); source comments that bounded redistribution 'need a smarter way'."
 
   - id: math_partition
     name: Ordered partition, variable number of parts
@@ -251,12 +260,13 @@ operations:
       has: true
       api: "math::gen_partition(n, part_left, part_right)"
       uniform: uniform
-      complexity: "O(n); DP in log space"
+      complexity: "O(n)"
     jngen:
       has: false
       api: ""
       uniform: ""
       complexity: ""
+    notes: "DP in log space."
 
   - id: math_random_prime
     name: Random prime in range
@@ -265,12 +275,13 @@ operations:
       has: true
       api: "math::gen_prime(left, right)"
       uniform: uniform
-      complexity: "O(log³ n) expected; Miller–Rabin rejection"
+      complexity: "O(log³ n) expected"
     jngen:
       has: true
       api: "rndm.randomPrime(l, r)"
       uniform: uniform (inferred)
-      complexity: "O(log³ n) expected (inferred); Miller–Rabin rejection"
+      complexity: "O(log³ n) expected (inferred)"
+    notes: "Miller–Rabin rejection."
 
   - id: math_congruent
     name: Random integer with congruence constraints
@@ -298,7 +309,8 @@ operations:
       has: true
       api: "rndm.partition(elements, numParts, minSize, maxSize)"
       uniform: non-uniform
-      complexity: "O(n + k log k) (inferred); shuffle + partition sizes + split"
+      complexity: "O(n + k log k) (inferred)"
+    notes: "shuffle + partition sizes + split"
 
   # --- Geometry ---
   - id: geometry_convex_polygon
@@ -308,13 +320,13 @@ operations:
       has: true
       api: "geometry::random_convex_polygon(n, min, max)"
       uniform: non-uniform
-      complexity: "O(n log n); Valtr construction filling bounding box"
+      complexity: "O(n log n)"
     jngen:
       has: true
       api: "rndg.convexPolygon(n, min, max)"
       uniform: non-uniform (inferred)
-      complexity: "O(n log n) (inferred); hull of 10n ellipse points, subsample n"
-    notes: "Different shape distributions. Benchmark uses the same n and max for both (wide max so jngen hull subsampling succeeds at n=1e6)."
+      complexity: "O(n log n) (inferred)"
+    notes: "tgen: Valtr construction filling bounding box. jngen: hull of 10n ellipse points, subsample n. Different shape distributions. Benchmark uses the same n and max for both (wide max so jngen hull subsampling succeeds at n=1e6)."
     benchmark: true
     benchmark_id: geometry_convex_polygon
     visualize: true
@@ -348,16 +360,17 @@ operations:
       has: true
       api: "geometry::random_points_general_position(n, min, max)"
       uniform: non-uniform
-      complexity: "O(n); algebraic construction over F_p"
+      complexity: "O(n)"
     jngen:
       has: true
       api: "rndg.pointsInGeneralPosition(n, min, max)"
       uniform: non-uniform (inferred)
-      complexity: "O(n² log n) expected (inferred); rejection until no collinearity"
+      complexity: "O(n² log n) expected (inferred)"
+    notes: "tgen: algebraic construction over F_p. jngen: rejection until no collinearity."
     benchmark: true
-    benchmark_id: geometry_points_general_position
+    benchmark_id: geometry_points_general_position_small
     secondary_benchmark_ids:
-      - geometry_points_general_position_small
+      - geometry_points_general_position
     visualize: true
     gallery_params: "n=2000, min=0, max=3e6"
 
@@ -368,12 +381,13 @@ operations:
       has: true
       api: "geometry::random_simple_polygon(n, min, max)"
       uniform: non-uniform
-      complexity: "O(n log n) expected; points + polygonization"
+      complexity: "O(n log n) expected"
     jngen:
       has: false
       api: ""
       uniform: ""
       complexity: ""
+    notes: "points + polygonization"
     benchmark: false
     benchmark_id: geometry_random_simple_polygon
     visualize: true
@@ -386,12 +400,13 @@ operations:
       has: true
       api: "geometry::random_simple_polygon_through_points(pts)"
       uniform: non-uniform
-      complexity: "O(n log n) expected; randomized divide-and-conquer Hamiltonian path"
+      complexity: "O(n log n) expected"
     jngen:
       has: false
       api: ""
       uniform: ""
       complexity: ""
+    notes: "randomized divide-and-conquer Hamiltonian path"
     benchmark: false
     benchmark_id: geometry_simple_polygon_through_points
     visualize: true
@@ -404,12 +419,13 @@ operations:
       has: true
       api: "tgen::distinct<Func, Args>"
       uniform: uniform
-      complexity: "O(k log n) for k distinct values; composable constraint machinery"
+      complexity: "O(k log n) for k distinct values"
     jngen:
       has: false
       api: ""
       uniform: ""
       complexity: ""
+    notes: "composable constraint machinery"
     exclusive: tgen
 
   - id: testlib_integration
@@ -558,12 +574,13 @@ operations:
       has: true
       api: "hack::spfa_hack(n)"
       uniform: ""
-      complexity: "O(n) vertices/edges; forces Ω(n²) relaxations"
+      complexity: "O(n)"
     jngen:
       has: false
       api: ""
       uniform: ""
       complexity: ""
+    notes: "n vertices/edges; forces Ω(n²) relaxations"
 
   - id: hack_stale_heap_dijkstra
     name: Stale-heap Dijkstra bug graph
@@ -572,12 +589,13 @@ operations:
       has: true
       api: "hack::stale_heap_dijkstra_bug(n)"
       uniform: ""
-      complexity: "O(n); forces Ω(n²) without stale-heap skip"
+      complexity: "O(n)"
     jngen:
       has: false
       api: ""
       uniform: ""
       complexity: ""
+    notes: "forces Ω(n²) without stale-heap skip"
 
   - id: hack_non_strict_dijkstra
     name: Non-strict relaxation Dijkstra bug graph
@@ -586,12 +604,13 @@ operations:
       has: true
       api: "hack::non_strict_relaxation_dijkstra_bug(n)"
       uniform: ""
-      complexity: "O(n); forces Ω(2^{n/2}) with non-strict relaxation"
+      complexity: "O(n)"
     jngen:
       has: false
       api: ""
       uniform: ""
       complexity: ""
+    notes: "forces Ω(2^{n/2}) with non-strict relaxation"
 
   - id: hack_mt19937_xor_hash
     name: mt19937 XOR-hash collision mask
@@ -600,12 +619,13 @@ operations:
       has: true
       api: "hack::mt19937_xor_hash_hack<T>()"
       uniform: ""
-      complexity: "O(1); bitmask for int or long long outputs"
+      complexity: "O(1)"
     jngen:
       has: false
       api: ""
       uniform: ""
       complexity: ""
+    notes: "bitmask for int or long long outputs"
 
   - id: hack_segment_tree_beats
     name: Segment-tree-beats worst case
@@ -628,9 +648,10 @@ operations:
       has: true
       api: "hack::naive_rotating_calipers_max_dist_bug()"
       uniform: ""
-      complexity: "O(1); fixed 6-vertex convex polygon"
+      complexity: "O(1)"
     jngen:
       has: false
       api: ""
       uniform: ""
       complexity: ""
+    notes: "fixed 6-vertex convex polygon"
