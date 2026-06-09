@@ -21,25 +21,25 @@ constexpr int BENCH_COORD_MAX = 3 * BENCH_GEOM_N;
 constexpr int BENCH_ELONGATION = 100;
 constexpr int BENCH_SPREAD_SMALL = 2;
 constexpr int BENCH_SPREAD_LARGE = 6;
-// jngen pointsInGeneralPosition is O(n^2) rejection; tune n for ~2s jngen runtime.
-#ifdef QUICK
-constexpr int BENCH_GENERAL_POSITION_N = 1'000;
+// Shared geometry head-to-head params (same n and range for tgen and jngen).
+// jngen convexPolygon subsamples hull(10n); needs a wide range at large n.
 constexpr long long BENCH_GENERAL_POSITION_COORD_MAX = 3'000'000LL;
-constexpr const char *BENCH_PARAMS_GENERAL_POSITION = "n=1e3, min=0, max=3e6";
-#else
-constexpr int BENCH_GENERAL_POSITION_N = 1'800;
-constexpr long long BENCH_GENERAL_POSITION_COORD_MAX = 3'000'000LL;
-constexpr const char *BENCH_PARAMS_GENERAL_POSITION = "n=1800, min=0, max=3e6";
-#endif
-// jngen convexPolygon needs hull(10n) >= n vertices; max n grows with coordinate range.
 #ifdef QUICK
-constexpr int BENCH_CONVEX_N = 10'000;
-constexpr int BENCH_CONVEX_COORD_MAX = 3 * BENCH_N;
-constexpr const char *BENCH_PARAMS_CONVEX = "n=1e4, min=0, max=3e5";
+constexpr long long BENCH_CONVEX_COORD_MAX = 3LL * BENCH_N;
+constexpr const char *BENCH_PARAMS_CONVEX = "n=1e5, min=0, max=3e5";
+constexpr const char *BENCH_PARAMS_GENERAL_POSITION = "n=1e5, min=0, max=3e6";
+constexpr int BENCH_GENERAL_POSITION_SMALL_N = 1'000;
+constexpr const char *BENCH_GENERAL_POSITION_SMALL_SUFFIX = " (n=1e3)";
+constexpr const char *BENCH_PARAMS_GENERAL_POSITION_SMALL =
+	"n=1e3, min=0, max=3e6";
 #else
-constexpr int BENCH_CONVEX_N = 1'000'000;
 constexpr long long BENCH_CONVEX_COORD_MAX = 30'000'000'000LL;
 constexpr const char *BENCH_PARAMS_CONVEX = "n=1e6, min=0, max=3e10";
+constexpr const char *BENCH_PARAMS_GENERAL_POSITION = "n=1e6, min=0, max=3e6";
+constexpr int BENCH_GENERAL_POSITION_SMALL_N = 1'800;
+constexpr const char *BENCH_GENERAL_POSITION_SMALL_SUFFIX = " (n=1800)";
+constexpr const char *BENCH_PARAMS_GENERAL_POSITION_SMALL =
+	"n=1800, min=0, max=3e6";
 #endif
 
 #ifdef QUICK
@@ -105,6 +105,10 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		{"geometry_points_general_position",
 		 "geometry::random_points_general_position", "",
 		 BENCH_PARAMS_GENERAL_POSITION, true},
+		{"geometry_points_general_position_small",
+		 "geometry::random_points_general_position",
+		 BENCH_GENERAL_POSITION_SMALL_SUFFIX,
+		 BENCH_PARAMS_GENERAL_POSITION_SMALL, true},
 		{"geometry_random_simple_polygon", "geometry::random_simple_polygon",
 		 "", BENCH_PARAMS_GEOM, false},
 		{"geometry_simple_polygon_through_points",

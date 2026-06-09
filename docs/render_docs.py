@@ -31,6 +31,24 @@ except ImportError:
 COMPLEXITY_RE = re.compile(r"(?:O|Omega)\((?:[^()]*|\([^()]*\))+\)")
 LIB_MENTION_RE = re.compile(r"\b(jngen|tgen)(?=\s)")
 
+EMPTY_CELL_MARK = "—"
+
+
+def empty_cell_html():
+    return f'<span class="cell-empty">{EMPTY_CELL_MARK}</span>'
+
+
+def is_empty_cell(content):
+    return content in (EMPTY_CELL_MARK, empty_cell_html())
+
+
+def format_empty_aware_td(content, *extra_classes):
+    classes = [c for c in extra_classes if c]
+    if is_empty_cell(content) and "cell-empty" not in classes:
+        classes.append("cell-empty")
+    class_attr = f' class="{" ".join(classes)}"' if classes else ""
+    return f"<td{class_attr}>{content}</td>"
+
 
 def format_generated_at(ts):
     if not ts or ts == "—":
@@ -642,7 +660,8 @@ def format_notes_html(tg, jg, extra_notes, exclusive=None):
         blocks.append(format_notes_text_html(extra_notes))
     if show_exclusive_badge(tg, jg, exclusive):
         blocks.append(format_exclusive_html(exclusive))
-    return join_notes_blocks(blocks)
+    text = join_notes_blocks(blocks)
+    return empty_cell_html() if text == EMPTY_CELL_MARK else text
 
 
 API_WRAP_MAX_LEN = 52
@@ -1110,7 +1129,7 @@ def lib_benchmark_ok(lib_result):
 def render_bench_fail_row(label, label_class, lib_result, *, show_detail=True):
     status = lib_result.get("status", "failed")
     if status == "error":
-        badge = "FAILS"
+        badge = "FAILURE"
     elif status == "timeout":
         badge = "TIMEOUT"
     else:
@@ -1188,7 +1207,7 @@ def bench_ratio(row):
 def format_ratio_html(row):
     ratio = bench_ratio(row)
     if ratio is None:
-        return "—"
+        return empty_cell_html()
     if ratio > 0 and ratio < 0.01:
         text = "<0.01x"
     else:
@@ -1260,7 +1279,7 @@ def format_benchmark_cell_html(op, bench_index):
         bids.append(op["benchmark_id"])
     bids.extend(op.get("secondary_benchmark_ids", []))
     if not bids:
-        return "—"
+        return empty_cell_html()
 
     blocks = []
     for bid in bids:
@@ -1277,7 +1296,7 @@ def format_benchmark_cell_html(op, bench_index):
             )
         blocks.append("<br>".join(lines))
 
-    return "<br><br>".join(blocks) if blocks else "—"
+    return "<br><br>".join(blocks) if blocks else empty_cell_html()
 
 
 def render_comparison_html(operations, categories, bench_index, source_resolver=None):
@@ -1329,14 +1348,20 @@ def render_comparison_html(operations, categories, bench_index, source_resolver=
 
             notes = format_notes_html(tg, jg, op.get("notes", ""), op.get("exclusive"))
             bench = format_benchmark_cell_html(op, bench_index)
+            notes_td_class = (
+                "col-notes cell-empty" if is_empty_cell(notes) else "col-notes"
+            )
+            bench_td_class = (
+                "col-bench cell-empty" if is_empty_cell(bench) else "col-bench"
+            )
 
             parts.append(
                 "<tr>"
                 f"<td>{html.escape(op['name'])}</td>"
                 f'<td class="{api_cell_td_class(jg)}">{jngen_cell}</td>'
                 f'<td class="{api_cell_td_class(tg)}">{tgen_cell}</td>'
-                f'<td class="col-notes">{notes}</td>'
-                f'<td class="{"col-bench cell-unavailable" if bench == "—" else "col-bench"}">{bench}</td>'
+                f'<td class="{notes_td_class}">{notes}</td>'
+                f'<td class="{bench_td_class}">{bench}</td>'
                 "</tr>"
             )
         parts.append("</table></div>")
@@ -1379,13 +1404,16 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
         "Bar length is relative to the slower library per operation "
         "(<strong class=\"lib-label lib-jngen\">jngen</strong> vs "
         "<strong class=\"lib-label lib-tgen\">tgen</strong>). "
-        "Ratio is colored by the faster library. "
-        "Cases where <strong class=\"lib-label lib-jngen\">jngen</strong> cannot "
-        'complete are marked with <span class="bench-fail-badge bench-fail-badge-inline">'
-        "FAILS</span>.</p>",
-        '<div class="table-scroll"><table class="bench-table">',
+        "Ratio is colored by the faster library.</p>",
+        '<div class="table-scroll"><table class="bench-table bench-table-timing">',
+        "<colgroup>"
+        '<col class="bench-col-op">'
+        '<col class="bench-col-params">'
+        '<col class="bench-col-comparison">'
+        '<col class="bench-col-ratio">'
+        "</colgroup>",
         "<tr><th>Operation</th><th>Parameters</th><th>Comparison</th>"
-        "<th>Ratio (tgen/jngen)</th></tr>",
+        '<th class="bench-col-ratio-header">Ratio (tgen/jngen)</th></tr>',
     ])
 
     shared = [
@@ -1409,8 +1437,8 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
             "<tr>"
             f"<td>{format_benchmark_name_html(name, source_url, doc_url)}</td>"
             f"<td>{format_params_html(params)}</td>"
-            f"<td>{comparison}</td>"
-            f"<td>{format_ratio_html(row)}</td>"
+            f'<td class="bench-col-comparison-cell">{comparison}</td>'
+            f'{format_empty_aware_td(format_ratio_html(row), "bench-col-ratio-cell")}'
             "</tr>"
         )
 
@@ -1735,8 +1763,20 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       line-height: 1.35;
       word-break: break-word;
     }}
-    table.bench-table td:nth-child(3) {{
-      min-width: 140px;
+    table.bench-table.bench-table-timing {{
+      table-layout: fixed;
+    }}
+    table.bench-table.bench-table-timing .bench-col-op {{ width: 20%; }}
+    table.bench-table.bench-table-timing .bench-col-params {{ width: 15%; }}
+    table.bench-table.bench-table-timing .bench-col-comparison {{ width: 50%; }}
+    table.bench-table.bench-table-timing .bench-col-ratio {{ width: 15%; }}
+    table.bench-table.bench-table-timing th.bench-col-ratio-header,
+    table.bench-table.bench-table-timing td.bench-col-ratio-cell {{
+      vertical-align: middle;
+      text-align: center;
+    }}
+    table.bench-table.bench-table-timing td.bench-col-comparison-cell {{
+      min-width: 280px;
     }}
     em {{ color: var(--muted); }}
     ul {{ color: var(--muted); }}
@@ -1823,6 +1863,11 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     }}
     td.cell-unavailable strong {{
       font-size: 1.05rem;
+    }}
+    td.cell-empty {{
+      vertical-align: middle;
+      text-align: center;
+      color: var(--muted);
     }}
     nav {{
       margin-bottom: 1.5rem;

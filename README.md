@@ -46,7 +46,7 @@ Geometry sample SVGs live under `docs/gallery/` (20 variants per sample, seeds 4
 - Connected and random graphs (including directed), skewed graphs, bipartite graphs
 - Random and skewed trees, uniform permutations
 - Distinct integer lists
-- Convex polygons (n=1e6, max=3e10 — jngen needs a wider range at this n; both use the same n)
+- Convex polygons and points in general position (same n and coordinate range for both libraries)
 
 **Feature table** (not all rows are timed): named graphs, rooted tree output, structured printing, testlib integration, math, geometry, strings, `hack::` generators — see [docs/comparison.html](docs/comparison.html).
 

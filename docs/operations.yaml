@@ -72,12 +72,12 @@ operations:
       has: true
       api: "graph::gen_bipartite(n1, n2, m), K(n1, n2)"
       uniform: uniform
-      complexity: "O(n1 + n2 + m log(n1 + n2)); uniform cross edges"
+      complexity: "O(n1 + n2 + m log(n1 * n2)); distinct edge-index sampling"
     jngen:
       has: true
       api: "Graph::randomBipartite(n1, n2, m), completeBipartite(n1, n2)"
       uniform: uniform (inferred)
-      complexity: "O(n1 + n2 + m log(n1 + n2)) (inferred); rejection sampling"
+      complexity: "O(n1 + n2 + m log(n1 * n2)) (inferred); rejection sampling"
     notes: "jngen randomBipartite supports connected and allowMulti modifiers; tgen has no equivalent options."
     benchmark: true
     benchmark_id: graph_bipartite
@@ -278,7 +278,7 @@ operations:
       api: "rndg.convexPolygon(n, min, max)"
       uniform: non-uniform (inferred)
       complexity: "O(n log n) (inferred); hull of 10n ellipse points, subsample n"
-    notes: "Different shape distributions. jngen needs a large coordinate range at high n (hull subsampling)."
+    notes: "Different shape distributions. Benchmark uses the same n and max for both (wide max so jngen hull subsampling succeeds at n=1e6)."
     benchmark: true
     benchmark_id: geometry_convex_polygon
     visualize: true
@@ -320,6 +320,8 @@ operations:
       complexity: "O(n² log n) expected (inferred); rejection until no collinearity"
     benchmark: true
     benchmark_id: geometry_points_general_position
+    secondary_benchmark_ids:
+      - geometry_points_general_position_small
     visualize: true
     gallery_params: "n=2000, min=0, max=3e6"
 

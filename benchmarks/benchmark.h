@@ -4,14 +4,20 @@
 #include <cmath>
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <unistd.h>
 #include <vector>
+
+#include <signal.h>
+#include <sys/wait.h>
 
 namespace benchmark {
 
@@ -70,14 +76,107 @@ inline double median(std::vector<double> values) {
 	return values[values.size() / 2];
 }
 
+constexpr size_t kChildErrorMax = 4096;
+
+inline void read_child_error(int fd, std::string &out) {
+	out.clear();
+	char buf[512];
+	while (out.size() < kChildErrorMax) {
+		const ssize_t n = read(fd, buf, sizeof(buf));
+		if (n <= 0)
+			break;
+		out.append(buf, buf + n);
+	}
+	if (out.size() > kChildErrorMax)
+		out.resize(kChildErrorMax);
+}
+
+inline void write_child_error(int fd, const char *msg) {
+	if (!msg || !*msg)
+		return;
+	const size_t len = std::strlen(msg);
+	const size_t n = std::min(len, kChildErrorMax);
+	(void)write(fd, msg, n);
+}
+
+// Runs @p fn in a child process and kills it if it exceeds @p max_ms wall time.
+// On exception in the child, the message is read into @p child_error.
+inline bool run_timed_child(const CaseFn &fn, double max_ms, double &out_ms,
+							std::string &child_error) {
+	child_error.clear();
+	int pipefd[2];
+	if (pipe(pipefd) != 0)
+		throw std::runtime_error("benchmark: pipe failed");
+
+	const auto start = clock::now();
+	const pid_t pid = fork();
+	if (pid < 0)
+		throw std::runtime_error("benchmark: fork failed");
+
+	if (pid == 0) {
+		close(pipefd[0]);
+		try {
+			fn();
+		} catch (const std::exception &e) {
+			write_child_error(pipefd[1], e.what());
+			close(pipefd[1]);
+			_exit(2);
+		} catch (...) {
+			write_child_error(pipefd[1], "unknown exception");
+			close(pipefd[1]);
+			_exit(2);
+		}
+		close(pipefd[1]);
+		_exit(0);
+	}
+
+	close(pipefd[1]);
+
+	const auto deadline = start + std::chrono::duration_cast<clock::duration>(
+								  std::chrono::duration<double, std::milli>(
+									  max_ms));
+
+	int status = 0;
+	while (true) {
+		const pid_t waited = waitpid(pid, &status, WNOHANG);
+		if (waited == pid) {
+			out_ms = elapsed_ms(start);
+			if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+				close(pipefd[0]);
+				return true;
+			}
+			if (WIFEXITED(status) && WEXITSTATUS(status) == 2) {
+				read_child_error(pipefd[0], child_error);
+				close(pipefd[0]);
+				if (child_error.empty())
+					child_error = "unknown exception";
+				throw std::runtime_error(child_error);
+			}
+			close(pipefd[0]);
+			throw std::runtime_error("benchmark: case failed in child");
+		}
+		if (waited < 0) {
+			close(pipefd[0]);
+			throw std::runtime_error("benchmark: waitpid failed");
+		}
+		if (clock::now() >= deadline) {
+			kill(pid, SIGKILL);
+			waitpid(pid, &status, 0);
+			close(pipefd[0]);
+			out_ms = elapsed_ms(start);
+			return false;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+}
+
 inline LibraryResult run_library_case(const CaseFn &fn) {
 	LibraryResult result;
 	try {
 		for (int i = 0; i < kTimedRuns; ++i) {
-			auto start = clock::now();
-			fn();
-			const double ms = elapsed_ms(start);
-			if (ms > kMaxRunMs) {
+			double ms = 0;
+			std::string child_error;
+			if (!run_timed_child(fn, kMaxRunMs, ms, child_error)) {
 				result.status = "timeout";
 				result.error = "single run exceeded 5000 ms limit";
 				return result;

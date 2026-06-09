@@ -143,3 +143,4 @@ benchmarks:
   graph_gen_skewed_m_eq_2n: graph_gen_skewed
   graph_gen_skewed_distinct_worst: graph_gen_skewed
   geometry_random_simple_polygon: geometry_simple_polygon
+  geometry_points_general_position_small: geometry_points_general_position

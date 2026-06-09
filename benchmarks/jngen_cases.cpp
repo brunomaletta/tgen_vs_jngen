@@ -65,12 +65,16 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 		consume_array(Array::randomUnique(BENCH_N, 1, BENCH_LIST_HI));
 	};
 	out["geometry_convex_polygon"] = [] {
-		consume_polygon(
-			rndg.convexPolygon(BENCH_CONVEX_N, 0, BENCH_CONVEX_COORD_MAX));
+		consume_polygon(rndg.convexPolygon(BENCH_N, 0, BENCH_CONVEX_COORD_MAX));
 	};
 	out["geometry_points_general_position"] = [] {
 		consume_polygon(rndg.pointsInGeneralPosition(
-			BENCH_GENERAL_POSITION_N, 0, BENCH_GENERAL_POSITION_COORD_MAX));
+			BENCH_N, 0, BENCH_GENERAL_POSITION_COORD_MAX));
+	};
+	out["geometry_points_general_position_small"] = [] {
+		consume_polygon(rndg.pointsInGeneralPosition(
+			BENCH_GENERAL_POSITION_SMALL_N, 0,
+			BENCH_GENERAL_POSITION_COORD_MAX));
 	};
 	out["permutation_uniform"] = [] {
 		consume_array(Array::id(BENCH_N).shuffled());
