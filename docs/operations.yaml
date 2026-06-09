@@ -152,7 +152,7 @@ operations:
       api: "Tree::randomPrim(n, elongation)"
       uniform: non-uniform (inferred)
       complexity: "O(n) (inferred)"
-    notes: "parent(i) = wnext(i, elongation)."
+    notes: "Uses parent(i) = wnext(i, elongation)."
     benchmark: true
     benchmark_id: tree_gen_skewed
 
@@ -310,7 +310,7 @@ operations:
       api: "rndm.partition(elements, numParts, minSize, maxSize)"
       uniform: non-uniform
       complexity: "O(n + k log k) (inferred)"
-    notes: "shuffle + partition sizes + split"
+    notes: "Shuffle + partition sizes + split."
 
   # --- Geometry ---
   - id: geometry_convex_polygon
@@ -387,7 +387,7 @@ operations:
       api: ""
       uniform: ""
       complexity: ""
-    notes: "points + polygonization"
+    notes: "Points + polygonization."
     benchmark: false
     benchmark_id: geometry_random_simple_polygon
     visualize: true
@@ -406,7 +406,7 @@ operations:
       api: ""
       uniform: ""
       complexity: ""
-    notes: "randomized divide-and-conquer Hamiltonian path"
+    notes: "Randomized divide-and-conquer Hamiltonian path."
     benchmark: false
     benchmark_id: geometry_simple_polygon_through_points
     visualize: true
@@ -425,11 +425,11 @@ operations:
       api: ""
       uniform: ""
       complexity: ""
-    notes: "composable constraint machinery"
+    notes: "Composable constraint machinery."
     exclusive: tgen
 
   - id: testlib_integration
-    name: testlib integration
+    name: Testlib integration
     category: other
     tgen:
       has: false
@@ -580,7 +580,7 @@ operations:
       api: ""
       uniform: ""
       complexity: ""
-    notes: "n vertices/edges; forces Ω(n²) relaxations"
+    notes: "Graph with n vertices and edges; forces Ω(n²) relaxations."
 
   - id: hack_stale_heap_dijkstra
     name: Stale-heap Dijkstra bug graph
@@ -595,7 +595,7 @@ operations:
       api: ""
       uniform: ""
       complexity: ""
-    notes: "forces Ω(n²) without stale-heap skip"
+    notes: "Forces Ω(n²) without stale-heap skip."
 
   - id: hack_non_strict_dijkstra
     name: Non-strict relaxation Dijkstra bug graph
@@ -610,10 +610,10 @@ operations:
       api: ""
       uniform: ""
       complexity: ""
-    notes: "forces Ω(2^{n/2}) with non-strict relaxation"
+    notes: "Forces Ω(2^{n/2}) with non-strict relaxation."
 
   - id: hack_mt19937_xor_hash
-    name: mt19937 XOR-hash collision mask
+    name: MT19937 XOR-hash collision mask
     category: hacks
     tgen:
       has: true
@@ -625,7 +625,7 @@ operations:
       api: ""
       uniform: ""
       complexity: ""
-    notes: "bitmask for int or long long outputs"
+    notes: "Bitmask for int or long long outputs."
 
   - id: hack_segment_tree_beats
     name: Segment-tree-beats worst case
@@ -654,4 +654,4 @@ operations:
       api: ""
       uniform: ""
       complexity: ""
-    notes: "fixed 6-vertex convex polygon"
+    notes: "Fixed 6-vertex convex polygon."

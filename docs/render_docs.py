@@ -400,6 +400,34 @@ def highlight_lib_names_md(text):
     return LIB_MENTION_RE.sub(repl, text)
 
 
+LIB_NAME_PREFIXES = ("tgen", "jngen")
+
+
+def capitalize_doc_text(text):
+    if not text:
+        return text
+    if text[0].islower() and not any(
+        text.startswith(f"{name}:") or text.startswith(f"{name} ")
+        for name in LIB_NAME_PREFIXES
+    ):
+        text = text[0].upper() + text[1:]
+
+    def cap_letter(match):
+        prefix = match.group(1)
+        letter = match.group(2)
+        following = text[match.start(2) :]
+        if prefix in (". ", "; ") and any(
+            following.startswith(name) for name in LIB_NAME_PREFIXES
+        ):
+            return prefix + letter
+        return prefix + letter.upper()
+
+    text = re.sub(r"(\. )([a-z])", cap_letter, text)
+    text = re.sub(r"(; )([a-z])", cap_letter, text)
+    text = re.sub(r"((?:tgen|jngen): )([a-z])", cap_letter, text)
+    return text
+
+
 def highlight_lib_names_html(text):
     if not text:
         return text
@@ -418,12 +446,13 @@ def highlight_lib_names_html(text):
 
 
 def format_notes_text_md(text):
-    return bold_complexities_md(highlight_lib_names_md(text))
+    return bold_complexities_md(highlight_lib_names_md(capitalize_doc_text(text)))
 
 
 def format_notes_text_html(text):
     if not text:
         return text
+    text = capitalize_doc_text(text)
     if INFERRED_SUFFIX not in text:
         out = []
         last = 0
@@ -1262,7 +1291,7 @@ def render_benchmark_row_lines(
                 lines.append(format_ratio_html(row))
             elif not benchmark_is_comparable(row):
                 lines.append(
-                    '<em class="bench-params">different n — not comparable</em>'
+                    '<em class="bench-params">Different n — not comparable</em>'
                 )
     else:
         lines.append(
