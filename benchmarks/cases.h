@@ -92,6 +92,10 @@ constexpr int BENCH_BIP_N1 = 100;
 constexpr int BENCH_BIP_N2 = 100;
 constexpr int BENCH_BIP_M = 5'000;
 constexpr const char *BENCH_PARAMS_BIPARTITE = "n1=1e2, n2=1e2, m=5e3";
+constexpr int BENCH_PARTITION_N = 480'000;
+constexpr long long BENCH_PARTITION_FIXED_N = 5'000'000LL;
+constexpr const char *BENCH_PARAMS_PARTITION = "n=4.8e5";
+constexpr const char *BENCH_PARAMS_PARTITION_FIXED = "n=5e6, k=10, part_left=0";
 #else
 constexpr const char *BENCH_PARAMS_N = "n=1e6";
 constexpr const char *BENCH_PARAMS_PERM = "n=5e6";
@@ -117,7 +121,13 @@ constexpr int BENCH_BIP_N1 = 1'000;
 constexpr int BENCH_BIP_N2 = 1'000;
 constexpr int BENCH_BIP_M = 500'000;
 constexpr const char *BENCH_PARAMS_BIPARTITE = "n1=1e3, n2=1e3, m=5e5";
+constexpr int BENCH_PARTITION_N = 4'800'000;
+constexpr long long BENCH_PARTITION_FIXED_N = 50'000'000LL;
+constexpr const char *BENCH_PARAMS_PARTITION = "n=4.8e6";
+constexpr const char *BENCH_PARAMS_PARTITION_FIXED = "n=5e7, k=10, part_left=0";
 #endif
+
+constexpr int BENCH_PARTITION_K = 10;
 
 inline std::vector<benchmark::CaseSpec> all_case_specs() {
 	return {
@@ -163,5 +173,9 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		{"graph_directed_acyclic", "graph::get_acyclic", " (DAG)",
 		 BENCH_PARAMS_N_M, true},
 		{"str_regex", "str::gen", "", BENCH_PARAMS_STR_REGEX, true},
+		{"math_partition", "math::gen_partition", "", BENCH_PARAMS_PARTITION,
+		 false},
+		{"math_partition_fixed_size", "math::gen_partition_fixed_size", "",
+		 BENCH_PARAMS_PARTITION_FIXED, true},
 	};
 }

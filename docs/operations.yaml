@@ -250,8 +250,10 @@ operations:
       has: true
       api: "rndm.partition(n, numParts, minSize, maxSize)"
       uniform: non-uniform (inferred)
-      complexity: "O(k log k) (inferred)"
+      complexity: "O(n) (inferred)"
     notes: "jngen: random delimiters, sort, heuristic redistribution. Different algorithms and semantics. tgen returns an ordered composition sampled uniformly. jngen sorts parts in non-increasing order (not a uniform composition); source comments that bounded redistribution 'need a smarter way'."
+    benchmark: true
+    benchmark_id: math_partition_fixed_size
 
   - id: math_partition
     name: Ordered partition, variable number of parts
@@ -267,6 +269,8 @@ operations:
       uniform: ""
       complexity: ""
     notes: "DP in log space."
+    benchmark: true
+    benchmark_id: math_partition
 
   - id: math_random_prime
     name: Random prime in range

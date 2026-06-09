@@ -107,6 +107,10 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	out["str_regex"] = [str_pat] {
 		consume_string(rnds.random(str_pat));
 	};
+	out["math_partition_fixed_size"] = [] {
+		consume_array(rndm.partition(static_cast<int>(BENCH_PARTITION_FIXED_N),
+									 BENCH_PARTITION_K));
+	};
 }
 
 } // namespace

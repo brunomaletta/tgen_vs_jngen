@@ -1309,6 +1309,32 @@ def render_benchmark_row_lines(
     return lines
 
 
+def join_benchmark_cell_lines(lines):
+    """Join benchmark lines without a blank row where ratio is omitted.
+
+    A block-level ``bench-bars`` div already ends on its own line; inserting
+    ``<br>`` before params when ratio is skipped leaves an extra empty line.
+    """
+    if not lines:
+        return ""
+
+    parts = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if (
+            i + 1 < len(lines)
+            and 'class="bench-bars"' in line
+            and '<span class="bench-params">' in lines[i + 1]
+        ):
+            parts.append(line + lines[i + 1])
+            i += 2
+            continue
+        parts.append(line)
+        i += 1
+    return "<br>".join(parts)
+
+
 def format_benchmark_cell_html(op, bench_index):
     bids = []
     if op.get("benchmark_id"):
@@ -1330,7 +1356,7 @@ def format_benchmark_cell_html(op, bench_index):
             lines.insert(
                 0, f'<em class="bench-variant">{html.escape(suffix.lstrip())}</em>'
             )
-        blocks.append("<br>".join(lines))
+        blocks.append(join_benchmark_cell_lines(lines))
 
     return "<br><br>".join(blocks) if blocks else empty_cell_html()
 
@@ -1489,7 +1515,7 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
     if tgen_only:
         parts.extend([
             "<h2>tgen-only timings</h2>",
-            '<div class="table-scroll"><table class="bench-table">',
+            '<div class="table-scroll"><table class="bench-table bench-table-tgen-only">',
             "<tr><th>Operation</th><th>Parameters</th><th>tgen</th></tr>",
         ])
         for row in tgen_only:
@@ -1504,8 +1530,9 @@ def render_benchmarks_html(bench, source_resolver=None, repos=None):
                 doc_url = source_resolver.doc_url_for_benchmark(bench_id, "tgen")
             parts.append(
                 "<tr>"
-                f"<td>{format_benchmark_name_html(name, source_url, doc_url)}</td>"
-                f"<td>{format_params_html(params)}</td>"
+                f'<td class="bench-col-op">'
+                f"{format_benchmark_name_html(name, source_url, doc_url)}</td>"
+                f'<td class="bench-col-params">{format_params_html(params)}</td>'
                 f"<td>{html.escape(tg_ms)}</td>"
                 "</tr>"
             )
@@ -1758,6 +1785,10 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     td.col-bench .bench-bars {{
       margin-top: 0.25rem;
     }}
+    td.col-bench .bench-bars + .bench-params {{
+      display: block;
+      margin-top: 0.2rem;
+    }}
     .bench-bar-fill-fail {{
       display: flex;
       align-items: center;
@@ -1818,7 +1849,8 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
     table.bench-table.bench-table-timing td.bench-col-comparison-cell {{
       min-width: 280px;
     }}
-    table.bench-table.bench-table-timing td.bench-col-op code {{
+    table.bench-table.bench-table-timing td.bench-col-op code,
+    table.bench-table.bench-table-tgen-only td.bench-col-op code {{
       color: #58a6ff;
     }}
     em {{ color: var(--muted); }}

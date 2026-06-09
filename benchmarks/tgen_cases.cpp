@@ -44,6 +44,11 @@ void consume_string(const std::string &s) {
 		sink += c;
 }
 
+void consume_partition(const std::vector<int> &part) {
+	for (int x : part)
+		sink += static_cast<uint64_t>(x);
+}
+
 std::vector<tgen::geometry::point<long long>> polygon_through_points;
 
 void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
@@ -127,6 +132,13 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	};
 	out["str_regex"] = [str_pat] {
 		consume_string(tgen::str(str_pat).gen().to_std());
+	};
+	out["math_partition"] = [] {
+		consume_partition(tgen::math::gen_partition(BENCH_PARTITION_N));
+	};
+	out["math_partition_fixed_size"] = [] {
+		consume_partition(tgen::math::gen_partition_fixed_size(
+			static_cast<int>(BENCH_PARTITION_FIXED_N), BENCH_PARTITION_K));
 	};
 }
 
