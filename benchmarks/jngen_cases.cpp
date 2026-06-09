@@ -30,7 +30,13 @@ void consume_array(const Array &a) {
 		sink += static_cast<uint64_t>(a[i]);
 }
 
+void consume_string(const std::string &s) {
+	for (unsigned char c : s)
+		sink += c;
+}
+
 void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
+	const std::string str_pat = bench_str_regex_pattern();
 	out["graph_connected_m_eq_n"] = [] {
 		consume_graph(Graph::random(BENCH_N, BENCH_M).connected().g());
 	};
@@ -39,6 +45,9 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	};
 	out["graph_gen"] = [] {
 		consume_graph(Graph::random(BENCH_N, BENCH_M).g());
+	};
+	out["graph_gen_m_eq_2n"] = [] {
+		consume_graph(Graph::random(BENCH_N, BENCH_M_2N).g());
 	};
 	out["graph_gen_skewed_m_eq_n"] = [] {
 		consume_graph(Graph::randomStretched(
@@ -64,6 +73,9 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	out["list_all_different"] = [] {
 		consume_array(Array::randomUnique(BENCH_N, 1, BENCH_LIST_HI));
 	};
+	out["list_random"] = [] {
+		consume_array(Array::random(BENCH_N, 1, BENCH_LIST_HI));
+	};
 	out["geometry_convex_polygon"] = [] {
 		consume_polygon(rndg.convexPolygon(BENCH_N, 0, BENCH_CONVEX_COORD_MAX));
 	};
@@ -77,7 +89,7 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 			BENCH_GENERAL_POSITION_COORD_MAX));
 	};
 	out["permutation_uniform"] = [] {
-		consume_array(Array::id(BENCH_N).shuffled());
+		consume_array(Array::id(BENCH_PERM_N).shuffled());
 	};
 	out["graph_bipartite"] = [] {
 		consume_graph(Graph::randomBipartite(
@@ -86,6 +98,13 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	};
 	out["graph_directed"] = [] {
 		consume_graph(Graph::random(BENCH_N, BENCH_M).directed().g());
+	};
+	out["graph_directed_acyclic"] = [] {
+		consume_graph(
+			Graph::random(BENCH_N, BENCH_M).directed().acyclic().g());
+	};
+	out["str_regex"] = [str_pat] {
+		consume_string(rnds.random(str_pat));
 	};
 }
 

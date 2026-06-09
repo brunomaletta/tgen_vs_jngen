@@ -39,9 +39,15 @@ void consume_permutation(const tgen::permutation::value &perm) {
 		sink += static_cast<uint64_t>(perm[i]);
 }
 
+void consume_string(const std::string &s) {
+	for (unsigned char c : s)
+		sink += c;
+}
+
 std::vector<tgen::geometry::point<long long>> polygon_through_points;
 
 void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
+	const std::string str_pat = bench_str_regex_pattern();
 	out["graph_connected_m_eq_n"] = [] {
 		consume_graph(tgen::graph(BENCH_N, BENCH_M).get_connected());
 	};
@@ -50,6 +56,9 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	};
 	out["graph_gen"] = [] {
 		consume_graph(tgen::graph(BENCH_N, BENCH_M).gen());
+	};
+	out["graph_gen_m_eq_2n"] = [] {
+		consume_graph(tgen::graph(BENCH_N, BENCH_M_2N).gen());
 	};
 	out["graph_gen_skewed_m_eq_n"] = [] {
 		consume_graph(tgen::graph::gen_skewed(
@@ -72,6 +81,9 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 		consume_list(tgen::list<int>(BENCH_N, 1, BENCH_LIST_HI)
 						 .all_different()
 						 .gen());
+	};
+	out["list_random"] = [] {
+		consume_list(tgen::list<int>(BENCH_N, 1, BENCH_LIST_HI).gen());
 	};
 	out["geometry_convex_polygon"] = [] {
 		consume_polygon(tgen::geometry::random_convex_polygon(
@@ -99,7 +111,7 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 			polygon_through_points));
 	};
 	out["permutation_uniform"] = [] {
-		consume_permutation(tgen::permutation(BENCH_N).gen());
+		consume_permutation(tgen::permutation(BENCH_PERM_N).gen());
 	};
 	out["graph_bipartite"] = [] {
 		consume_graph(tgen::graph::gen_bipartite(
@@ -107,6 +119,12 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	};
 	out["graph_directed"] = [] {
 		consume_graph(tgen::graph(BENCH_N, BENCH_M, true).gen());
+	};
+	out["graph_directed_acyclic"] = [] {
+		consume_graph(tgen::graph(BENCH_N, BENCH_M, true).get_acyclic());
+	};
+	out["str_regex"] = [str_pat] {
+		consume_string(tgen::str(str_pat).gen().to_std());
 	};
 }
 

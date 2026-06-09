@@ -24,8 +24,16 @@ entries:
     jngen: { file: impl/graph_inl.h, line: 306 }
 
   graph_directed:
+    tgen: tgen::wgraph::gen
+    jngen: { file: impl/graph_inl.h, line: 170 }
+
+  graph_directed_acyclic:
     tgen: tgen::wgraph::get_acyclic
     jngen: { file: impl/graph_inl.h, line: 170 }
+
+  list_random:
+    tgen: tgen::list::gen
+    jngen: { file: array.h, line: 115 }
 
   tree_gen:
     tgen: tgen::wtree::gen
@@ -140,7 +148,9 @@ entries:
 # Benchmark result id -> operation id (when not listed as benchmark_id in operations.yaml).
 benchmarks:
   graph_connected_m_eq_2n: graph_connected
+  graph_gen_m_eq_2n: graph_gen
   graph_gen_skewed_m_eq_2n: graph_gen_skewed
   graph_gen_skewed_distinct_worst: graph_gen_skewed
+  graph_directed_acyclic: graph_directed
   geometry_random_simple_polygon: geometry_simple_polygon
   geometry_points_general_position_small: geometry_points_general_position

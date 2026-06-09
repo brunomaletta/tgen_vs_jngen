@@ -90,9 +90,13 @@ int main(int argc, char **argv) {
 				  << " [tgen]...\n"
 				  << std::flush;
 		auto tgen_it = tgen.find(spec.id);
-		if (tgen_it != tgen.end())
+		if (tgen_it != tgen.end()) {
 			row.tgen = benchmark::run_library_case(tgen_it->second);
-		else {
+			if (row.tgen.status == "timeout")
+				std::cout << "  [tgen] timed out (>" << benchmark::format_ms(
+								 benchmark::kMaxRunMs)
+						  << " ms)\n";
+		} else {
 			row.tgen.status = "skipped";
 			row.tgen.error = "no tgen case registered";
 		}
@@ -102,9 +106,13 @@ int main(int argc, char **argv) {
 					  << " [jngen]...\n"
 					  << std::flush;
 			auto jngen_it = jngen.find(spec.id);
-			if (jngen_it != jngen.end())
+			if (jngen_it != jngen.end()) {
 				row.jngen = benchmark::run_library_case(jngen_it->second);
-			else {
+				if (row.jngen.status == "timeout")
+					std::cout << "  [jngen] timed out (>"
+							  << benchmark::format_ms(benchmark::kMaxRunMs)
+							  << " ms)\n";
+			} else {
 				row.jngen.status = "skipped";
 				row.jngen.error = "no jngen case registered";
 			}
@@ -114,8 +122,13 @@ int main(int argc, char **argv) {
 		}
 
 		if (row.compare_both && row.tgen.status == "ok" &&
-			row.jngen.status == "ok" && row.jngen.median_ms > 0)
-			row.ratio = row.tgen.median_ms / row.jngen.median_ms;
+			row.jngen.status == "ok" && row.jngen.median_ms > 0) {
+			const auto round_ms = [](double ms) {
+				return std::round(ms * 1000.0) / 1000.0;
+			};
+			row.ratio = round_ms(row.tgen.median_ms) /
+						round_ms(row.jngen.median_ms);
+		}
 
 		report.results.push_back(std::move(row));
 	}

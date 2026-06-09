@@ -2,6 +2,7 @@
 
 #include "benchmark.h"
 
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -16,6 +17,20 @@ constexpr int BENCH_M = BENCH_N;
 constexpr int BENCH_M_2N = 2 * BENCH_N;
 constexpr int BENCH_M_DISTINCT_WORST = 2 * BENCH_N - 3;
 constexpr int BENCH_LIST_HI = 2 * BENCH_N;
+#ifdef QUICK
+constexpr int BENCH_STR_LEN = 500'000;
+constexpr int BENCH_PERM_N = 500'000;
+#else
+constexpr int BENCH_STR_LEN = 23'200'000;
+constexpr int BENCH_PERM_N = 5'000'000;
+#endif
+
+inline std::string bench_str_regex_pattern() {
+	// 4-char units: digit block | hex block | literal pair repeat.
+	const int repeats = BENCH_STR_LEN / 4;
+	return "(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){" +
+		   std::to_string(repeats) + "}";
+}
 // tgen general-position needs max - min >= prime_from(2n) - 1.
 constexpr int BENCH_COORD_MAX = 3 * BENCH_GEOM_N;
 constexpr int BENCH_ELONGATION = 100;
@@ -44,10 +59,15 @@ constexpr const char *BENCH_PARAMS_GENERAL_POSITION_SMALL =
 
 #ifdef QUICK
 constexpr const char *BENCH_PARAMS_N = "n=1e5";
+constexpr const char *BENCH_PARAMS_PERM = "n=5e5";
 constexpr const char *BENCH_PARAMS_N_M = "n=1e5, m=1e5";
 constexpr const char *BENCH_PARAMS_N_M_2N = "n=1e5, m=2e5";
 constexpr const char *BENCH_PARAMS_N_M_2N_3 = "n=1e5, m=2n-3";
 constexpr const char *BENCH_PARAMS_LIST = "n=1e5, value_left=1, value_right=2e5";
+constexpr const char *BENCH_PARAMS_LIST_RANDOM =
+	"n=1e5, value_left=1, value_right=2e5";
+constexpr const char *BENCH_PARAMS_STR_REGEX =
+	"pattern=(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){r}, len=5e5";
 constexpr const char *BENCH_PARAMS_GEOM = "n=1e5, min=0, max=3e5";
 constexpr const char *BENCH_PARAMS_THROUGH = "n=1e5";
 constexpr const char *BENCH_PARAMS_SKEWED_N =
@@ -63,10 +83,15 @@ constexpr int BENCH_BIP_M = 5'000;
 constexpr const char *BENCH_PARAMS_BIPARTITE = "n1=1e2, n2=1e2, m=5e3";
 #else
 constexpr const char *BENCH_PARAMS_N = "n=1e6";
+constexpr const char *BENCH_PARAMS_PERM = "n=5e6";
 constexpr const char *BENCH_PARAMS_N_M = "n=1e6, m=1e6";
 constexpr const char *BENCH_PARAMS_N_M_2N = "n=1e6, m=2e6";
 constexpr const char *BENCH_PARAMS_N_M_2N_3 = "n=1e6, m=2n-3";
 constexpr const char *BENCH_PARAMS_LIST = "n=1e6, value_left=1, value_right=2e6";
+constexpr const char *BENCH_PARAMS_LIST_RANDOM =
+	"n=1e6, value_left=1, value_right=2e6";
+constexpr const char *BENCH_PARAMS_STR_REGEX =
+	"pattern=(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){r}, len=2.32e7";
 constexpr const char *BENCH_PARAMS_GEOM = "n=1e6, min=0, max=3e6";
 constexpr const char *BENCH_PARAMS_THROUGH = "n=1e6";
 constexpr const char *BENCH_PARAMS_SKEWED_N =
@@ -89,6 +114,8 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		{"graph_connected_m_eq_2n", "graph::get_connected", " (m=2n)",
 		 BENCH_PARAMS_N_M_2N, true},
 		{"graph_gen", "graph::gen", "", BENCH_PARAMS_N_M, true},
+		{"graph_gen_m_eq_2n", "graph::gen", " (m=2n)", BENCH_PARAMS_N_M_2N,
+		 true},
 		{"graph_gen_skewed_m_eq_n", "graph::gen_skewed", " (m=n)",
 		 BENCH_PARAMS_SKEWED_N, true},
 		{"graph_gen_skewed_m_eq_2n", "graph::gen_skewed", " (m=2n)",
@@ -100,6 +127,7 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		 BENCH_PARAMS_TREE_SKEWED, true},
 		{"list_all_different", "list<int>::gen", " (all_different)",
 		 BENCH_PARAMS_LIST, true},
+		{"list_random", "list<int>::gen", "", BENCH_PARAMS_LIST_RANDOM, true},
 		{"geometry_convex_polygon", "geometry::random_convex_polygon", "",
 		 BENCH_PARAMS_CONVEX, true},
 		{"geometry_points_general_position",
@@ -114,10 +142,14 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		{"geometry_simple_polygon_through_points",
 		 "geometry::random_simple_polygon_through_points", "",
 		 BENCH_PARAMS_THROUGH, false},
-		{"permutation_uniform", "permutation::gen", "", BENCH_PARAMS_N, true},
+		{"permutation_uniform", "permutation::gen", "", BENCH_PARAMS_PERM,
+		 true},
 		{"graph_bipartite", "graph::gen_bipartite", "", BENCH_PARAMS_BIPARTITE,
 		 true},
 		{"graph_directed", "graph::gen", " (directed)", BENCH_PARAMS_N_M,
 		 true},
+		{"graph_directed_acyclic", "graph::get_acyclic", " (DAG)",
+		 BENCH_PARAMS_N_M, true},
+		{"str_regex", "str::gen", "", BENCH_PARAMS_STR_REGEX, true},
 	};
 }

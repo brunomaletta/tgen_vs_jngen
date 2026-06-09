@@ -45,6 +45,8 @@ operations:
       complexity: "O(n + m log n) (inferred); rejection with constraint machinery"
     benchmark: true
     benchmark_id: graph_gen
+    secondary_benchmark_ids:
+      - graph_gen_m_eq_2n
 
   - id: graph_gen_skewed
     name: Skewed / stretched connected graph
@@ -83,20 +85,38 @@ operations:
     benchmark_id: graph_bipartite
 
   - id: graph_directed
-    name: Directed / acyclic random graph
+    name: Directed random graph
     category: graphs
     tgen:
       has: true
-      api: "graph(n, m, directed=true).gen(), .get_acyclic()"
+      api: "graph(n, m, directed=true).gen()"
       uniform: non-uniform
-      complexity: "O(n + m log n); randomized Kahn for topological ordering, then rejection sampling"
+      complexity: "O(n + m log n); rejection with constraint machinery"
+    jngen:
+      has: true
+      api: "Graph::random(n, m).directed().g()"
+      uniform: non-uniform (inferred)
+      complexity: "O(n + m log n) (inferred); rejection sampling"
+    benchmark: true
+    benchmark_id: graph_directed
+    secondary_benchmark_ids:
+      - graph_directed_acyclic
+
+  - id: graph_directed_acyclic
+    name: Directed acyclic random graph (DAG)
+    category: graphs
+    tgen:
+      has: true
+      api: "graph(n, m, directed=true).get_acyclic()"
+      uniform: non-uniform
+      complexity: "O(n + m log n); randomized Kahn topological order, then rejection sampling"
     jngen:
       has: true
       api: "Graph::random(n, m).directed().acyclic().g()"
       uniform: non-uniform (inferred)
       complexity: "O(n + m log n) (inferred); rejection sampling + acyclic shuffle-orient"
-    benchmark: true
-    benchmark_id: graph_directed
+    benchmark: false
+    benchmark_id: graph_directed_acyclic
 
   # --- Trees (benchmarked head-to-head) ---
   - id: tree_gen
@@ -161,6 +181,22 @@ operations:
       complexity: "O(k log k) expected (inferred); hash-set rejection"
     benchmark: true
     benchmark_id: list_all_different
+
+  - id: list_random
+    name: Random integer list (duplicates allowed)
+    category: lists
+    tgen:
+      has: true
+      api: "list<int>(k, lo, hi).gen()"
+      uniform: uniform
+      complexity: "O(k); independent uniform draws"
+    jngen:
+      has: true
+      api: "Array::random(k, lo, hi)"
+      uniform: uniform (inferred)
+      complexity: "O(k) (inferred)"
+    benchmark: true
+    benchmark_id: list_random
 
   - id: permutation_uniform
     name: Uniform random permutation
@@ -413,15 +449,17 @@ operations:
     category: strings
     tgen:
       has: true
-      api: 'str("[a-z]{10}").gen()'
+      api: 'str("(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){r}").gen()'
       uniform: uniform
       complexity: "O(output length) expected."
     jngen:
       has: true
-      api: 'rnd.next("[a-z]{10}") / rnds.random(pattern)'
+      api: 'rnds.random("(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){r}")'
       uniform: non-uniform
       complexity: "O(output length) (inferred)"
-    notes: "Same testlib-style regex syntax. tgen samples uniformly among matches (documented); jngen explicitly does not: e.g. rnd.next(\"[1-9][0-9]{1,2}\") does not yield uniform digit strings."
+    notes: "Same testlib-style regex syntax. tgen samples uniformly among matches (documented); jngen explicitly does not: e.g. rnd.next(\"[1-9][0-9]{1,2}\") does not yield uniform digit strings. Benchmark measures generation throughput at fixed pattern length, not distributional fairness."
+    benchmark: true
+    benchmark_id: str_regex
 
   # --- Hacks (hack::) ---
   - id: anti_hash_strings

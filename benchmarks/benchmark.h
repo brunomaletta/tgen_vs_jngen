@@ -13,10 +13,12 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <cerrno>
 #include <unistd.h>
 #include <vector>
 
 #include <signal.h>
+#include <sys/time.h>
 #include <sys/wait.h>
 
 namespace benchmark {
@@ -76,6 +78,17 @@ inline double median(std::vector<double> values) {
 	return values[values.size() / 2];
 }
 
+inline std::string format_ms(double ms) {
+	char buf[32];
+	std::snprintf(buf, sizeof(buf), "%.3f", ms);
+	std::string out(buf);
+	while (!out.empty() && out.back() == '0')
+		out.pop_back();
+	if (!out.empty() && out.back() == '.')
+		out.pop_back();
+	return out.empty() ? "0" : out;
+}
+
 constexpr size_t kChildErrorMax = 4096;
 
 inline void read_child_error(int fd, std::string &out) {
@@ -96,7 +109,28 @@ inline void write_child_error(int fd, const char *msg) {
 		return;
 	const size_t len = std::strlen(msg);
 	const size_t n = std::min(len, kChildErrorMax);
-	(void)write(fd, msg, n);
+	if (write(fd, msg, n) < 0)
+		return;
+}
+
+inline void arm_child_timer_ms(double max_ms) {
+	struct itimerval timer{};
+	const auto whole_sec = static_cast<time_t>(max_ms / 1000.0);
+	timer.it_value.tv_sec = whole_sec;
+	timer.it_value.tv_usec = static_cast<suseconds_t>(
+		(max_ms - static_cast<double>(whole_sec) * 1000.0) * 1000.0);
+	setitimer(ITIMER_REAL, &timer, nullptr);
+}
+
+inline void disarm_child_timer() {
+	struct itimerval timer{};
+	setitimer(ITIMER_REAL, &timer, nullptr);
+}
+
+inline void kill_child_process(pid_t pid) {
+	// Child calls setpgid(0, 0), so -pid kills the whole process group.
+	if (kill(-pid, SIGKILL) != 0)
+		(void)kill(pid, SIGKILL);
 }
 
 // Runs @p fn in a child process and kills it if it exceeds @p max_ms wall time.
@@ -115,17 +149,22 @@ inline bool run_timed_child(const CaseFn &fn, double max_ms, double &out_ms,
 
 	if (pid == 0) {
 		close(pipefd[0]);
+		(void)setpgid(0, 0);
+		arm_child_timer_ms(max_ms);
 		try {
 			fn();
 		} catch (const std::exception &e) {
+			disarm_child_timer();
 			write_child_error(pipefd[1], e.what());
 			close(pipefd[1]);
 			_exit(2);
 		} catch (...) {
+			disarm_child_timer();
 			write_child_error(pipefd[1], "unknown exception");
 			close(pipefd[1]);
 			_exit(2);
 		}
+		disarm_child_timer();
 		close(pipefd[1]);
 		_exit(0);
 	}
@@ -152,6 +191,13 @@ inline bool run_timed_child(const CaseFn &fn, double max_ms, double &out_ms,
 					child_error = "unknown exception";
 				throw std::runtime_error(child_error);
 			}
+			if (WIFSIGNALED(status)) {
+				const int sig = WTERMSIG(status);
+				if (sig == SIGALRM || sig == SIGKILL) {
+					close(pipefd[0]);
+					return false;
+				}
+			}
 			close(pipefd[0]);
 			throw std::runtime_error("benchmark: case failed in child");
 		}
@@ -160,8 +206,12 @@ inline bool run_timed_child(const CaseFn &fn, double max_ms, double &out_ms,
 			throw std::runtime_error("benchmark: waitpid failed");
 		}
 		if (clock::now() >= deadline) {
-			kill(pid, SIGKILL);
-			waitpid(pid, &status, 0);
+			kill_child_process(pid);
+			while (waitpid(pid, &status, 0) != pid) {
+				if (errno == EINTR)
+					continue;
+				break;
+			}
 			close(pipefd[0]);
 			out_ms = elapsed_ms(start);
 			return false;
@@ -178,7 +228,11 @@ inline LibraryResult run_library_case(const CaseFn &fn) {
 			std::string child_error;
 			if (!run_timed_child(fn, kMaxRunMs, ms, child_error)) {
 				result.status = "timeout";
-				result.error = "single run exceeded 5000 ms limit";
+				result.error = "single run exceeded " +
+							   format_ms(kMaxRunMs) + " ms limit";
+				std::cerr << "benchmark: killed run after exceeding "
+						  << format_ms(kMaxRunMs) << " ms (elapsed "
+						  << format_ms(ms) << " ms)\n";
 				return result;
 			}
 			result.runs_ms.push_back(ms);
@@ -219,17 +273,6 @@ inline std::string json_escape(const std::string &s) {
 		}
 	}
 	return out;
-}
-
-inline std::string format_ms(double ms) {
-	char buf[32];
-	std::snprintf(buf, sizeof(buf), "%.3f", ms);
-	std::string out(buf);
-	while (!out.empty() && out.back() == '0')
-		out.pop_back();
-	if (!out.empty() && out.back() == '.')
-		out.pop_back();
-	return out.empty() ? "0" : out;
 }
 
 inline std::string iso_timestamp() {

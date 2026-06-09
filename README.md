@@ -43,10 +43,11 @@ Geometry sample SVGs live under `docs/gallery/` (20 variants per sample, seeds 4
 
 **Benchmarked head-to-head** (same parameters where both libraries support them):
 
-- Connected and random graphs (including directed), skewed graphs, bipartite graphs
+- Connected and random graphs (including directed and DAG), skewed graphs, bipartite graphs
 - Random and skewed trees, uniform permutations
-- Distinct integer lists
+- Distinct and random integer lists
 - Convex polygons and points in general position (same n and coordinate range for both libraries)
+- Regex pattern strings
 
 **Feature table** (not all rows are timed): named graphs, rooted tree output, structured printing, testlib integration, math, geometry, strings, `hack::` generators — see [docs/comparison.html](docs/comparison.html).
 
