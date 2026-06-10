@@ -250,7 +250,7 @@ operations:
       has: true
       api: "rndm.partition(n, numParts, minSize, maxSize)"
       uniform: non-uniform (inferred)
-      complexity: "O(n) (inferred)"
+      complexity: "O(k log k) (inferred)"
     notes: "Same high-level approach: random delimiters, sort, gap recovery. jngen also sorts parts in non-increasing order and shuffles; tgen fast omits reordering. Not uniformly random; optimized for speed."
     benchmark: true
     benchmark_id: math_partition_fixed_size_fast
