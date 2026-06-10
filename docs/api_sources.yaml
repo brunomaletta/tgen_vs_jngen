@@ -44,6 +44,7 @@ entries:
     jngen: { file: impl/tree_inl.h, line: 138 }
 
   tree_kruskal:
+    tgen: tgen::wtree::gen_kruskal
     jngen: { file: impl/tree_inl.h, line: 150 }
 
   list_all_different:
@@ -71,6 +72,7 @@ entries:
     tgen: tgen::math::gen_congruent
 
   math_partition_array:
+    tgen: tgen::math::partition_elements
     jngen: { file: math_jngen.h, line: 268 }
 
   geometry_convex_polygon:

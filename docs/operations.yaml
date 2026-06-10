@@ -81,7 +81,7 @@ operations:
       api: "Graph::randomBipartite(n1, n2, m), completeBipartite(n1, n2)"
       uniform: uniform (inferred)
       complexity: "O(n1 + n2 + m log(n1 * n2)) (inferred)"
-    notes: "tgen: distinct edge-index sampling. jngen: rejection sampling. jngen randomBipartite supports connected and allowMulti modifiers; tgen has no equivalent options."
+    notes: "tgen: distinct edge-index sampling; optional connected spanning tree. jngen: rejection sampling. jngen randomBipartite also supports allowMulti; tgen stores simple graphs only."
     benchmark: true
     benchmark_id: graph_bipartite
 
@@ -160,16 +160,18 @@ operations:
     name: Random tree (Kruskal-like)
     category: trees
     tgen:
-      has: false
-      api: ""
-      uniform: ""
-      complexity: ""
+      has: true
+      api: "tree::gen_kruskal(n)"
+      uniform: non-uniform
+      complexity: "O(n²) expected"
     jngen:
       has: true
       api: "Tree::randomKruskal(n)"
       uniform: non-uniform (inferred)
       complexity: "O(n²) expected (inferred)"
     notes: "Kruskal-like edge add until connected."
+    benchmark: true
+    benchmark_id: tree_gen_kruskal
 
   # --- Lists and sequences ---
   - id: list_all_different
@@ -307,16 +309,18 @@ operations:
     name: Partition array into k groups
     category: math
     tgen:
-      has: false
-      api: ""
-      uniform: ""
-      complexity: ""
+      has: true
+      api: "math::partition_elements(elements, k, min_size, max_size)"
+      uniform: non-uniform
+      complexity: "O(n) if unbounded max_size; O(n·k) otherwise"
     jngen:
       has: true
       api: "rndm.partition(elements, numParts, minSize, maxSize)"
-      uniform: non-uniform
-      complexity: "O(n + k log k) (inferred)"
-    notes: "Shuffle + partition sizes + split."
+      uniform: non-uniform (inferred)
+      complexity: "O(n) if unbounded max_size; O(n·k) otherwise (inferred)"
+    notes: "Shuffle + fast partition sizes + split. Same approach as jngen."
+    benchmark: true
+    benchmark_id: math_partition_array
 
   # --- Geometry ---
   - id: geometry_convex_polygon
@@ -463,7 +467,7 @@ operations:
       api: "Drawer d; d.polygon(...); d.dumpSvg(\"out.svg\")"
       uniform: ""
       complexity: ""
-    notes: "Drawer for points, segments, circles, polygons; outputs SVG."
+    notes: "jngen Drawer for points, segments, circles, polygons; outputs SVG."
 
   # --- Strings ---
   - id: str_regex

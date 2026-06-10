@@ -68,6 +68,14 @@ constexpr const char *BENCH_PARAMS_GENERAL_POSITION_SMALL =
 #endif
 
 #ifdef QUICK
+constexpr int BENCH_KRUSKAL_N = 5'000;
+constexpr const char *BENCH_PARAMS_KRUSKAL = "n=5e3";
+#else
+constexpr int BENCH_KRUSKAL_N = 10'000;
+constexpr const char *BENCH_PARAMS_KRUSKAL = "n=1e4";
+#endif
+
+#ifdef QUICK
 constexpr const char *BENCH_PARAMS_N = "n=1e5";
 constexpr const char *BENCH_PARAMS_PERM = "n=5e5";
 constexpr const char *BENCH_PARAMS_N_M = "n=1e5, m=1e5";
@@ -134,6 +142,13 @@ constexpr const char *BENCH_PARAMS_PARTITION_FAST = "n=1e18, k=3e6, part_left=0"
 #endif
 
 constexpr int BENCH_PARTITION_K = 10;
+constexpr int BENCH_PARTITION_ARRAY_N = BENCH_N;
+constexpr int BENCH_PARTITION_ARRAY_K = 10;
+#ifdef QUICK
+constexpr const char *BENCH_PARAMS_PARTITION_ARRAY = "n=1e5, k=10";
+#else
+constexpr const char *BENCH_PARAMS_PARTITION_ARRAY = "n=1e6, k=10";
+#endif
 
 inline std::vector<benchmark::CaseSpec> all_case_specs() {
 	return {
@@ -153,6 +168,8 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		{"tree_gen", "tree::gen", "", BENCH_PARAMS_N, true},
 		{"tree_gen_skewed", "tree::gen_skewed", "",
 		 BENCH_PARAMS_TREE_SKEWED, true},
+		{"tree_gen_kruskal", "tree::gen_kruskal", "", BENCH_PARAMS_KRUSKAL,
+		 true},
 		{"list_all_different", "list<int>::gen", " (all_different)",
 		 BENCH_PARAMS_LIST, true},
 		{"list_random", "list<int>::gen", "", BENCH_PARAMS_LIST_RANDOM, true},
@@ -185,5 +202,7 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		 BENCH_PARAMS_PARTITION_FIXED, false},
 		{"math_partition_fixed_size_fast", "math::gen_partition_fixed_size_fast",
 		 "", BENCH_PARAMS_PARTITION_FAST, true},
+		{"math_partition_array", "math::partition_elements", "",
+		 BENCH_PARAMS_PARTITION_ARRAY, true},
 	};
 }

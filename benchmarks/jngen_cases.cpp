@@ -40,6 +40,13 @@ void consume_string(const std::string &s) {
 		sink += c;
 }
 
+template <typename T>
+void consume_partition_groups(const TArray<TArray<T>> &groups) {
+	for (const auto &group : groups)
+		for (const T &x : group)
+			sink += static_cast<uint64_t>(x);
+}
+
 void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	const std::string str_pat = bench_str_regex_pattern();
 	out["graph_connected_m_eq_n"] = [] {
@@ -74,6 +81,9 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	out["tree_gen"] = [] { consume_tree(Tree::random(BENCH_N)); };
 	out["tree_gen_skewed"] = [] {
 		consume_tree(Tree::randomPrim(BENCH_N, BENCH_ELONGATION));
+	};
+	out["tree_gen_kruskal"] = [] {
+		consume_tree(Tree::randomKruskal(BENCH_KRUSKAL_N));
 	};
 	out["list_all_different"] = [] {
 		consume_array(Array::randomUnique(BENCH_LIST_ALL_DIFF_N, 1,
@@ -116,6 +126,13 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 		consume_array64(rndm.partition(
 			static_cast<long long>(BENCH_PARTITION_FAST_N),
 			BENCH_PARTITION_FAST_K));
+	};
+	out["math_partition_array"] = [] {
+		TArray<int> elements(BENCH_PARTITION_ARRAY_N);
+		for (int i = 0; i < BENCH_PARTITION_ARRAY_N; ++i)
+			elements[i] = i;
+		consume_partition_groups(
+			rndm.partition(std::move(elements), BENCH_PARTITION_ARRAY_K));
 	};
 }
 

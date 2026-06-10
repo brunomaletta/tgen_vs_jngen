@@ -54,6 +54,13 @@ void consume_partition(const std::vector<uint64_t> &part) {
 		sink += x;
 }
 
+template <typename T>
+void consume_partition_groups(const std::vector<std::vector<T>> &groups) {
+	for (const auto &group : groups)
+		for (const T &x : group)
+			sink += static_cast<uint64_t>(x);
+}
+
 std::vector<tgen::geometry::point<long long>> polygon_through_points;
 
 void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
@@ -86,6 +93,9 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	out["tree_gen"] = [] { consume_tree(tgen::tree(BENCH_N).gen()); };
 	out["tree_gen_skewed"] = [] {
 		consume_tree(tgen::tree::gen_skewed(BENCH_N, BENCH_ELONGATION));
+	};
+	out["tree_gen_kruskal"] = [] {
+		consume_tree(tgen::tree::gen_kruskal(BENCH_KRUSKAL_N));
 	};
 	out["list_all_different"] = [] {
 		consume_list(tgen::list<int>(BENCH_LIST_ALL_DIFF_N, 1,
@@ -148,6 +158,13 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	out["math_partition_fixed_size_fast"] = [] {
 		consume_partition(tgen::math::gen_partition_fixed_size_fast(
 			BENCH_PARTITION_FAST_N, BENCH_PARTITION_FAST_K));
+	};
+	out["math_partition_array"] = [] {
+		std::vector<int> elements(BENCH_PARTITION_ARRAY_N);
+		for (int i = 0; i < BENCH_PARTITION_ARRAY_N; ++i)
+			elements[i] = i;
+		consume_partition_groups(tgen::math::partition_elements(
+			std::move(elements), BENCH_PARTITION_ARRAY_K));
 	};
 }
 
