@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-09T20:23:40Z",
+  "generated_at": "2026-06-10T00:47:19Z",
   "compiler": "15.2.0",
-  "flags": "-std=c++17 -O2",
+  "flags": "-std=c++17 -O2 -DQUICK",
   "hostname": "bruno-inspiron14",
   "vendors": {
-    "tgen": "ee67829",
+    "tgen": "098fe5b",
     "jngen": "8d1e33b"
   },
   "results": [
@@ -12,244 +12,242 @@
       "id": "graph_connected_m_eq_n",
       "name": "graph::get_connected",
       "name_suffix": " (m=n)",
-      "params": "n=1e6, m=1e6",
+      "params": "n=1e5, m=1e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 233.821,
-      "runs_ms": [233.703, 233.821, 243.446]
+      "median_ms": 20.554,
+      "runs_ms": [20.554, 20.308, 30.56]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1026.45,
-      "runs_ms": [1054.07, 1004.691, 1026.45]
+      "median_ms": 80.888,
+      "runs_ms": [80.888, 70.795, 80.918]
       },
-      "ratio": 0.227796
+      "ratio": 0.254104
     },
     {
       "id": "graph_connected_m_eq_2n",
       "name": "graph::get_connected",
       "name_suffix": " (m=2n)",
-      "params": "n=1e6, m=2e6",
+      "params": "n=1e5, m=2e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 526.018,
-      "runs_ms": [536.488, 526.015, 526.018]
+      "median_ms": 40.863,
+      "runs_ms": [40.765, 50.997, 40.863]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1588.348,
-      "runs_ms": [1629.938, 1572.698, 1588.348]
+      "median_ms": 111.747,
+      "runs_ms": [111.873, 111.747, 111.59]
       },
-      "ratio": 0.331173
+      "ratio": 0.365674
     },
     {
       "id": "graph_gen",
       "name": "graph::gen",
       "name_suffix": "",
-      "params": "n=1e6, m=1e6",
+      "params": "n=1e5, m=1e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 233.432,
-      "runs_ms": [243.226, 223.565, 233.432]
+      "median_ms": 30.534,
+      "runs_ms": [20.503, 30.618, 30.534]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 505.354,
-      "runs_ms": [486.493, 505.354, 526.426]
+      "median_ms": 51.011,
+      "runs_ms": [40.868, 60.839, 51.011]
       },
-      "ratio": 0.461918
+      "ratio": 0.598577
     },
     {
       "id": "graph_gen_m_eq_2n",
       "name": "graph::gen",
       "name_suffix": " (m=2n)",
-      "params": "n=1e6, m=2e6",
+      "params": "n=1e5, m=2e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 536.563,
-      "runs_ms": [546.104, 536.563, 527.766]
+      "median_ms": 40.662,
+      "runs_ms": [40.699, 40.567, 40.662]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1106.975,
-      "runs_ms": [1117.3, 1106.975, 1073.459]
+      "median_ms": 81.029,
+      "runs_ms": [80.884, 81.029, 91.253]
       },
-      "ratio": 0.484711
+      "ratio": 0.50182
     },
     {
       "id": "graph_gen_skewed_m_eq_n",
       "name": "graph::gen_skewed",
       "name_suffix": " (m=n)",
-      "params": "n=1e6, m=1e6, elongation=1e2, spread=2",
+      "params": "n=1e5, m=1e5, elongation=1e2, spread=2",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 202.981,
-      "runs_ms": [202.581, 203.863, 202.981]
+      "median_ms": 30.713,
+      "runs_ms": [30.698, 30.722, 30.713]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 627.455,
-      "runs_ms": [627.455, 646.027, 618.036]
+      "median_ms": 61.104,
+      "runs_ms": [60.77, 61.127, 61.104]
       },
-      "ratio": 0.323499
+      "ratio": 0.502635
     },
     {
       "id": "graph_gen_skewed_m_eq_2n",
       "name": "graph::gen_skewed",
       "name_suffix": " (m=2n)",
-      "params": "n=1e6, m=2e6, elongation=1e2, spread=6",
+      "params": "n=1e5, m=2e5, elongation=1e2, spread=6",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 517.986,
-      "runs_ms": [516.127, 526.569, 517.986]
+      "median_ms": 60.979,
+      "runs_ms": [60.721, 70.728, 60.979]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1404.014,
-      "runs_ms": [1460.793, 1404.014, 1402.975]
+      "median_ms": 101.818,
+      "runs_ms": [101.818, 101.65, 111.296]
       },
-      "ratio": 0.368932
+      "ratio": 0.598902
     },
     {
       "id": "graph_gen_skewed_distinct_worst",
       "name": "graph::gen_skewed",
       "name_suffix": " (distinct worst)",
-      "params": "n=1e6, m=2n-3, elongation=1e2, spread=2",
+      "params": "n=1e5, m=2n-3, elongation=1e2, spread=2",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 426.073,
-      "runs_ms": [425.662, 426.073, 437.566]
+      "median_ms": 50.674,
+      "runs_ms": [50.674, 50.539, 50.728]
       },
       "jngen": {
       "status": "error",
-      "error": "Cannot generate random stretched graph with parameters 1000000, 1999997, 100, 2 (assertion `false' failed)."
+      "error": "Cannot generate random stretched graph with parameters 100000, 199997, 100, 2 (assertion `false' failed)."
       }
     },
     {
       "id": "tree_gen",
       "name": "tree::gen",
       "name_suffix": "",
-      "params": "n=1e6",
+      "params": "n=1e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 548.793,
-      "runs_ms": [548.994, 548.395, 548.793]
+      "median_ms": 50.835,
+      "runs_ms": [50.973, 50.835, 50.668]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 617.943,
-      "runs_ms": [609.199, 660.71, 617.943]
+      "median_ms": 50.691,
+      "runs_ms": [50.65, 50.691, 50.698]
       },
-      "ratio": 0.888096
+      "ratio": 1.00284
     },
     {
       "id": "tree_gen_skewed",
       "name": "tree::gen_skewed",
       "name_suffix": "",
-      "params": "n=1e6, elongation=1e2",
+      "params": "n=1e5, elongation=1e2",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 182.404,
-      "runs_ms": [182.404, 183.307, 172.844]
+      "median_ms": 30.443,
+      "runs_ms": [30.446, 30.435, 30.443]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 283.456,
-      "runs_ms": [284.138, 264.121, 283.456]
+      "median_ms": 40.491,
+      "runs_ms": [40.596, 30.661, 40.491]
       },
-      "ratio": 0.6435
+      "ratio": 0.751846
     },
     {
       "id": "list_all_different",
       "name": "list<int>::gen",
       "name_suffix": " (all_different)",
-      "params": "n=5e6, value_left=1, value_right=10e6",
+      "params": "n=3.2e5, value_left=1, value_right=6.4e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 861.036,
-      "runs_ms": [869.076, 861.036, 852.858]
+      "median_ms": 40.732,
+      "runs_ms": [40.787, 40.732, 40.508]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1533.054,
-      "runs_ms": [1569.321, 1533.054, 1530.303]
+      "median_ms": 60.817,
+      "runs_ms": [60.83, 60.817, 60.628]
       },
-      "ratio": 0.561648
+      "ratio": 0.669747
     },
     {
       "id": "list_random",
       "name": "list<int>::gen",
       "name_suffix": "",
-      "params": "n=5e6, value_left=1, value_right=10e6",
+      "params": "n=7e5, value_left=1, value_right=14e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 50.943,
-      "runs_ms": [50.818, 70.949, 50.943]
+      "median_ms": 20.318,
+      "runs_ms": [20.318, 20.417, 10.227]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 81.288,
-      "runs_ms": [81.288, 81.28, 81.375]
+      "median_ms": 20.399,
+      "runs_ms": [10.268, 20.399, 20.411]
       },
-      "ratio": 0.626698
+      "ratio": 0.996029
     },
     {
       "id": "geometry_convex_polygon",
       "name": "geometry::random_convex_polygon",
       "name_suffix": "",
-      "params": "n=1e6, min=0, max=3e10",
+      "params": "n=1e5, min=0, max=3e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 780.665,
-      "runs_ms": [780.441, 819.936, 780.665]
+      "median_ms": 30.714,
+      "runs_ms": [40.725, 30.497, 30.714]
       },
       "jngen": {
-      "status": "ok",
-      "median_ms": 2523.763,
-      "runs_ms": [2523.763, 2454.262, 2536.977]
-      },
-      "ratio": 0.309326
+      "status": "error",
+      "error": "Cannot generate a convex polygon with so many vertices (assertion `static_cast<int>(res.size()) >= n' failed)."
+      }
     },
     {
       "id": "geometry_points_general_position_small",
       "name": "geometry::random_points_general_position",
-      "name_suffix": " (n=1800)",
-      "params": "n=1800, min=0, max=3e6",
+      "name_suffix": " (n=1e3)",
+      "params": "n=1e3, min=0, max=3e6",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 10.556,
-      "runs_ms": [10.338, 10.556, 10.632]
+      "median_ms": 10.23,
+      "runs_ms": [10.222, 10.23, 10.292]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1609.843,
-      "runs_ms": [1626.96, 1599.46, 1609.843]
+      "median_ms": 424.713,
+      "runs_ms": [435.732, 424.713, 415.182]
       },
-      "ratio": 0.00655716
+      "ratio": 0.0240869
     },
     {
       "id": "geometry_points_general_position",
       "name": "geometry::random_points_general_position",
       "name_suffix": "",
-      "params": "n=1e6, min=0, max=3e6",
+      "params": "n=1e5, min=0, max=3e6",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 172.657,
-      "runs_ms": [192.667, 162.609, 172.657]
+      "median_ms": 20.445,
+      "runs_ms": [20.445, 20.294, 30.446]
       },
       "jngen": {
       "status": "timeout",
@@ -260,12 +258,12 @@
       "id": "geometry_random_simple_polygon",
       "name": "geometry::random_simple_polygon",
       "name_suffix": "",
-      "params": "n=1e6, min=0, max=3e6",
+      "params": "n=1e5, min=0, max=3e5",
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 1115.884,
-      "runs_ms": [1143.141, 1114.949, 1115.884]
+      "median_ms": 71.135,
+      "runs_ms": [71.135, 71.043, 81.125]
       },
       "jngen": {
       "status": "skipped",
@@ -276,12 +274,12 @@
       "id": "geometry_simple_polygon_through_points",
       "name": "geometry::random_simple_polygon_through_points",
       "name_suffix": "",
-      "params": "n=1e6",
+      "params": "n=1e5",
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 971.452,
-      "runs_ms": [971.452, 983.855, 914.485]
+      "median_ms": 70.924,
+      "runs_ms": [60.919, 70.924, 70.931]
       },
       "jngen": {
       "status": "skipped",
@@ -292,102 +290,102 @@
       "id": "permutation_uniform",
       "name": "permutation::gen",
       "name_suffix": "",
-      "params": "n=5e6",
+      "params": "n=5e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 121.556,
-      "runs_ms": [132.185, 121.441, 121.556]
+      "median_ms": 10.301,
+      "runs_ms": [10.301, 10.43, 10.217]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 132.627,
-      "runs_ms": [131.777, 141.548, 132.627]
+      "median_ms": 20.351,
+      "runs_ms": [20.351, 20.54, 10.28]
       },
-      "ratio": 0.916525
+      "ratio": 0.506167
     },
     {
       "id": "graph_bipartite",
       "name": "graph::gen_bipartite",
       "name_suffix": "",
-      "params": "n1=1e3, n2=1e3, m=5e5",
+      "params": "n1=1e2, n2=1e2, m=5e3",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 51.375,
-      "runs_ms": [61.055, 51.375, 51.107]
+      "median_ms": 10.324,
+      "runs_ms": [10.424, 10.237, 10.324]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 192.739,
-      "runs_ms": [193.083, 192.739, 192.668]
+      "median_ms": 10.284,
+      "runs_ms": [10.295, 10.284, 10.237]
       },
-      "ratio": 0.266552
+      "ratio": 1.00389
     },
     {
       "id": "graph_directed",
       "name": "graph::gen",
       "name_suffix": " (directed)",
-      "params": "n=1e6, m=1e6",
+      "params": "n=1e5, m=1e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 263.353,
-      "runs_ms": [263.816, 243.492, 263.353]
+      "median_ms": 20.46,
+      "runs_ms": [20.46, 20.277, 20.512]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 598.302,
-      "runs_ms": [577.761, 616.64, 598.302]
+      "median_ms": 40.566,
+      "runs_ms": [40.408, 40.703, 40.566]
       },
-      "ratio": 0.440167
+      "ratio": 0.504363
     },
     {
       "id": "graph_directed_acyclic",
       "name": "graph::get_acyclic",
       "name_suffix": " (DAG)",
-      "params": "n=1e6, m=1e6",
+      "params": "n=1e5, m=1e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 343.925,
-      "runs_ms": [345.345, 334.22, 343.925]
+      "median_ms": 30.428,
+      "runs_ms": [30.528, 30.428, 20.504]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 609.817,
-      "runs_ms": [608.542, 638.11, 609.817]
+      "median_ms": 50.642,
+      "runs_ms": [50.819, 50.642, 40.69]
       },
-      "ratio": 0.563981
+      "ratio": 0.600845
     },
     {
       "id": "str_regex",
       "name": "str::gen",
       "name_suffix": "",
-      "params": "pattern=(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){r}, len=2.32e7",
+      "params": "pattern=(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){r}, len=5e5",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 1086.741,
-      "runs_ms": [1104.986, 1086.741, 1058.173]
+      "median_ms": 40.682,
+      "runs_ms": [40.814, 30.658, 40.682]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 872.491,
-      "runs_ms": [870.968, 912.186, 872.491]
+      "median_ms": 30.554,
+      "runs_ms": [30.555, 30.554, 30.47]
       },
-      "ratio": 1.24556
+      "ratio": 1.33148
     },
     {
       "id": "math_partition",
       "name": "math::gen_partition",
       "name_suffix": "",
-      "params": "n=4.8e6",
+      "params": "n=4.8e5",
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 932.708,
-      "runs_ms": [952.47, 932.708, 906.367]
+      "median_ms": 111.418,
+      "runs_ms": [111.86, 111.418, 101.433]
       },
       "jngen": {
       "status": "skipped",
@@ -398,19 +396,19 @@
       "id": "math_partition_fixed_size",
       "name": "math::gen_partition_fixed_size",
       "name_suffix": "",
-      "params": "n=5e7, k=10, part_left=0",
+      "params": "n=5e6, k=10, part_left=0",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 730.722,
-      "runs_ms": [739.506, 719.261, 730.722]
+      "median_ms": 91.262,
+      "runs_ms": [91.339, 91.262, 90.889]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 10.539,
-      "runs_ms": [10.401, 10.539, 10.707]
+      "median_ms": 10.155,
+      "runs_ms": [10.307, 10.155, 10.128]
       },
-      "ratio": 69.335
+      "ratio": 8.9869
     }
   ]
 }
