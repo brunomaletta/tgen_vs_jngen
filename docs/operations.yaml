@@ -81,7 +81,7 @@ operations:
       api: "Graph::randomBipartite(n1, n2, m), completeBipartite(n1, n2)"
       uniform: uniform (inferred)
       complexity: "O(n1 + n2 + m log(n1 * n2)) (inferred)"
-    notes: "tgen: distinct edge-index sampling; optional connected spanning tree. jngen: rejection sampling. jngen randomBipartite also supports allowMulti; tgen stores simple graphs only."
+    notes: "tgen: distinct edge-index sampling. jngen: rejection sampling. Both support optional connected generation. jngen also supports allowMulti; tgen stores simple graphs only."
     benchmark: true
     benchmark_id: graph_bipartite
 
