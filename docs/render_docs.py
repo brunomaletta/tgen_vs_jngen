@@ -1039,12 +1039,13 @@ def sample_table_header_row():
     )
 
 
-def geometry_sample_operations(operations):
-    return [
-        op
-        for op in operations
-        if op.get("visualize") and not op.get("gallery_only")
-    ]
+def sample_operations_by_category(operations):
+    by_cat = {}
+    for op in operations:
+        if not op.get("visualize") or op.get("gallery_only"):
+            continue
+        by_cat.setdefault(op.get("category", "other"), []).append(op)
+    return by_cat
 
 
 def samples_have_inferred(ops, operations_by_id):
@@ -1072,13 +1073,11 @@ def samples_have_inferred(ops, operations_by_id):
     return False
 
 
-def render_geometry_samples_html(operations, source_resolver=None):
-    ops = geometry_sample_operations(operations)
+def render_sample_category_table_html(ops, operations, source_resolver=None):
     if not ops:
         return []
     operations_by_id = {op["id"]: op for op in operations}
     parts = [
-        "<h3>Samples</h3>",
         '<div class="table-scroll"><table class="comparison-table samples-table">',
         "<colgroup>"
         '<col class="col-op">'
@@ -1101,6 +1100,22 @@ def render_geometry_samples_html(operations, source_resolver=None):
     parts.append("</table></div>")
     if samples_have_inferred(ops, operations_by_id):
         parts.append(TABLE_INFERRED_FOOTNOTE_HTML)
+    return parts
+
+
+def render_samples_section_html(operations, categories, source_resolver=None):
+    by_cat = sample_operations_by_category(operations)
+    if not by_cat:
+        return []
+    parts = ["<h2>Samples</h2>"]
+    for cat_id, cat_label in categories.items():
+        ops = by_cat.get(cat_id)
+        if not ops:
+            continue
+        parts.append(f"<h3>{html.escape(cat_label)}</h3>")
+        parts.extend(
+            render_sample_category_table_html(ops, operations, source_resolver)
+        )
     return parts
 
 
@@ -1429,9 +1444,8 @@ def render_comparison_html(operations, categories, bench_index, source_resolver=
         parts.append("</table></div>")
         if category_has_inferred(by_cat[cat_id]):
             parts.append(TABLE_INFERRED_FOOTNOTE_HTML)
-        if cat_id == "geometry":
-            parts.extend(render_geometry_samples_html(operations, source_resolver))
 
+    parts.extend(render_samples_section_html(operations, categories, source_resolver))
     parts.append("</section>")
     return "\n".join(parts)
 

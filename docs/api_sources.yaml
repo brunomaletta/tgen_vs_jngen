@@ -57,16 +57,15 @@ entries:
   declarative_generators:
     tgen: tgen::list::gen
 
+  math_partition_fixed_size_fast:
+    tgen: tgen::math::gen_partition_fixed_size_fast
+    jngen: { file: math_jngen.h, line: 206 }
+
   math_partition_fixed_size:
     tgen: tgen::math::gen_partition_fixed_size
-    jngen: { file: math_jngen.h, line: 206 }
 
   math_partition:
     tgen: tgen::math::gen_partition
-
-  math_random_prime:
-    tgen: tgen::math::gen_prime
-    jngen: { file: math_jngen.h, line: 156 }
 
   math_congruent:
     tgen: tgen::math::gen_congruent

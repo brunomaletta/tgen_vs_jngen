@@ -49,6 +49,11 @@ void consume_partition(const std::vector<int> &part) {
 		sink += static_cast<uint64_t>(x);
 }
 
+void consume_partition(const std::vector<uint64_t> &part) {
+	for (uint64_t x : part)
+		sink += x;
+}
+
 std::vector<tgen::geometry::point<long long>> polygon_through_points;
 
 void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
@@ -139,6 +144,10 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	out["math_partition_fixed_size"] = [] {
 		consume_partition(tgen::math::gen_partition_fixed_size(
 			static_cast<int>(BENCH_PARTITION_FIXED_N), BENCH_PARTITION_K));
+	};
+	out["math_partition_fixed_size_fast"] = [] {
+		consume_partition(tgen::math::gen_partition_fixed_size_fast(
+			BENCH_PARTITION_FAST_N, BENCH_PARTITION_FAST_K));
 	};
 }
 

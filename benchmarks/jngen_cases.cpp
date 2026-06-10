@@ -30,6 +30,11 @@ void consume_array(const Array &a) {
 		sink += static_cast<uint64_t>(a[i]);
 }
 
+void consume_array64(const Array64 &a) {
+	for (size_t i = 0; i < a.size(); ++i)
+		sink += static_cast<uint64_t>(a[i]);
+}
+
 void consume_string(const std::string &s) {
 	for (unsigned char c : s)
 		sink += c;
@@ -107,9 +112,10 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 	out["str_regex"] = [str_pat] {
 		consume_string(rnds.random(str_pat));
 	};
-	out["math_partition_fixed_size"] = [] {
-		consume_array(rndm.partition(static_cast<int>(BENCH_PARTITION_FIXED_N),
-									 BENCH_PARTITION_K));
+	out["math_partition_fixed_size_fast"] = [] {
+		consume_array64(rndm.partition(
+			static_cast<long long>(BENCH_PARTITION_FAST_N),
+			BENCH_PARTITION_FAST_K));
 	};
 }
 

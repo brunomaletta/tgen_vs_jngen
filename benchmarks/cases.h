@@ -31,7 +31,7 @@ constexpr int BENCH_LIST_RANDOM_HI = 2 * BENCH_LIST_RANDOM_N;
 constexpr int BENCH_STR_LEN = 500'000;
 constexpr int BENCH_PERM_N = 500'000;
 #else
-constexpr int BENCH_STR_LEN = 23'200'000;
+constexpr int BENCH_STR_LEN = 10'000'000;
 constexpr int BENCH_PERM_N = 5'000'000;
 #endif
 
@@ -96,6 +96,9 @@ constexpr int BENCH_PARTITION_N = 480'000;
 constexpr long long BENCH_PARTITION_FIXED_N = 5'000'000LL;
 constexpr const char *BENCH_PARAMS_PARTITION = "n=4.8e5";
 constexpr const char *BENCH_PARAMS_PARTITION_FIXED = "n=5e6, k=10, part_left=0";
+constexpr uint64_t BENCH_PARTITION_FAST_N = 5'000'000ULL;
+constexpr int BENCH_PARTITION_FAST_K = 10;
+constexpr const char *BENCH_PARAMS_PARTITION_FAST = "n=5e6, k=10, part_left=0";
 #else
 constexpr const char *BENCH_PARAMS_N = "n=1e6";
 constexpr const char *BENCH_PARAMS_PERM = "n=5e6";
@@ -107,7 +110,7 @@ constexpr const char *BENCH_PARAMS_LIST =
 constexpr const char *BENCH_PARAMS_LIST_RANDOM =
 	"n=5e6, value_left=1, value_right=10e6";
 constexpr const char *BENCH_PARAMS_STR_REGEX =
-	"pattern=(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){r}, len=2.32e7";
+	"pattern=(([1-9][0-9]{3}|[A-F]{4})|(ab|cd){2}){r}, len=1e7";
 constexpr const char *BENCH_PARAMS_GEOM = "n=1e6, min=0, max=3e6";
 constexpr const char *BENCH_PARAMS_THROUGH = "n=1e6";
 constexpr const char *BENCH_PARAMS_SKEWED_N =
@@ -125,6 +128,9 @@ constexpr int BENCH_PARTITION_N = 4'800'000;
 constexpr long long BENCH_PARTITION_FIXED_N = 50'000'000LL;
 constexpr const char *BENCH_PARAMS_PARTITION = "n=4.8e6";
 constexpr const char *BENCH_PARAMS_PARTITION_FIXED = "n=5e7, k=10, part_left=0";
+constexpr uint64_t BENCH_PARTITION_FAST_N = 1'000'000'000'000'000'000ULL;
+constexpr int BENCH_PARTITION_FAST_K = 3'000'000;
+constexpr const char *BENCH_PARAMS_PARTITION_FAST = "n=1e18, k=3e6, part_left=0";
 #endif
 
 constexpr int BENCH_PARTITION_K = 10;
@@ -176,6 +182,8 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		{"math_partition", "math::gen_partition", "", BENCH_PARAMS_PARTITION,
 		 false},
 		{"math_partition_fixed_size", "math::gen_partition_fixed_size", "",
-		 BENCH_PARAMS_PARTITION_FIXED, true},
+		 BENCH_PARAMS_PARTITION_FIXED, false},
+		{"math_partition_fixed_size_fast", "math::gen_partition_fixed_size_fast",
+		 "", BENCH_PARAMS_PARTITION_FAST, true},
 	};
 }
