@@ -163,12 +163,12 @@ operations:
       has: true
       api: "tree::gen_kruskal(n)"
       uniform: non-uniform
-      complexity: "O(n²) expected"
+      complexity: "O(n log(n) alpha(n)) expected"
     jngen:
       has: true
       api: "Tree::randomKruskal(n)"
       uniform: non-uniform (inferred)
-      complexity: "O(n²) expected (inferred)"
+      complexity: "O(n log(n) alpha(n)) expected (inferred)"
     notes: "Kruskal-like edge add until connected."
     benchmark: true
     benchmark_id: tree_gen_kruskal
@@ -264,7 +264,7 @@ operations:
       has: true
       api: "math::gen_partition_fixed_size(n, k, part_left, part_right)"
       uniform: uniform
-      complexity: "O(n) if unbounded part max (stars-and-bars) or O(n·k) for bounded parts (DP in log space)"
+      complexity: "O(n) if unbounded part_right; O(n·k) otherwise"
     jngen:
       has: false
       api: ""
@@ -311,14 +311,13 @@ operations:
     tgen:
       has: true
       api: "math::partition_elements(elements, k, min_size, max_size)"
-      uniform: non-uniform
-      complexity: "O(n) if unbounded max_size; O(n·k) otherwise"
+      uniform: "uniform if unbounded max_size; non-uniform otherwise"
+      complexity: "O(n) if unbounded max_size; O(n + k log k) otherwise"
     jngen:
       has: true
       api: "rndm.partition(elements, numParts, minSize, maxSize)"
       uniform: non-uniform (inferred)
-      complexity: "O(n) if unbounded max_size; O(n·k) otherwise (inferred)"
-    notes: "Shuffle + fast partition sizes + split. Same approach as jngen."
+      complexity: "O(n + k log k) (inferred)"
     benchmark: true
     benchmark_id: math_partition_array
 
@@ -468,6 +467,22 @@ operations:
       uniform: ""
       complexity: ""
     notes: "jngen Drawer for points, segments, circles, polygons; outputs SVG."
+
+  - id: library_build_accel
+    name: Accelerated build guide
+    category: other
+    tgen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    jngen:
+      has: true
+      api: "JNGEN_DECLARE_ONLY (precompiled static library)"
+      uniform: ""
+      complexity: ""
+    notes: "Compile jngen.h once into a static lib; link with JNGEN_DECLARE_ONLY for faster rebuilds."
+    exclusive: jngen
 
   # --- Strings ---
   - id: str_regex

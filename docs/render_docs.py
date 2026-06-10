@@ -210,6 +210,7 @@ JNGEN_OP_DOC = {
     "testlib_integration": "doc/random.md",
     "str_regex": "doc/random.md",
     "geometry_svg_drawer": "doc/drawer.md",
+    "library_build_accel": "doc/library_build.md",
     "anti_hash_strings": "doc/strings.md",
 }
 
@@ -562,16 +563,50 @@ def format_uniformity_html(tg, jg, category, op_id):
     return "".join(rows)
 
 
+def format_uniformity_clause_html(clause, inferred=False):
+    text = clause.strip()
+    lower = text.lower()
+    kind = None
+    tail = ""
+    if lower.startswith("non-uniform"):
+        kind = "non-uniform"
+        tail = text[len("non-uniform") :].strip()
+    elif lower.startswith("uniform"):
+        kind = "uniform"
+        tail = text[len("uniform") :].strip()
+    else:
+        return format_uniform_value_html(uniform_label(text), inferred)
+    label = uniform_label(kind)
+    mark = INFERRED_MARK_HTML if inferred else ""
+    css = uniform_value_class(label)
+    inner = f"<strong>{html.escape(label)}</strong>"
+    if tail:
+        inner += f" {html.escape(tail)}"
+    return f'<span class="uniform-val {css}">{inner}{mark}</span>'
+
+
 def format_lib_uniformity_html(lib_info, category, op_id):
-    base, inferred = get_uniform_raw(lib_info, category, op_id)
+    uniform_raw = lib_info.get("uniform")
+    if not uniform_raw or not lib_info.get("has"):
+        return ""
+    base, inferred = split_inferred(uniform_raw)
     if not base:
         return ""
-    label = uniform_label(base)
-    return (
-        '<span class="api-uniformity">'
-        f"{format_uniform_value_html(label, inferred)}"
-        "</span>"
-    )
+    if "; " not in base:
+        label = uniform_label(base)
+        return (
+            '<span class="api-uniformity">'
+            f"{format_uniform_value_html(label, inferred)}"
+            "</span>"
+        )
+    lines = []
+    for clause in base.split("; "):
+        lines.append(
+            '<span class="api-uniformity-line">'
+            f"{format_uniformity_clause_html(clause.strip(), inferred)}"
+            "</span>"
+        )
+    return '<span class="api-uniformity">' + "".join(lines) + "</span>"
 
 
 def complexity_first_clause(complexity):
@@ -1643,10 +1678,12 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       margin-top: 0.2rem;
       line-height: 1.35;
     }}
-    .api-complexity-line {{
+    .api-complexity-line,
+    .api-uniformity-line {{
       display: block;
     }}
-    .api-complexity-line + .api-complexity-line {{
+    .api-complexity-line + .api-complexity-line,
+    .api-uniformity-line + .api-uniformity-line {{
       margin-top: 0.2rem;
     }}
     .api-complexity-or {{

@@ -104,6 +104,9 @@ entries:
   geometry_svg_drawer:
     jngen: { file: drawer/drawer.h, line: 412 }
 
+  library_build_accel:
+    jngen: { file: random.h, line: 243, doc: doc/library_build.md }
+
   str_regex:
     tgen: tgen::str::gen
     jngen: { file: impl/random_inl.h, line: 202 }

@@ -57,6 +57,7 @@ constexpr int BENCH_GENERAL_POSITION_SMALL_N = 1'000;
 constexpr const char *BENCH_GENERAL_POSITION_SMALL_SUFFIX = " (n=1e3)";
 constexpr const char *BENCH_PARAMS_GENERAL_POSITION_SMALL =
 	"n=1e3, min=0, max=3e6";
+constexpr const char *BENCH_GENERAL_POSITION_SUFFIX = " (n=1e5)";
 #else
 constexpr long long BENCH_CONVEX_COORD_MAX = 30'000'000'000LL;
 constexpr const char *BENCH_PARAMS_CONVEX = "n=1e6, min=0, max=3e10";
@@ -65,14 +66,15 @@ constexpr int BENCH_GENERAL_POSITION_SMALL_N = 1'800;
 constexpr const char *BENCH_GENERAL_POSITION_SMALL_SUFFIX = " (n=1800)";
 constexpr const char *BENCH_PARAMS_GENERAL_POSITION_SMALL =
 	"n=1800, min=0, max=3e6";
+constexpr const char *BENCH_GENERAL_POSITION_SUFFIX = " (n=1e6)";
 #endif
 
 #ifdef QUICK
-constexpr int BENCH_KRUSKAL_N = 5'000;
-constexpr const char *BENCH_PARAMS_KRUSKAL = "n=5e3";
+constexpr int BENCH_KRUSKAL_N = 100'000;
+constexpr const char *BENCH_PARAMS_KRUSKAL = "n=1e5";
 #else
-constexpr int BENCH_KRUSKAL_N = 10'000;
-constexpr const char *BENCH_PARAMS_KRUSKAL = "n=1e4";
+constexpr int BENCH_KRUSKAL_N = 1'000'000;
+constexpr const char *BENCH_PARAMS_KRUSKAL = "n=1e6";
 #endif
 
 #ifdef QUICK
@@ -107,6 +109,8 @@ constexpr const char *BENCH_PARAMS_PARTITION_FIXED = "n=5e6, k=10, part_left=0";
 constexpr uint64_t BENCH_PARTITION_FAST_N = 5'000'000ULL;
 constexpr int BENCH_PARTITION_FAST_K = 10;
 constexpr const char *BENCH_PARAMS_PARTITION_FAST = "n=5e6, k=10, part_left=0";
+constexpr int BENCH_PARTITION_ARRAY_K = 100'000;
+constexpr const char *BENCH_PARAMS_PARTITION_ARRAY = "n=1e5, k=1e5";
 #else
 constexpr const char *BENCH_PARAMS_N = "n=1e6";
 constexpr const char *BENCH_PARAMS_PERM = "n=5e6";
@@ -139,16 +143,12 @@ constexpr const char *BENCH_PARAMS_PARTITION_FIXED = "n=5e7, k=10, part_left=0";
 constexpr uint64_t BENCH_PARTITION_FAST_N = 1'000'000'000'000'000'000ULL;
 constexpr int BENCH_PARTITION_FAST_K = 3'000'000;
 constexpr const char *BENCH_PARAMS_PARTITION_FAST = "n=1e18, k=3e6, part_left=0";
+constexpr int BENCH_PARTITION_ARRAY_K = 1'000'000;
+constexpr const char *BENCH_PARAMS_PARTITION_ARRAY = "n=1e6, k=1e6";
 #endif
 
 constexpr int BENCH_PARTITION_K = 10;
 constexpr int BENCH_PARTITION_ARRAY_N = BENCH_N;
-constexpr int BENCH_PARTITION_ARRAY_K = 10;
-#ifdef QUICK
-constexpr const char *BENCH_PARAMS_PARTITION_ARRAY = "n=1e5, k=10";
-#else
-constexpr const char *BENCH_PARAMS_PARTITION_ARRAY = "n=1e6, k=10";
-#endif
 
 inline std::vector<benchmark::CaseSpec> all_case_specs() {
 	return {
@@ -156,7 +156,7 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		 BENCH_PARAMS_N_M, true},
 		{"graph_connected_m_eq_2n", "graph::get_connected", " (m=2n)",
 		 BENCH_PARAMS_N_M_2N, true},
-		{"graph_gen", "graph::gen", "", BENCH_PARAMS_N_M, true},
+		{"graph_gen", "graph::gen", " (m=n)", BENCH_PARAMS_N_M, true},
 		{"graph_gen_m_eq_2n", "graph::gen", " (m=2n)", BENCH_PARAMS_N_M_2N,
 		 true},
 		{"graph_gen_skewed_m_eq_n", "graph::gen_skewed", " (m=n)",
@@ -180,8 +180,8 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		 BENCH_GENERAL_POSITION_SMALL_SUFFIX,
 		 BENCH_PARAMS_GENERAL_POSITION_SMALL, true},
 		{"geometry_points_general_position",
-		 "geometry::random_points_general_position", "",
-		 BENCH_PARAMS_GENERAL_POSITION, true},
+		 "geometry::random_points_general_position",
+		 BENCH_GENERAL_POSITION_SUFFIX, BENCH_PARAMS_GENERAL_POSITION, true},
 		{"geometry_random_simple_polygon", "geometry::random_simple_polygon",
 		 "", BENCH_PARAMS_GEOM, false},
 		{"geometry_simple_polygon_through_points",
