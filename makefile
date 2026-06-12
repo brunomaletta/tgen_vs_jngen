@@ -10,6 +10,9 @@ BENCH_BIN = build/benchmarks/run
 VIZ_BIN = build/visualize/samples
 BENCH_JSON = docs/benchmark_results.json
 TGEN_XML_INDEX = vendor/tgen/docs/build/xml/index.xml
+# Doxygen 1.14 multithreading is flaky (SIGSEGV on CI); tgen Doxyfile uses 1 but its
+# makefile overrides with NPROCS — keep doc passes single-threaded here.
+TGEN_DOC_NPROCS ?= 1
 DOC ?= docs/comparison.html
 DOC_PATH := $(abspath $(DOC))
 
@@ -65,11 +68,11 @@ visualize: vendor $(VIZ_BIN)
 	python3 visualize/normalize_gallery.py docs/gallery
 
 $(TGEN_XML_INDEX): vendor
-	cd vendor/tgen && $(MAKE) doc-prepare
+	cd vendor/tgen && $(MAKE) doc-prepare NPROCS=$(TGEN_DOC_NPROCS)
 
 docs: $(TGEN_XML_INDEX)
 	python3 docs/render_docs.py
-	cd vendor/tgen && $(MAKE) doc-rebuild
+	cd vendor/tgen && $(MAKE) doc-rebuild NPROCS=$(TGEN_DOC_NPROCS)
 	python3 docs/build_site.py --bundle-only
 
 check:
