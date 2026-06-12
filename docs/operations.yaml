@@ -508,7 +508,7 @@ operations:
     category: hacks
     tgen:
       has: true
-      api: "hack::polynomial_hash_hack(alphabet, base, mod)"
+      api: "hack::polynomial_hash(alphabet, base, mod)"
       uniform: ""
       complexity: "O(√mod log mod)"
     jngen:
@@ -523,7 +523,7 @@ operations:
     category: hacks
     tgen:
       has: true
-      api: "hack::unsigned_polynomial_hash_hack()"
+      api: "hack::unsigned_polynomial_hash()"
       uniform: ""
       complexity: "O(1)"
     notes: "Thue–Morse construction."
@@ -553,7 +553,7 @@ operations:
     category: hacks
     tgen:
       has: true
-      api: "hack::string_set(size)"
+      api: "hack::string_set_worst_case(size)"
       uniform: ""
       complexity: "O(size log size)"
     notes: "Distinct strings with equal std::set ordering keys."
@@ -583,7 +583,7 @@ operations:
     category: hacks
     tgen:
       has: true
-      api: "hack::mo(n, q)"
+      api: "hack::mo_worst_case(n, q)"
       uniform: ""
       complexity: "O(n log n + q)"
     jngen:
@@ -597,7 +597,7 @@ operations:
     category: hacks
     tgen:
       has: true
-      api: "hack::spfa_hack(n)"
+      api: "hack::spfa(n)"
       uniform: ""
       complexity: "O(n)"
     jngen:
@@ -642,7 +642,7 @@ operations:
     category: hacks
     tgen:
       has: true
-      api: "hack::mt19937_xor_hash_hack<T>()"
+      api: "hack::mt19937_xor_hash<T>()"
       uniform: ""
       complexity: "O(1)"
     jngen:
@@ -657,7 +657,7 @@ operations:
     category: hacks
     tgen:
       has: true
-      api: "hack::segment_tree_beats_hack(k, q)"
+      api: "hack::segment_tree_beats_worst_case(k, q)"
       uniform: ""
       complexity: "O(n + q)"
     jngen:

@@ -112,27 +112,27 @@ entries:
     jngen: { file: impl/random_inl.h, line: 202 }
 
   anti_hash_strings:
-    tgen: tgen::hack::polynomial_hash_hack
+    tgen: tgen::hack::polynomial_hash
     jngen: { file: impl/rnds_inl.h, line: 204 }
 
   hack_unsigned_polynomial_hash:
-    tgen: tgen::hack::unsigned_polynomial_hash_hack
+    tgen: tgen::hack::unsigned_polynomial_hash
 
   anti_unordered_set:
     tgen: tgen::hack::std_unordered
     jngen: { file: rnda.h, line: 74 }
 
   hack_string_set:
-    tgen: tgen::hack::string_set
+    tgen: tgen::hack::string_set_worst_case
 
   hack_dinitz:
     tgen: tgen::hack::dinitz_worst_case
 
   hack_mo:
-    tgen: tgen::hack::mo
+    tgen: tgen::hack::mo_worst_case
 
   hack_spfa:
-    tgen: tgen::hack::spfa_hack
+    tgen: tgen::hack::spfa
 
   hack_stale_heap_dijkstra:
     tgen: tgen::hack::stale_heap_dijkstra_bug
@@ -141,10 +141,10 @@ entries:
     tgen: tgen::hack::non_strict_relaxation_dijkstra_bug
 
   hack_mt19937_xor_hash:
-    tgen: tgen::hack::mt19937_xor_hash_hack
+    tgen: tgen::hack::mt19937_xor_hash
 
   hack_segment_tree_beats:
-    tgen: tgen::hack::segment_tree_beats_hack
+    tgen: tgen::hack::segment_tree_beats_worst_case
 
   hack_rotating_calipers:
     tgen: tgen::hack::naive_rotating_calipers_max_dist_bug
