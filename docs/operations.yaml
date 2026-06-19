@@ -20,7 +20,7 @@ operations:
       has: true
       api: "graph(n, m).get_connected()"
       uniform: non-uniform
-      complexity: "O(n + m log n)"
+      complexity: "O(n + m log^2 n) expected"
     jngen:
       has: true
       api: "Graph::random(n, m).connected()"
@@ -37,7 +37,7 @@ operations:
       has: true
       api: "graph(n, m).gen()"
       uniform: uniform
-      complexity: "O(n + m log n)"
+      complexity: "O(n + m log^2 n) expected"
     jngen:
       has: true
       api: "Graph::random(n, m)"
@@ -56,7 +56,7 @@ operations:
       has: true
       api: "graph::gen_skewed(n, m, elongation, spread)"
       uniform: non-uniform
-      complexity: "O(n + m log n) if spread is O(1); O(n log n + m log^2 n) otherwise"
+      complexity: "O(n + m log n) if spread is O(1); O(n log n + m log^2 n) expected otherwise"
     jngen:
       has: true
       api: "Graph::randomStretched(n, m, elongation, spread)"
@@ -75,7 +75,7 @@ operations:
       has: true
       api: "graph::gen_bipartite(n1, n2, m), K(n1, n2)"
       uniform: uniform
-      complexity: "O(n1 + n2 + m log(n1 * n2))"
+      complexity: "O(n1 + n2 + m log(n1 * n2)) expected"
     jngen:
       has: true
       api: "Graph::randomBipartite(n1, n2, m), completeBipartite(n1, n2)"
@@ -92,7 +92,7 @@ operations:
       has: true
       api: "graph(n, m, directed=true).gen()"
       uniform: non-uniform
-      complexity: "O(n + m log n)"
+      complexity: "O(n + m log^2 n) expected"
     jngen:
       has: true
       api: "Graph::random(n, m).directed().g()"
@@ -111,7 +111,7 @@ operations:
       has: true
       api: "graph(n, m, directed=true).get_acyclic()"
       uniform: non-uniform
-      complexity: "O(n + m log n)"
+      complexity: "O(n + m log^2 n) expected"
     jngen:
       has: true
       api: "Graph::random(n, m).directed().acyclic().g()"
@@ -323,19 +323,19 @@ operations:
 
   # --- Geometry ---
   - id: geometry_convex_polygon
-    name: Random convex polygon
+    name: Random convex polygon (non strict)
     category: geometry
     tgen:
       has: true
-      api: "geometry::random_convex_polygon(n, min, max)"
+      api: "geometry::random_convex_polygon(n, min, max, strict=false)"
       uniform: non-uniform
       complexity: "O(n log n)"
     jngen:
-      has: true
-      api: "rndg.convexPolygon(n, min, max)"
-      uniform: non-uniform (inferred)
-      complexity: "O(n log n) (inferred)"
-    notes: "tgen: Valtr construction filling bounding box. jngen: hull of 10n ellipse points, subsample n. Different shape distributions. Benchmark uses the same n and max for both (wide max so jngen hull subsampling succeeds at n=1e6)."
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    notes: "Valtr lattice walk; collinear boundary vertices allowed."
     benchmark: true
     benchmark_id: geometry_convex_polygon
     visualize: true
@@ -345,18 +345,35 @@ operations:
     gallery_stack_top_params: "n=80, min=0, max=1000"
     gallery_stack_params: "n=15000, min=0, max=3e9"
 
+  - id: geometry_convex_polygon_strict
+    name: Random convex polygon (strict)
+    category: geometry
+    tgen:
+      has: true
+      api: "geometry::random_convex_polygon(n, min, max, strict=true)"
+      uniform: non-uniform
+      complexity: "O(n log n)"
+    jngen:
+      has: true
+      api: "rndg.convexPolygon(n, min, max)"
+      uniform: non-uniform (inferred)
+      complexity: "O(n log n) (inferred)"
+    notes: "Both sample extra vertices then subsample to n: jngen hull of 10n ellipse points; tgen Valtr walk on n + max(100, n/1000) grid lines, collinear removal, subsample."
+    benchmark: true
+    benchmark_id: geometry_convex_polygon_strict
+
   - id: geometry_convex_polygon_large
     name: Random convex polygon (large)
     category: geometry
     gallery_only: true
     tgen:
       has: true
-      api: "geometry::random_convex_polygon(n, min, max)"
+      api: "geometry::random_convex_polygon(n, min, max, strict=false)"
       uniform: ""
       complexity: ""
     jngen:
-      has: true
-      api: "rndg.convexPolygon(n, min, max)"
+      has: false
+      api: ""
       uniform: ""
       complexity: ""
     visualize: true
@@ -388,7 +405,7 @@ operations:
     category: geometry
     tgen:
       has: true
-      api: "geometry::random_simple_polygon(n, min, max)"
+      api: "geometry::random_simple_polygon(n, min, max, strict=false)"
       uniform: non-uniform
       complexity: "O(n log n) expected"
     jngen:
@@ -396,7 +413,7 @@ operations:
       api: ""
       uniform: ""
       complexity: ""
-    notes: "Points + polygonization."
+    notes: "Default (strict=false) samples distinct grid points, then polygonizes; strict=true uses general-position vertices (v1.0.0 behavior). Collinear triples may appear on the boundary when strict=false."
     benchmark: false
     benchmark_id: geometry_random_simple_polygon
     visualize: true
@@ -428,7 +445,7 @@ operations:
       has: true
       api: "tgen::distinct<Func, Args>"
       uniform: uniform
-      complexity: "O(k log n) for k distinct values"
+      complexity: "O(T log k + log^2 k) amortized expected per call when generating k values and next() runs in O(T)"
     jngen:
       has: false
       api: ""
