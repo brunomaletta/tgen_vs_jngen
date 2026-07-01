@@ -19,6 +19,8 @@ constexpr long long GALLERY_GENERAL_POSITION_COORD = 3'000'000LL;
 // Gallery variants: seeds GALLERY_SEED_BASE .. GALLERY_SEED_BASE + COUNT - 1.
 constexpr int GALLERY_SEED_BASE = 42;
 constexpr int GALLERY_VARIANT_COUNT = 20;
+// Dense convex polygons: one fixed preview (no variant cycling in the docs).
+constexpr int GALLERY_LARGE_VARIANT_COUNT = 1;
 
 inline std::string gallery_seed_tag(int seed) {
 	return "_s" + std::to_string(seed);

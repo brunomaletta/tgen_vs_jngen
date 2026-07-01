@@ -338,15 +338,9 @@ operations:
     notes: "Valtr lattice walk; collinear boundary vertices allowed."
     benchmark: true
     benchmark_id: geometry_convex_polygon
-    visualize: true
-    gallery_stack:
-      - geometry_convex_polygon
-      - geometry_convex_polygon_large
-    gallery_stack_top_params: "n=80, min=0, max=1000"
-    gallery_stack_params: "n=15000, min=0, max=3e9"
 
   - id: geometry_convex_polygon_strict
-    name: Random convex polygon (strict)
+    name: Random convex polygon
     category: geometry
     tgen:
       has: true
@@ -361,19 +355,26 @@ operations:
     notes: "Both sample extra vertices then subsample to n: jngen hull of 10n ellipse points; tgen Valtr walk on n + max(100, n/1000) grid lines, collinear removal, subsample."
     benchmark: true
     benchmark_id: geometry_convex_polygon_strict
+    visualize: true
+    gallery_stack:
+      - geometry_convex_polygon_strict
+      - geometry_convex_polygon_large
+    gallery_stack_top_params: "n=80, min=0, max=1000"
+    gallery_stack_params: "n=15000, min=0, max=3e9"
 
   - id: geometry_convex_polygon_large
     name: Random convex polygon (large)
     category: geometry
     gallery_only: true
+    gallery_single_variant: true
     tgen:
       has: true
-      api: "geometry::random_convex_polygon(n, min, max, strict=false)"
+      api: "geometry::random_convex_polygon(n, min, max, strict=true)"
       uniform: ""
       complexity: ""
     jngen:
-      has: false
-      api: ""
+      has: true
+      api: "rndg.convexPolygon(n, min, max)"
       uniform: ""
       complexity: ""
     visualize: true

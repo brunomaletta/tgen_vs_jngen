@@ -54,15 +54,10 @@ void run_tgen_samples(const std::string &out_dir) {
 		tgen::register_gen(seed);
 
 		write_points_json(
-			out_dir + "/geometry_convex_polygon" + tag + ".points.json",
+			out_dir + "/geometry_convex_polygon_strict" + tag + ".points.json",
 			tgen::geometry::random_convex_polygon(
-				GALLERY_CONVEX_N, 0, GALLERY_CONVEX_COORD),
+				GALLERY_CONVEX_N, 0, GALLERY_CONVEX_COORD, true),
 			"polygon", GALLERY_CONVEX_COORD);
-		write_points_json(
-			out_dir + "/geometry_convex_polygon_large" + tag + ".points.json",
-			tgen::geometry::random_convex_polygon(
-				GALLERY_CONVEX_LARGE_N, 0, GALLERY_CONVEX_LARGE_COORD),
-			"polygon", GALLERY_CONVEX_LARGE_COORD);
 
 		write_points_json(
 			out_dir + "/geometry_simple_polygon" + tag + ".points.json",
@@ -86,5 +81,18 @@ void run_tgen_samples(const std::string &out_dir) {
 				+ ".points.json",
 			tgen::geometry::random_simple_polygon_through_points(grid),
 			"polygon", GALLERY_COORD);
+	}
+
+	for (int vi = 0; vi < GALLERY_LARGE_VARIANT_COUNT; ++vi) {
+		const int seed = GALLERY_SEED_BASE + vi;
+		const std::string tag = gallery_seed_tag(seed);
+		std::cout << "tgen large convex sample seed " << seed << "...\n"
+				  << std::flush;
+		tgen::register_gen(seed);
+		write_points_json(
+			out_dir + "/geometry_convex_polygon_large" + tag + ".points.json",
+			tgen::geometry::random_convex_polygon(
+				GALLERY_CONVEX_LARGE_N, 0, GALLERY_CONVEX_LARGE_COORD, true),
+			"polygon", GALLERY_CONVEX_LARGE_COORD);
 	}
 }

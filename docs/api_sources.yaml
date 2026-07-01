@@ -80,6 +80,7 @@ entries:
 
   geometry_convex_polygon_large:
     tgen: tgen::geometry::random_convex_polygon
+    jngen: { file: impl/geometry_inl.h, line: 46 }
 
   geometry_convex_polygon_strict:
     tgen: tgen::geometry::random_convex_polygon

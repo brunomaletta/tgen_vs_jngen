@@ -48,16 +48,23 @@ void run_jngen_samples(const string &out_dir) {
 		rnd.seed(seed);
 
 		draw_polygon_svg(
-			out_dir + "/geometry_convex_polygon_jngen" + tag + ".svg",
+			out_dir + "/geometry_convex_polygon_strict_jngen" + tag + ".svg",
 			rndg.convexPolygon(GALLERY_CONVEX_N, 0, GALLERY_CONVEX_COORD));
-		draw_polygon_svg(
-			out_dir + "/geometry_convex_polygon_large_jngen" + tag + ".svg",
-			rndg.convexPolygon(GALLERY_CONVEX_LARGE_N, 0,
-							   GALLERY_CONVEX_LARGE_COORD));
 
 		draw_points_svg(
 			out_dir + "/geometry_points_general_position_jngen" + tag + ".svg",
 			rndg.pointsInGeneralPosition(GALLERY_GENERAL_POSITION_N, 0,
 										 GALLERY_GENERAL_POSITION_COORD));
+	}
+
+	for (int vi = 0; vi < GALLERY_LARGE_VARIANT_COUNT; ++vi) {
+		const int seed = GALLERY_SEED_BASE + vi;
+		const string tag = gallery_seed_tag(seed);
+		cout << "jngen large convex sample seed " << seed << "...\n" << flush;
+		rnd.seed(seed);
+		draw_polygon_svg(
+			out_dir + "/geometry_convex_polygon_large_jngen" + tag + ".svg",
+			rndg.convexPolygon(GALLERY_CONVEX_LARGE_N, 0,
+							   GALLERY_CONVEX_LARGE_COORD));
 	}
 }

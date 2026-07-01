@@ -955,11 +955,23 @@ def sample_svg_exists(op_id, lib, seed=GALLERY_SEED_BASE):
     return os.path.isfile(os.path.join("docs", sample_svg_path(op_id, lib, seed)))
 
 
-def render_sample_widget(op_id, lib):
-    seeds = gallery_seeds()
+def render_sample_widget(op_id, lib, single_variant=False):
+    seeds = (
+        [GALLERY_SEED_BASE]
+        if single_variant
+        else gallery_seeds()
+    )
     prefix = f"gallery/{op_id}_{lib}"
     initial = f"{prefix}_s{seeds[0]}.svg"
     seeds_json = json.dumps(seeds)
+    regen_btn = (
+        '<span class="sample-regen-phantom" aria-hidden="true"></span>'
+        if single_variant
+        else (
+            f'<button type="button" class="sample-regen" '
+            f'title="Next sample (Shift-click: random)">↻</button>'
+        )
+    )
     return (
         f'<div class="sample-widget" data-prefix="{html.escape(prefix)}" '
         f'data-seeds="{html.escape(seeds_json)}" data-index="0">'
@@ -967,8 +979,7 @@ def render_sample_widget(op_id, lib):
         f'width="{GALLERY_IMG_SIZE}" height="{GALLERY_IMG_SIZE}" '
         f'loading="lazy" decoding="async" '
         f'alt="{html.escape(lib)} sample">'
-        f'<button type="button" class="sample-regen" '
-        f'title="Next sample (Shift-click: random)">↻</button>'
+        f"{regen_btn}"
         f"</div>"
     )
 
@@ -997,8 +1008,10 @@ def _append_sample_images_html(cell, op, lib, operations_by_id):
                     f'<span class="gallery-params gallery-params-stack">'
                     f"{format_params_html(top_params)}</span>"
                 )
+            child = operations_by_id.get(sid, {})
+            single_variant = child.get("gallery_single_variant", False)
             if sample_svg_exists(sid, lib):
-                cell += render_sample_widget(sid, lib)
+                cell += render_sample_widget(sid, lib, single_variant=single_variant)
             if i == 0 and len(stack) > 1 and mid_params:
                 cell += (
                     f'<span class="gallery-params gallery-params-stack">'
@@ -1006,7 +1019,8 @@ def _append_sample_images_html(cell, op, lib, operations_by_id):
                 )
         return cell
     if sample_svg_exists(op["id"], lib):
-        cell += render_sample_widget(op["id"], lib)
+        single_variant = op.get("gallery_single_variant", False)
+        cell += render_sample_widget(op["id"], lib, single_variant=single_variant)
     return cell
 
 
@@ -1951,18 +1965,26 @@ def render_html(comparison_body, benchmarks_body, page_meta=""):
       max-width: none;
       margin: 0;
     }}
-    .sample-regen {{
+    .sample-regen,
+    .sample-regen-phantom {{
       flex-shrink: 0;
       width: 2rem;
       height: 2rem;
       padding: 0;
       border: 1px solid var(--border);
       border-radius: 6px;
+      box-sizing: border-box;
+    }}
+    .sample-regen {{
       background: var(--code-bg);
       color: var(--text);
       font-size: 1.15rem;
       line-height: 1;
       cursor: pointer;
+    }}
+    .sample-regen-phantom {{
+      visibility: hidden;
+      pointer-events: none;
     }}
     .sample-regen:hover,
     .sample-regen:focus-visible {{
