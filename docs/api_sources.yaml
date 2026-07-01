@@ -92,6 +92,9 @@ entries:
   geometry_simple_polygon:
     tgen: tgen::geometry::random_simple_polygon
 
+  geometry_orthogonal_polygon:
+    tgen: tgen::geometry::random_orthogonal_polygon
+
   geometry_simple_polygon_through_points:
     tgen: tgen::geometry::random_simple_polygon_through_points
 
@@ -159,5 +162,6 @@ benchmarks:
   graph_gen_skewed_distinct_worst: graph_gen_skewed
   graph_directed_acyclic: graph_directed
   geometry_random_simple_polygon: geometry_simple_polygon
+  geometry_random_orthogonal_polygon: geometry_orthogonal_polygon
   geometry_points_general_position: geometry_points_general_position
   geometry_points_general_position_small: geometry_points_general_position

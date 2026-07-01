@@ -192,6 +192,8 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		 BENCH_GENERAL_POSITION_SUFFIX, BENCH_PARAMS_GENERAL_POSITION, true},
 		{"geometry_random_simple_polygon", "geometry::random_simple_polygon",
 		 "", BENCH_PARAMS_GEOM, false},
+		{"geometry_random_orthogonal_polygon",
+		 "geometry::random_orthogonal_polygon", "", BENCH_PARAMS_GEOM, false},
 		{"geometry_simple_polygon_through_points",
 		 "geometry::random_simple_polygon_through_points", "",
 		 BENCH_PARAMS_THROUGH, false},

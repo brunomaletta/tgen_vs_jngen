@@ -128,6 +128,10 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 		consume_polygon(tgen::geometry::random_simple_polygon(
 			BENCH_GEOM_N, 0, BENCH_COORD_MAX));
 	};
+	out["geometry_random_orthogonal_polygon"] = [] {
+		consume_polygon(tgen::geometry::random_orthogonal_polygon(
+			BENCH_GEOM_N, 0, BENCH_COORD_MAX));
+	};
 	out["geometry_simple_polygon_through_points"] = [] {
 		if (polygon_through_points.empty())
 			polygon_through_points =

@@ -419,6 +419,25 @@ operations:
     visualize: true
     gallery_params: "n=80, min=0, max=1000"
 
+  - id: geometry_orthogonal_polygon
+    name: Random orthogonal polygon
+    category: geometry
+    tgen:
+      has: true
+      api: "geometry::random_orthogonal_polygon(n, min, max, strict=false)"
+      uniform: non-uniform
+      complexity: "O(n²) for n <= 1000; O(n) otherwise"
+    jngen:
+      has: false
+      api: ""
+      uniform: ""
+      complexity: ""
+    notes: "Axis-aligned simple polygon grown by local boundary edits. With strict=true, every vertex is a 90-degree turn."
+    benchmark: false
+    benchmark_id: geometry_random_orthogonal_polygon
+    visualize: true
+    gallery_params: "n=80, min=0, max=1000"
+
   - id: geometry_simple_polygon_through_points
     name: Simple polygon through given points
     category: geometry

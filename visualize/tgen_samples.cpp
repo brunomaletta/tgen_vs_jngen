@@ -70,6 +70,12 @@ void run_tgen_samples(const std::string &out_dir) {
 			"polygon", GALLERY_COORD);
 
 		write_points_json(
+			out_dir + "/geometry_orthogonal_polygon" + tag + ".points.json",
+			tgen::geometry::random_orthogonal_polygon(
+				GALLERY_N, 0, GALLERY_COORD),
+			"polygon", GALLERY_COORD);
+
+		write_points_json(
 			out_dir + "/geometry_points_general_position" + tag + ".points.json",
 			tgen::geometry::random_points_general_position(
 				GALLERY_GENERAL_POSITION_N, 0, GALLERY_GENERAL_POSITION_COORD),

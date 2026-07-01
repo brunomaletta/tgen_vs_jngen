@@ -55,8 +55,8 @@ def main():
     errors = []
 
     gallery_dir = os.path.join(root, "docs", "gallery")
-    # 5 tgen + 3 jngen sample types × 20 seeds (see visualize/samples.h).
-    expected_gallery_svgs = 160
+    # 6 tgen + 3 jngen sample types × 20 seeds (see visualize/samples.h).
+    expected_gallery_svgs = 180
     gallery_svgs = [
         name
         for name in os.listdir(gallery_dir)
