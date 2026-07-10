@@ -119,11 +119,6 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 		consume_polygon(tgen::geometry::random_points_general_position(
 			BENCH_N, 0, BENCH_GENERAL_POSITION_COORD_MAX));
 	};
-	out["geometry_points_general_position_small"] = [] {
-		consume_polygon(tgen::geometry::random_points_general_position(
-			BENCH_GENERAL_POSITION_SMALL_N, 0,
-			BENCH_GENERAL_POSITION_COORD_MAX));
-	};
 	out["geometry_random_simple_polygon"] = [] {
 		consume_polygon(tgen::geometry::random_simple_polygon(
 			BENCH_GEOM_N, 0, BENCH_COORD_MAX));

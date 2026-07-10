@@ -9,6 +9,7 @@ endif
 BENCH_BIN = build/benchmarks/run
 VIZ_BIN = build/visualize/samples
 BENCH_JSON = docs/benchmark_results.json
+TGEN_DOC_BUILD = vendor/tgen/docs/build
 TGEN_XML_INDEX = vendor/tgen/docs/build/xml/index.xml
 # Doxygen 1.14 multithreading is flaky (SIGSEGV on CI); tgen Doxyfile uses 1 but its
 # makefile overrides with NPROCS — keep doc passes single-threaded here.
@@ -68,11 +69,29 @@ visualize: vendor $(VIZ_BIN)
 	python3 visualize/normalize_gallery.py docs/gallery
 
 $(TGEN_XML_INDEX): vendor
-	cd vendor/tgen && $(MAKE) doc-prepare NPROCS=$(TGEN_DOC_NPROCS)
+	@mkdir -p $(TGEN_DOC_BUILD)
+	@printf '%s\n' '<div id="benchmark-results"></div>' > $(TGEN_DOC_BUILD)/benchmark_include.html
+	cd vendor/tgen/docs && { \
+	printf '%s\n' '@INCLUDE = Doxyfile' 'GENERATE_HTML = NO' 'GENERATE_XML = YES' \
+		'GENERATE_LATEX = NO' 'GENERATE_DOCBOOK = NO' \
+		'OUTPUT_DIRECTORY = build' 'XML_OUTPUT = xml' \
+		'NUM_PROC_THREADS = $(TGEN_DOC_NPROCS)' 'DOT_NUM_THREADS = $(TGEN_DOC_NPROCS)'; \
+	} | doxygen -
 
 docs: $(TGEN_XML_INDEX)
 	python3 docs/render_docs.py
-	cd vendor/tgen && $(MAKE) doc-rebuild NPROCS=$(TGEN_DOC_NPROCS)
+	cd vendor/tgen && python3 docs/llms_gen.py \
+		--xml docs/build/xml \
+		--out docs/build \
+		--base-url 'https://brunomaletta.github.io/tgen'
+	cd vendor/tgen && python3 docs/benchmark_render.py \
+		--json docs/benchmark_results.json \
+		--xml docs/build/xml \
+		--out docs/build/benchmark_include.html
+	cd vendor/tgen/docs && { \
+	printf '%s\n' '@INCLUDE = Doxyfile' \
+		'NUM_PROC_THREADS = $(TGEN_DOC_NPROCS)' 'DOT_NUM_THREADS = $(TGEN_DOC_NPROCS)'; \
+	} | doxygen -
 	python3 docs/build_site.py --bundle-only
 
 check:

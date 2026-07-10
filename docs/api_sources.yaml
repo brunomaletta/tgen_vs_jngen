@@ -165,4 +165,3 @@ benchmarks:
   geometry_random_simple_polygon: geometry_simple_polygon
   geometry_random_orthogonal_polygon: geometry_orthogonal_polygon
   geometry_points_general_position: geometry_points_general_position
-  geometry_points_general_position_small: geometry_points_general_position

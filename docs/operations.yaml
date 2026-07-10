@@ -395,9 +395,7 @@ operations:
       complexity: "O(n² log n) expected (inferred)"
     notes: "tgen: algebraic construction over F_p. jngen: rejection until no collinearity."
     benchmark: true
-    benchmark_id: geometry_points_general_position_small
-    secondary_benchmark_ids:
-      - geometry_points_general_position
+    benchmark_id: geometry_points_general_position
     visualize: true
     gallery_params: "n=2000, min=0, max=3e6"
 

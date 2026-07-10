@@ -100,11 +100,6 @@ void register_cases(std::unordered_map<std::string, benchmark::CaseFn> &out) {
 		consume_polygon(rndg.pointsInGeneralPosition(
 			BENCH_N, 0, BENCH_GENERAL_POSITION_COORD_MAX));
 	};
-	out["geometry_points_general_position_small"] = [] {
-		consume_polygon(rndg.pointsInGeneralPosition(
-			BENCH_GENERAL_POSITION_SMALL_N, 0,
-			BENCH_GENERAL_POSITION_COORD_MAX));
-	};
 	out["permutation_uniform"] = [] {
 		consume_array(Array::id(BENCH_PERM_N).shuffled());
 	};

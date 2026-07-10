@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-07-01T13:01:56Z",
+  "generated_at": "2026-07-10T13:46:24Z",
   "compiler": "15.2.0",
   "flags": "-std=c++17 -O2",
   "hostname": "bruno-inspiron14",
   "vendors": {
-    "tgen": "05c6ea7",
+    "tgen": "e598767",
     "jngen": "8d1e33b"
   },
   "results": [
@@ -16,15 +16,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 304.638,
-      "runs_ms": [304.638, 304.183, 304.889]
+      "median_ms": 405.249,
+      "runs_ms": [516.073, 404.751, 405.249]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1306.212,
-      "runs_ms": [1317.907, 1277.944, 1306.212]
+      "median_ms": 1832.442,
+      "runs_ms": [1832.442, 1821.657, 1849.804]
       },
-      "ratio": 0.233222
+      "ratio": 0.221152
     },
     {
       "id": "graph_connected_m_eq_2n",
@@ -34,15 +34,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 648.701,
-      "runs_ms": [648.701, 659.232, 638.69]
+      "median_ms": 1072.732,
+      "runs_ms": [1091.545, 1072.732, 839.612]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 2065.885,
-      "runs_ms": [2046.912, 2065.885, 2301.626]
+      "median_ms": 2840.554,
+      "runs_ms": [2840.554, 2813.826, 2973.392]
       },
-      "ratio": 0.314006
+      "ratio": 0.377649
     },
     {
       "id": "graph_gen",
@@ -52,15 +52,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 323.749,
-      "runs_ms": [333.984, 323.749, 323.552]
+      "median_ms": 425.311,
+      "runs_ms": [667.304, 425.311, 394.291]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 727.733,
-      "runs_ms": [708.24, 727.733, 820.443]
+      "median_ms": 901.195,
+      "runs_ms": [999.943, 892.027, 901.195]
       },
-      "ratio": 0.444873
+      "ratio": 0.471941
     },
     {
       "id": "graph_gen_m_eq_2n",
@@ -70,15 +70,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 667.765,
-      "runs_ms": [748.816, 667.765, 657.635]
+      "median_ms": 971.007,
+      "runs_ms": [971.007, 1475.565, 829.198]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1460.305,
-      "runs_ms": [1566.822, 1460.305, 1359.233]
+      "median_ms": 2287.267,
+      "runs_ms": [2729.394, 2023.413, 2287.267]
       },
-      "ratio": 0.457278
+      "ratio": 0.424527
     },
     {
       "id": "graph_gen_skewed_m_eq_n",
@@ -88,15 +88,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 284.405,
-      "runs_ms": [284.405, 284.268, 284.87]
+      "median_ms": 425.941,
+      "runs_ms": [446.453, 425.941, 425.005]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 793.787,
-      "runs_ms": [782.116, 793.787, 794.175]
+      "median_ms": 1203.594,
+      "runs_ms": [1203.469, 1295.059, 1203.594]
       },
-      "ratio": 0.358289
+      "ratio": 0.353891
     },
     {
       "id": "graph_gen_skewed_m_eq_2n",
@@ -106,15 +106,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 690.737,
-      "runs_ms": [699.807, 688.944, 690.737]
+      "median_ms": 1071.705,
+      "runs_ms": [1101.716, 1071.705, 1062.564]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1741.598,
-      "runs_ms": [1748.187, 1740.587, 1741.598]
+      "median_ms": 2620.337,
+      "runs_ms": [2620.802, 2620.337, 2610.918]
       },
-      "ratio": 0.396611
+      "ratio": 0.408995
     },
     {
       "id": "graph_gen_skewed_distinct_worst",
@@ -124,8 +124,8 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 559.854,
-      "runs_ms": [559.604, 560.023, 559.854]
+      "median_ms": 779.062,
+      "runs_ms": [769.05, 779.062, 869.859]
       },
       "jngen": {
       "status": "error",
@@ -140,15 +140,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 638.414,
-      "runs_ms": [638.414, 637.499, 639.027]
+      "median_ms": 900.29,
+      "runs_ms": [860.135, 910.148, 900.29]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 772.311,
-      "runs_ms": [782.119, 771.977, 772.311]
+      "median_ms": 1234.263,
+      "runs_ms": [1234.263, 1545.497, 1042.934]
       },
-      "ratio": 0.826628
+      "ratio": 0.729415
     },
     {
       "id": "tree_gen_skewed",
@@ -158,15 +158,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 243.227,
-      "runs_ms": [253.019, 243.227, 233.194]
+      "median_ms": 324.095,
+      "runs_ms": [314.366, 324.095, 465.642]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 375.503,
-      "runs_ms": [375.503, 397.005, 355.351]
+      "median_ms": 576.606,
+      "runs_ms": [779.2, 556.751, 576.606]
       },
-      "ratio": 0.647737
+      "ratio": 0.562074
     },
     {
       "id": "tree_gen_kruskal",
@@ -176,15 +176,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 659.446,
-      "runs_ms": [658.466, 659.446, 669.005]
+      "median_ms": 940.94,
+      "runs_ms": [940.94, 962.579, 921.9]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 802.16,
-      "runs_ms": [799.744, 802.16, 931.358]
+      "median_ms": 1315.006,
+      "runs_ms": [1889.677, 1214.453, 1315.006]
       },
-      "ratio": 0.822088
+      "ratio": 0.71554
     },
     {
       "id": "list_all_different",
@@ -194,15 +194,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 1225.065,
-      "runs_ms": [1327.228, 1194.314, 1225.065]
+      "median_ms": 2227.471,
+      "runs_ms": [2227.471, 1576.473, 2292.866]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 1902.355,
-      "runs_ms": [2018.875, 1902.355, 1828.661]
+      "median_ms": 2805.582,
+      "runs_ms": [2805.582, 3881.799, 2605.185]
       },
-      "ratio": 0.643973
+      "ratio": 0.793943
     },
     {
       "id": "list_random",
@@ -212,15 +212,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 81.38,
-      "runs_ms": [71.133, 81.38, 91.554]
+      "median_ms": 131.864,
+      "runs_ms": [131.957, 131.864, 91.629]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 101.837,
-      "runs_ms": [101.766, 112.489, 101.837]
+      "median_ms": 162.008,
+      "runs_ms": [182.506, 162.008, 152.324]
       },
-      "ratio": 0.79912
+      "ratio": 0.813935
     },
     {
       "id": "geometry_convex_polygon",
@@ -230,8 +230,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 966.637,
-      "runs_ms": [976.212, 966.637, 966.322]
+      "median_ms": 2212.745,
+      "runs_ms": [1777.402, 2212.745, 3039.562]
       },
       "jngen": {
       "status": "skipped",
@@ -246,44 +246,24 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 995.025,
-      "runs_ms": [995.025, 983.801, 1014.865]
+      "median_ms": 2702.337,
+      "runs_ms": [2702.337, 1887.841, 2939.772]
       },
       "jngen": {
-      "status": "ok",
-      "median_ms": 3441.191,
-      "runs_ms": [3441.387, 3441.191, 3434.526]
-      },
-      "ratio": 0.289151
-    },
-    {
-      "id": "geometry_points_general_position_small",
-      "name": "geometry::random_points_general_position",
-      "name_suffix": " (n=1800)",
-      "params": "n=1800, min=0, max=3e6",
-      "compare_both": true,
-      "tgen": {
-      "status": "ok",
-      "median_ms": 10.516,
-      "runs_ms": [10.558, 10.462, 10.516]
-      },
-      "jngen": {
-      "status": "ok",
-      "median_ms": 2224.582,
-      "runs_ms": [2075.78, 2377.146, 2224.582]
-      },
-      "ratio": 0.00472718
+      "status": "timeout",
+      "error": "single run exceeded 5000 ms limit"
+      }
     },
     {
       "id": "geometry_points_general_position",
       "name": "geometry::random_points_general_position",
-      "name_suffix": " (n=1e6)",
+      "name_suffix": "",
       "params": "n=1e6, min=0, max=3e6",
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 243.015,
-      "runs_ms": [242.85, 263.071, 243.015]
+      "median_ms": 496.313,
+      "runs_ms": [529.769, 458.599, 496.313]
       },
       "jngen": {
       "status": "timeout",
@@ -298,8 +278,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 1476.348,
-      "runs_ms": [1476.348, 1485.524, 1316.708]
+      "median_ms": 3172.322,
+      "runs_ms": [3172.322, 2191.766, 3394.248]
       },
       "jngen": {
       "status": "skipped",
@@ -314,8 +294,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 696.612,
-      "runs_ms": [771.234, 657.658, 696.612]
+      "median_ms": 51.397,
+      "runs_ms": [61.628, 51.378, 51.397]
       },
       "jngen": {
       "status": "skipped",
@@ -330,8 +310,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 1144.686,
-      "runs_ms": [1243.163, 1144.686, 1077.439]
+      "median_ms": 2302.98,
+      "runs_ms": [2531.896, 2302.98, 2192.039]
       },
       "jngen": {
       "status": "skipped",
@@ -346,15 +326,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 142.152,
-      "runs_ms": [142.014, 142.189, 142.152]
+      "median_ms": 303.42,
+      "runs_ms": [303.42, 387.782, 293.76]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 152.457,
-      "runs_ms": [152.326, 152.457, 162.562]
+      "median_ms": 313.895,
+      "runs_ms": [303.133, 314.727, 313.895]
       },
-      "ratio": 0.932407
+      "ratio": 0.966629
     },
     {
       "id": "graph_bipartite",
@@ -364,15 +344,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 61.337,
-      "runs_ms": [71.097, 61.337, 61.231]
+      "median_ms": 102.033,
+      "runs_ms": [102.033, 101.832, 142.562]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 243.443,
-      "runs_ms": [243.647, 243.443, 233.396]
+      "median_ms": 525.564,
+      "runs_ms": [525.847, 525.564, 415.216]
       },
-      "ratio": 0.251956
+      "ratio": 0.19414
     },
     {
       "id": "graph_directed",
@@ -382,15 +362,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 274.554,
-      "runs_ms": [274.554, 283.832, 273.495]
+      "median_ms": 485.244,
+      "runs_ms": [515.279, 485.244, 444.579]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 650.112,
-      "runs_ms": [658.486, 648.898, 650.112]
+      "median_ms": 1273.898,
+      "runs_ms": [1263.329, 1273.898, 1275.215]
       },
-      "ratio": 0.422318
+      "ratio": 0.380913
     },
     {
       "id": "graph_directed_acyclic",
@@ -400,15 +380,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 365.549,
-      "runs_ms": [365.549, 366.186, 365.491]
+      "median_ms": 628.722,
+      "runs_ms": [697.844, 628.722, 586.082]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 689.528,
-      "runs_ms": [689.528, 680.358, 690.176]
+      "median_ms": 1488.11,
+      "runs_ms": [1313.438, 1787.697, 1488.11]
       },
-      "ratio": 0.530144
+      "ratio": 0.422497
     },
     {
       "id": "str_regex",
@@ -418,15 +398,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 568.211,
-      "runs_ms": [588.053, 567.24, 568.211]
+      "median_ms": 788.271,
+      "runs_ms": [847.823, 788.271, 737.691]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 465.956,
-      "runs_ms": [455.618, 466.543, 465.956]
+      "median_ms": 798.185,
+      "runs_ms": [798.185, 1011.775, 667.21]
       },
-      "ratio": 1.21945
+      "ratio": 0.987579
     },
     {
       "id": "math_partition",
@@ -436,8 +416,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 1156.058,
-      "runs_ms": [1177.538, 1155.908, 1156.058]
+      "median_ms": 2102.061,
+      "runs_ms": [2940.067, 2102.061, 1727.526]
       },
       "jngen": {
       "status": "skipped",
@@ -452,8 +432,8 @@
       "compare_both": false,
       "tgen": {
       "status": "ok",
-      "median_ms": 914.041,
-      "runs_ms": [913.516, 914.641, 914.041]
+      "median_ms": 1305.476,
+      "runs_ms": [1508.928, 1305.476, 1304.982]
       },
       "jngen": {
       "status": "skipped",
@@ -468,15 +448,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 346.107,
-      "runs_ms": [345.935, 346.107, 346.109]
+      "median_ms": 505.621,
+      "runs_ms": [496.642, 505.621, 646.455]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 711.932,
-      "runs_ms": [711.932, 700.437, 721.559]
+      "median_ms": 982.36,
+      "runs_ms": [982.36, 1090.593, 940.659]
       },
-      "ratio": 0.486152
+      "ratio": 0.5147
     },
     {
       "id": "math_partition_array",
@@ -486,15 +466,15 @@
       "compare_both": true,
       "tgen": {
       "status": "ok",
-      "median_ms": 132.417,
-      "runs_ms": [132.193, 132.564, 132.417]
+      "median_ms": 182.878,
+      "runs_ms": [162.303, 182.878, 202.373]
       },
       "jngen": {
       "status": "ok",
-      "median_ms": 233.978,
-      "runs_ms": [233.808, 234.015, 233.978]
+      "median_ms": 454.955,
+      "runs_ms": [454.955, 445.404, 455.165]
       },
-      "ratio": 0.565938
+      "ratio": 0.401969
     }
   ]
 }

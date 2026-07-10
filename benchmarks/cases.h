@@ -56,11 +56,7 @@ constexpr const char *BENCH_PARAMS_CONVEX = "n=1e5, min=0, max=3e5, strict=false
 constexpr const char *BENCH_PARAMS_CONVEX_STRICT =
 	"n=1e5, min=0, max=1e12, strict=true";
 constexpr const char *BENCH_PARAMS_GENERAL_POSITION = "n=1e5, min=0, max=3e6";
-constexpr int BENCH_GENERAL_POSITION_SMALL_N = 1'000;
-constexpr const char *BENCH_GENERAL_POSITION_SMALL_SUFFIX = " (n=1e3)";
-constexpr const char *BENCH_PARAMS_GENERAL_POSITION_SMALL =
-	"n=1e3, min=0, max=3e6";
-constexpr const char *BENCH_GENERAL_POSITION_SUFFIX = " (n=1e5)";
+constexpr const char *BENCH_GENERAL_POSITION_SUFFIX = "";
 #else
 constexpr long long BENCH_CONVEX_COORD_MAX = 30'000'000'000LL;
 constexpr long long BENCH_CONVEX_STRICT_COORD_MAX = 1'000'000'000'000LL;
@@ -68,11 +64,7 @@ constexpr const char *BENCH_PARAMS_CONVEX = "n=1e6, min=0, max=3e10, strict=fals
 constexpr const char *BENCH_PARAMS_CONVEX_STRICT =
 	"n=1e6, min=0, max=1e12, strict=true";
 constexpr const char *BENCH_PARAMS_GENERAL_POSITION = "n=1e6, min=0, max=3e6";
-constexpr int BENCH_GENERAL_POSITION_SMALL_N = 1'800;
-constexpr const char *BENCH_GENERAL_POSITION_SMALL_SUFFIX = " (n=1800)";
-constexpr const char *BENCH_PARAMS_GENERAL_POSITION_SMALL =
-	"n=1800, min=0, max=3e6";
-constexpr const char *BENCH_GENERAL_POSITION_SUFFIX = " (n=1e6)";
+constexpr const char *BENCH_GENERAL_POSITION_SUFFIX = "";
 #endif
 
 #ifdef QUICK
@@ -183,10 +175,6 @@ inline std::vector<benchmark::CaseSpec> all_case_specs() {
 		 " (non strict)", BENCH_PARAMS_CONVEX, false},
 		{"geometry_convex_polygon_strict", "geometry::random_convex_polygon",
 		 " (strict)", BENCH_PARAMS_CONVEX_STRICT, true},
-		{"geometry_points_general_position_small",
-		 "geometry::random_points_general_position",
-		 BENCH_GENERAL_POSITION_SMALL_SUFFIX,
-		 BENCH_PARAMS_GENERAL_POSITION_SMALL, true},
 		{"geometry_points_general_position",
 		 "geometry::random_points_general_position",
 		 BENCH_GENERAL_POSITION_SUFFIX, BENCH_PARAMS_GENERAL_POSITION, true},
